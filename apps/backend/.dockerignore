@@ -1,0 +1,4 @@
+dados/
+*.db
+*.db-*
+.env

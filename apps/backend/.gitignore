@@ -1,0 +1,6 @@
+dados/
+*.db
+*.db-shm
+*.db-wal
+.env
+/corretor
