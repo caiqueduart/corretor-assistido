@@ -1,0 +1,15 @@
+/* Folha branca sobre o fundo: superfícies de trabalho (texto, listas, tabelas). */
+@mixin folha {
+    background: var(--folha);
+    border: 1px solid var(--linha);
+    border-radius: var(--raio);
+}
+
+/* Rótulo curto em caixa alta usado em cabeçalhos de coluna e legendas. */
+@mixin rotulo {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--texto-2);
+}

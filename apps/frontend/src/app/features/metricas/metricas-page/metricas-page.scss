@@ -1,0 +1,148 @@
+@use 'variables' as *;
+@use 'functions' as *;
+@use 'mixins' as *;
+
+:host {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.metricas {
+    &__bloco {
+        @include folha;
+        display: grid;
+        gap: 0.75rem;
+        padding: 1.25rem;
+    }
+
+    &__subtitulo {
+        font-size: pxToRem(16px);
+        font-weight: 700;
+    }
+
+    &__nota {
+        max-width: 70ch;
+        color: var(--texto-2);
+        font-size: pxToRem(14px);
+    }
+
+    &__rolagem {
+        overflow-x: auto;
+    }
+
+    &__tabela {
+        width: 100%;
+        border-collapse: collapse;
+
+        th,
+        td {
+            padding: 0.625rem 0.75rem;
+            border-bottom: 1px solid var(--linha);
+            text-align: left;
+        }
+
+        thead th {
+            @include rotulo;
+        }
+
+        tbody th {
+            font-weight: 600;
+        }
+
+        tbody tr:last-child > * {
+            border-bottom: 0;
+        }
+
+        .metricas__numero {
+            text-align: right;
+        }
+    }
+
+    &__linha-alerta {
+        background: var(--correcao-suave);
+    }
+
+    &__numero {
+        white-space: nowrap;
+    }
+
+    &__contagem {
+        color: var(--texto-2);
+        font-size: pxToRem(13px);
+    }
+}
+
+.resumo {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+
+    @media (width >= $breakpoint-md) {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0;
+    }
+
+    &__item {
+        display: grid;
+        align-content: start;
+        gap: 0.25rem;
+
+        @media (width >= $breakpoint-md) {
+            padding: 0 1.25rem;
+
+            &:first-child {
+                padding-left: 0;
+            }
+
+            & + & {
+                border-left: 1px solid var(--linha);
+            }
+        }
+
+        dt {
+            font-size: pxToRem(14px);
+            font-weight: 600;
+        }
+
+        dd {
+            margin: 0;
+        }
+    }
+
+    &__valor {
+        color: var(--caneta);
+        font-size: pxToRem(28px);
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    &__explicacao {
+        color: var(--texto-2);
+        font-size: pxToRem(14px);
+    }
+}
+
+.empilhada {
+    display: flex;
+    width: 100%;
+    max-width: 16rem;
+    height: 0.625rem;
+    margin-bottom: 0.25rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--grafite-suave);
+
+    &__parte {
+        &--aceita {
+            background: var(--caneta);
+        }
+
+        &--ajustada {
+            background: var(--caneta-clara);
+        }
+
+        &--recusada {
+            background: var(--correcao);
+        }
+    }
+}

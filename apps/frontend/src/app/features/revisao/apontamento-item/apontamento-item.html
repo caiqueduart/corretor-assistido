@@ -1,0 +1,97 @@
+@let item = apontamento();
+
+<button class="item__resumo" type="button" [attr.aria-expanded]="selecionado()" (click)="selecionar.emit()">
+    <span class="item__numero">{{ numero() }}</span>
+
+    <span class="item__troca">
+        <span class="item__de">{{ item.trecho }}</span>
+        <app-icone class="item__seta" nome="proximo" />
+        <span class="item__para">{{ textoFinal(item) }}</span>
+    </span>
+
+    <span class="item__situacao">{{ item.decisao ? situacao[item.decisao] : 'A decidir' }}</span>
+</button>
+
+@if (selecionado()) {
+    <div class="item__detalhe">
+        <p class="item__etiquetas">
+            <span class="etiqueta">{{ item.criterio }}</span>
+
+            @if (item.variacaoLinguistica) {
+                <span class="etiqueta etiqueta--marca-texto">Possível variação linguística</span>
+            }
+
+            @if (item.decisao === 'ajustada') {
+                <span class="etiqueta etiqueta--caneta">IA sugeriu “{{ item.sugestaoIa }}”</span>
+            }
+        </p>
+
+        <p class="item__explicacao">
+            <span class="visualmente-oculto">Explicação para o aluno: </span>
+            {{ item.explicacao }}
+        </p>
+
+        @if (item.variacaoLinguistica && !item.decisao) {
+            <p class="item__aviso">
+                A IA indicou que esta forma pode ser da fala ou da região do aluno, e não um erro de escrita. Recuse se
+                ela fizer sentido no texto.
+            </p>
+        }
+
+        @if (bloqueado()) {
+            <p class="item__bloqueado">Devolutiva enviada. A decisão ficou registrada.</p>
+        } @else if (ajustando()) {
+            <form class="item__ajuste" (submit)="$event.preventDefault(); salvarAjuste(campoAjuste.value)">
+                <label class="visualmente-oculto" for="ajuste-{{ item.id }}"
+                    >Sua correção para “{{ item.trecho }}”</label
+                >
+                <input
+                    #campoAjuste
+                    id="ajuste-{{ item.id }}"
+                    [value]="textoFinal(item)"
+                    autocomplete="off"
+                    (keydown.escape)="cancelarAjuste()"
+                />
+                <button class="botao botao--primario botao--pequeno" type="submit">Salvar</button>
+                <button class="botao botao--discreto botao--pequeno" type="button" (click)="cancelarAjuste()">
+                    Cancelar
+                </button>
+            </form>
+        } @else {
+            <div class="item__decisoes" role="group" [attr.aria-label]="'Decisão sobre o apontamento ' + numero()">
+                <button
+                    class="item__decisao item__decisao--aceitar"
+                    type="button"
+                    [attr.aria-pressed]="item.decisao === 'aceita'"
+                    aria-keyshortcuts="A"
+                    (click)="alternar('aceita')"
+                >
+                    <app-icone nome="aceitar" />
+                    Aceitar
+                </button>
+
+                <button
+                    class="item__decisao item__decisao--ajustar"
+                    type="button"
+                    [attr.aria-pressed]="item.decisao === 'ajustada'"
+                    aria-keyshortcuts="E"
+                    (click)="abrirAjuste()"
+                >
+                    <app-icone nome="ajustar" />
+                    Ajustar
+                </button>
+
+                <button
+                    class="item__decisao item__decisao--recusar"
+                    type="button"
+                    [attr.aria-pressed]="item.decisao === 'recusada'"
+                    aria-keyshortcuts="R"
+                    (click)="alternar('recusada')"
+                >
+                    <app-icone nome="recusar" />
+                    Recusar
+                </button>
+            </div>
+        }
+    </div>
+}

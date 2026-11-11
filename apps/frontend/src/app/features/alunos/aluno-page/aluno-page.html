@@ -1,0 +1,114 @@
+<a class="botao botao--discreto botao--pequeno aluno__voltar" routerLink="/alunos">
+    <app-icone nome="voltar" />
+    Alunos
+</a>
+
+@if (!redacoes.carregado()) {
+    <p class="aluno__nota" role="status">Carregando…</p>
+} @else if (aluno(); as atual) {
+    <header class="aluno__topo">
+        <h1 class="aluno__titulo">{{ atual.codigo }}</h1>
+        <p class="aluno__nota">{{ atual.turma }} · {{ atual.perfil }}</p>
+    </header>
+
+    <section class="aluno__bloco" aria-labelledby="titulo-desvios">
+        <h2 class="aluno__subtitulo" id="titulo-desvios">Desvios validados a cada 100 palavras</h2>
+
+        @if (pontos().length) {
+            <ul class="barras">
+                @for (ponto of pontos(); track ponto.redacao.id; let ultimo = $last) {
+                    <li class="barras__linha">
+                        <span class="barras__rotulo">
+                            {{ ponto.redacao.versao === 1 ? '1ª versão' : 'Reescrita ' + (ponto.redacao.versao - 1) }}
+                        </span>
+                        <span class="barras__trilho">
+                            <span
+                                class="barras__barra"
+                                [class.barras__barra--atual]="ultimo"
+                                [style.width.%]="(100 * ponto.taxa) / maiorTaxa()"
+                            ></span>
+                        </span>
+                        <span class="barras__valor">{{ ponto.taxa | number: '1.1-1' }}</span>
+                    </li>
+                }
+            </ul>
+
+            @if (atual.variacao !== null) {
+                <p class="aluno__resumo">
+                    @if (atual.variacao < 0) {
+                        Da 1ª versão para a última, os desvios caíram
+                        <span class="aluno__destaque">{{ -atual.variacao }}%</span>.
+                    } @else if (atual.variacao > 0) {
+                        Os desvios aumentaram <span class="aluno__destaque">{{ atual.variacao }}%</span> na reescrita.
+                    } @else {
+                        A quantidade de desvios não mudou entre as versões.
+                    }
+                </p>
+            } @else {
+                <p class="aluno__nota">
+                    A evolução aparece quando uma reescrita for devolvida. Importe a nova versão marcando “É reescrita
+                    de”.
+                </p>
+            }
+        } @else {
+            <p class="aluno__nota">Nenhuma devolutiva enviada para este aluno ainda.</p>
+        }
+    </section>
+
+    @if (comparacao(); as resultado) {
+        <section class="aluno__bloco" aria-labelledby="titulo-mudancas">
+            <h2 class="aluno__subtitulo" id="titulo-mudancas">O que mudou na reescrita</h2>
+
+            <div class="mudancas">
+                <div>
+                    <h3 class="mudancas__titulo mudancas__titulo--resolvido">
+                        <app-icone nome="aceitar" />
+                        Corrigiu ({{ resultado.resolvidos.length }})
+                    </h3>
+                    <ul class="mudancas__lista">
+                        @for (item of resultado.resolvidos; track item.apontamento.id) {
+                            <li>
+                                <del>{{ item.apontamento.trecho }}</del> → {{ textoFinal(item.apontamento) }}
+                            </li>
+                        } @empty {
+                            <li class="aluno__nota">Nenhum ainda.</li>
+                        }
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="mudancas__titulo mudancas__titulo--persistiu">
+                        <app-icone nome="alerta" />
+                        Ainda aparece ({{ resultado.persistiram.length }})
+                    </h3>
+                    <ul class="mudancas__lista">
+                        @for (item of resultado.persistiram; track item.apontamento.id) {
+                            <li>
+                                {{ item.apontamento.trecho }}
+                                <span class="aluno__nota">({{ item.apontamento.criterio }})</span>
+                            </li>
+                        } @empty {
+                            <li class="aluno__nota">Nada. Todos os pontos foram resolvidos.</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </section>
+    }
+
+    <section class="aluno__bloco" aria-labelledby="titulo-versoes">
+        <h2 class="aluno__subtitulo" id="titulo-versoes">Versões</h2>
+
+        <ol class="versoes">
+            @for (versao of atual.versoes; track versao.id) {
+                <li class="versoes__item">
+                    <app-situacao-versao [redacao]="versao" />
+                    <span class="versoes__titulo">{{ versao.titulo }}</span>
+                    <a class="botao botao--discreto botao--pequeno" [routerLink]="['/redacoes', versao.id]">Abrir</a>
+                </li>
+            }
+        </ol>
+    </section>
+} @else {
+    <p class="aluno__nota">Aluno não encontrado. <a routerLink="/alunos">Voltar para a lista</a></p>
+}

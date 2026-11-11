@@ -1,0 +1,41 @@
+<!-- O host usa white-space: pre-wrap; todo texto fica dentro de elementos para não herdar a indentação do template. -->
+@for (trecho of trechos(); track $index) {
+    @if (trecho.tipo === 'texto') {
+        <span>{{ trecho.texto }}</span>
+    } @else {
+        @let apontamento = trecho.apontamento;
+
+        @if (somenteValidados()) {
+            @if (apontamento.decisao === 'aceita' || apontamento.decisao === 'ajustada') {
+                <span class="marca marca--validada">
+                    <del class="marca__original">{{ apontamento.trecho }}</del>
+                    <ins class="marca__nova">{{ textoFinal(apontamento) }}</ins>
+                </span>
+            } @else {
+                <span>{{ apontamento.trecho }}</span>
+            }
+        } @else {
+            <button
+                class="marca"
+                type="button"
+                [class.marca--pendente]="!apontamento.decisao"
+                [class.marca--validada]="apontamento.decisao === 'aceita' || apontamento.decisao === 'ajustada'"
+                [class.marca--recusada]="apontamento.decisao === 'recusada'"
+                [class.marca--variacao]="apontamento.variacaoLinguistica"
+                [class.marca--selecionada]="apontamento.id === selecionadoId()"
+                [attr.aria-label]="rotulo(apontamento, trecho.indice)"
+                [attr.aria-pressed]="apontamento.id === selecionadoId()"
+                (click)="selecionar.emit(apontamento.id)"
+            >
+                @if (apontamento.decisao === 'aceita' || apontamento.decisao === 'ajustada') {
+                    <del class="marca__original">{{ apontamento.trecho }}</del>
+                    <ins class="marca__nova">{{ textoFinal(apontamento) }}</ins>
+                } @else {
+                    <span class="marca__original">{{ apontamento.trecho }}</span>
+                }
+
+                <sup class="marca__numero" aria-hidden="true">{{ trecho.indice + 1 }}</sup>
+            </button>
+        }
+    }
+}

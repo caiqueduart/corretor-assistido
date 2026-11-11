@@ -1,0 +1,141 @@
+<app-cabecalho-pagina
+    titulo="Métricas da POC"
+    descricao="Hipótese: o feedback assistido melhora a reescrita sem criar viés contra variedades linguísticas não padrão."
+/>
+
+@if (!redacoes.carregado()) {
+    <p class="metricas__nota" role="status">Calculando…</p>
+} @else {
+    <section class="metricas__bloco" aria-labelledby="titulo-resumo">
+        <h2 class="metricas__subtitulo" id="titulo-resumo">Resumo</h2>
+
+        <dl class="resumo">
+            <div class="resumo__item">
+                <dt>Ganho entre versões</dt>
+                <dd class="resumo__valor">
+                    {{ metricas.ganhoMedio().reducao === null ? '—' : metricas.ganhoMedio().reducao + '%' }}
+                </dd>
+                <dd class="resumo__explicacao">
+                    Redução média de desvios validados da 1ª versão para a reescrita ({{ metricas.ganhoMedio().alunos }}
+                    {{ metricas.ganhoMedio().alunos === 1 ? 'aluno' : 'alunos' }}).
+                </dd>
+            </div>
+
+            <div class="resumo__item">
+                <dt>Discordância professor × IA</dt>
+                <dd class="resumo__valor">
+                    {{ metricas.discordanciaGeral() === null ? '—' : metricas.discordanciaGeral() + '%' }}
+                </dd>
+                <dd class="resumo__explicacao">
+                    Parte das {{ metricas.decisoesRegistradas() }} decisões em que o professor recusou ou ajustou a IA.
+                </dd>
+            </div>
+
+            <div class="resumo__item">
+                <dt>Devolutivas enviadas</dt>
+                <dd class="resumo__valor">{{ metricas.devolutivas().enviadas }}</dd>
+                <dd class="resumo__explicacao">De {{ metricas.devolutivas().total }} redações importadas.</dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="metricas__bloco" aria-labelledby="titulo-criterio">
+        <h2 class="metricas__subtitulo" id="titulo-criterio">Decisões por critério</h2>
+
+        <div class="metricas__rolagem">
+            <table class="metricas__tabela">
+                <thead>
+                    <tr>
+                        <th scope="col">Critério</th>
+                        <th scope="col">Aceitas · ajustadas · recusadas</th>
+                        <th scope="col" class="metricas__numero">Discordância</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (linha of metricas.porCriterio(); track linha.criterio) {
+                        @let total = linha.aceitas + linha.ajustadas + linha.recusadas;
+
+                        <tr>
+                            <th scope="row">{{ linha.criterio }}</th>
+                            <td>
+                                <span class="empilhada" aria-hidden="true">
+                                    <span
+                                        class="empilhada__parte empilhada__parte--aceita"
+                                        [style.width.%]="porcentagem(linha.aceitas, total)"
+                                    ></span>
+                                    <span
+                                        class="empilhada__parte empilhada__parte--ajustada"
+                                        [style.width.%]="porcentagem(linha.ajustadas, total)"
+                                    ></span>
+                                    <span
+                                        class="empilhada__parte empilhada__parte--recusada"
+                                        [style.width.%]="porcentagem(linha.recusadas, total)"
+                                    ></span>
+                                </span>
+                                <span class="metricas__contagem">
+                                    {{ linha.aceitas }} · {{ linha.ajustadas }} · {{ linha.recusadas }}
+                                </span>
+                            </td>
+                            <td class="metricas__numero">
+                                {{ linha.discordancia === null ? '—' : linha.discordancia + '%' }}
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="metricas__bloco" aria-labelledby="titulo-equidade">
+        <h2 class="metricas__subtitulo" id="titulo-equidade">Auditoria de equidade por perfil</h2>
+        <p class="metricas__nota">
+            Se o professor recusa bem mais apontamentos num grupo, a IA pode estar tratando a fala desse grupo como
+            erro. O alerta aparece quando a discordância passa {{ limiar }} pontos da média, com pelo menos 3 decisões.
+        </p>
+
+        <div class="metricas__rolagem">
+            <table class="metricas__tabela">
+                <thead>
+                    <tr>
+                        <th scope="col">Perfil</th>
+                        <th scope="col" class="metricas__numero">Redações</th>
+                        <th scope="col" class="metricas__numero">Apontamentos / 100 palavras</th>
+                        <th scope="col" class="metricas__numero">Discordância</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (linha of metricas.porPerfil(); track linha.perfil) {
+                        <tr [class.metricas__linha-alerta]="linha.alerta">
+                            <th scope="row">
+                                {{ linha.perfil }}
+
+                                @if (linha.alerta) {
+                                    <span class="etiqueta etiqueta--correcao">
+                                        <app-icone nome="alerta" />
+                                        Possível viés
+                                    </span>
+                                }
+                            </th>
+                            <td class="metricas__numero">{{ linha.redacoes }}</td>
+                            <td class="metricas__numero">
+                                {{
+                                    linha.apontamentosPor100Palavras === null
+                                        ? '—'
+                                        : (linha.apontamentosPor100Palavras | number: '1.1-1')
+                                }}
+                            </td>
+                            <td class="metricas__numero">
+                                {{ linha.discordancia === null ? '—' : linha.discordancia + '%' }}
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <p class="metricas__nota">
+        Valores calculados a partir das redações carregadas, incluindo os exemplos de demonstração. Perfil e código do
+        aluno nunca são enviados à IA.
+    </p>
+}

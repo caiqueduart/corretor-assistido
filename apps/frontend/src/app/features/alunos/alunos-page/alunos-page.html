@@ -1,0 +1,52 @@
+<app-cabecalho-pagina
+    titulo="Alunos"
+    descricao="Cada reescrita volta ao ciclo de correção. A evolução compara os desvios que você validou em cada versão."
+/>
+
+@if (!redacoes.carregado()) {
+    <p class="alunos__vazio" role="status">Carregando alunos…</p>
+} @else {
+    <div class="alunos">
+        <table class="alunos__tabela">
+            <thead>
+                <tr>
+                    <th scope="col">Aluno</th>
+                    <th scope="col">Perfil</th>
+                    <th scope="col">Versões</th>
+                    <th scope="col" class="alunos__numero">Evolução</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @for (aluno of alunos(); track aluno.codigo) {
+                    <tr>
+                        <th scope="row">
+                            <a class="alunos__link" [routerLink]="['/alunos', aluno.codigo]">{{ aluno.codigo }}</a>
+                            <span class="alunos__turma">{{ aluno.turma }}</span>
+                        </th>
+
+                        <td class="alunos__perfil">{{ aluno.perfil }}</td>
+
+                        <td>
+                            <span class="alunos__versoes">
+                                @for (versao of aluno.versoes; track versao.id) {
+                                    <app-situacao-versao [redacao]="versao" />
+                                }
+                            </span>
+                        </td>
+
+                        <td class="alunos__numero">
+                            @if (aluno.variacao === null) {
+                                <span class="alunos__sem-dado">aguardando reescrita</span>
+                            } @else {
+                                <span class="alunos__variacao" [class.alunos__variacao--piora]="aluno.variacao > 0">
+                                    {{ aluno.variacao > 0 ? '+' : '' }}{{ aluno.variacao }}% desvios
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

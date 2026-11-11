@@ -1,0 +1,343 @@
+<a class="botao botao--discreto botao--pequeno revisao__voltar" routerLink="/redacoes">
+    <app-icone nome="voltar" />
+    Redações
+</a>
+
+@if (!redacoes.carregado()) {
+    <p class="revisao__aviso" role="status">Carregando redação…</p>
+} @else if (redacao(); as atual) {
+    <header class="revisao__topo">
+        <h1 class="revisao__titulo">
+            {{ atual.aluno }}
+            <span class="revisao__titulo-redacao">{{ atual.titulo }}</span>
+        </h1>
+
+        <p class="revisao__meta">
+            {{ atual.turma }} · {{ atual.versao === 1 ? '1ª versão' : 'Reescrita (versão ' + atual.versao + ')' }} ·
+            <a [routerLink]="['/alunos', atual.aluno]">Ver evolução do aluno</a>
+
+            @if (atual.exemplo) {
+                <span class="etiqueta">Exemplo</span>
+            }
+        </p>
+    </header>
+
+    <ol class="etapas" aria-label="Andamento da correção">
+        <li
+            class="etapas__item"
+            [class.etapas__item--feita]="atual.status !== 'aguardando-ia' && atual.status !== 'corrigindo'"
+            [class.etapas__item--atual]="atual.status === 'aguardando-ia' || atual.status === 'corrigindo'"
+        >
+            <span class="etapas__marca" aria-hidden="true">1</span>
+            <span class="etapas__texto">
+                <span class="etapas__nome">IA sugere</span>
+                <span class="etapas__detalhe">
+                    @switch (atual.status) {
+                        @case ('aguardando-ia') {
+                            Ainda não corrigiu
+                        }
+                        @case ('corrigindo') {
+                            Lendo o texto…
+                        }
+                        @default {
+                            {{ decisoes().total }} apontamentos a lápis
+                        }
+                    }
+                </span>
+            </span>
+        </li>
+
+        <li
+            class="etapas__item"
+            [class.etapas__item--feita]="atual.status === 'devolvida'"
+            [class.etapas__item--atual]="atual.status === 'em-revisao'"
+        >
+            <span class="etapas__marca" aria-hidden="true">2</span>
+            <span class="etapas__texto">
+                <span class="etapas__nome">Você decide</span>
+                <span class="etapas__detalhe">
+                    @if (atual.status === 'em-revisao' || atual.status === 'devolvida') {
+                        {{ decisoes().total - decisoes().pendentes }} de {{ decisoes().total }} decididos
+                    } @else {
+                        Aceitar, ajustar ou recusar
+                    }
+                </span>
+            </span>
+        </li>
+
+        <li class="etapas__item" [class.etapas__item--feita]="atual.status === 'devolvida'">
+            <span class="etapas__marca" aria-hidden="true">3</span>
+            <span class="etapas__texto">
+                <span class="etapas__nome">Aluno recebe</span>
+                <span class="etapas__detalhe">
+                    @if (atual.status === 'devolvida') {
+                        Enviada em {{ atual.enviadaEm | date: "dd/MM 'às' HH:mm" }}
+                    } @else {
+                        Só depois do seu envio
+                    }
+                </span>
+            </span>
+        </li>
+    </ol>
+
+    @if (erro(); as mensagem) {
+        <p class="revisao__erro" role="alert">
+            <app-icone nome="alerta" />
+            {{ mensagem }}
+        </p>
+    }
+
+    @switch (atual.status) {
+        @case ('em-revisao') {
+            <div class="revisao__abas" role="group" aria-label="Visualização">
+                <button
+                    class="revisao__aba"
+                    type="button"
+                    [attr.aria-pressed]="visao() === 'revisao'"
+                    (click)="visao.set('revisao')"
+                >
+                    <app-icone nome="lapis" />
+                    Revisar
+                </button>
+                <button
+                    class="revisao__aba"
+                    type="button"
+                    [attr.aria-pressed]="visao() === 'aluno'"
+                    (click)="visao.set('aluno')"
+                >
+                    <app-icone nome="olho" />
+                    Prévia do aluno
+                </button>
+            </div>
+
+            @if (visao() === 'revisao') {
+                <div class="mesa">
+                    <article class="mesa__folha" aria-label="Texto do aluno">
+                        <app-texto-marcado
+                            [conteudo]="atual.conteudo"
+                            [apontamentos]="atual.apontamentos"
+                            [selecionadoId]="selecionadoId()"
+                            (selecionar)="selecionar($event, true)"
+                        />
+
+                        <ul class="legenda" aria-label="Legenda">
+                            <li class="legenda__item legenda__item--lapis">IA sugeriu</li>
+                            <li class="legenda__item legenda__item--caneta">Você validou</li>
+                            <li class="legenda__item legenda__item--recusa">Você recusou</li>
+                            <li class="legenda__item legenda__item--variacao">Possível variação linguística</li>
+                        </ul>
+                    </article>
+
+                    <section class="mesa__painel" aria-labelledby="titulo-apontamentos">
+                        <header class="mesa__painel-topo">
+                            <h2 class="mesa__painel-titulo" id="titulo-apontamentos">Apontamentos da IA</h2>
+
+                            @if (decisoes().pendentes) {
+                                <div class="mesa__lote">
+                                    <button
+                                        class="botao botao--pequeno"
+                                        type="button"
+                                        [disabled]="ocupada()"
+                                        (click)="decidirPendentes('aceita')"
+                                    >
+                                        {{
+                                            decisoes().pendentes === 1
+                                                ? 'Aceitar o restante'
+                                                : 'Aceitar os ' + decisoes().pendentes + ' restantes'
+                                        }}
+                                    </button>
+                                    <button
+                                        class="botao botao--pequeno botao--perigo"
+                                        type="button"
+                                        [disabled]="ocupada()"
+                                        (click)="decidirPendentes('recusada')"
+                                    >
+                                        {{
+                                            decisoes().pendentes === 1
+                                                ? 'Recusar o restante'
+                                                : 'Recusar os ' + decisoes().pendentes + ' restantes'
+                                        }}
+                                    </button>
+                                </div>
+                            }
+                        </header>
+
+                        @for (apontamento of atual.apontamentos; track apontamento.id; let i = $index) {
+                            <app-apontamento-item
+                                [attr.id]="'apontamento-' + apontamento.id"
+                                [apontamento]="apontamento"
+                                [numero]="i + 1"
+                                [selecionado]="apontamento.id === selecionadoId()"
+                                (selecionar)="selecionar(apontamento.id)"
+                                (decidir)="decidir(apontamento.id, $event)"
+                            />
+                        } @empty {
+                            <p class="mesa__vazio">
+                                A IA não encontrou desvios de ortografia ou pontuação. Leia o texto e, se concordar,
+                                envie só o recado.
+                            </p>
+                        }
+
+                        @if (atual.apontamentos.length) {
+                            <p class="mesa__atalhos">
+                                Atalhos: <kbd>A</kbd> aceitar · <kbd>E</kbd> ajustar · <kbd>R</kbd> recusar ·
+                                <kbd>↑</kbd><kbd>↓</kbd> navegar
+                            </p>
+                        }
+                    </section>
+                </div>
+            } @else {
+                <p class="revisao__previa">
+                    <app-icone nome="olho" />
+                    Prévia. O aluno ainda não recebeu nada; isto é o que ele vai ver quando você enviar.
+                </p>
+
+                <app-devolutiva [redacao]="atual" />
+            }
+
+            <section class="recado">
+                <label class="recado__rotulo" for="campo-recado">Recado para o aluno</label>
+                <textarea
+                    class="recado__campo"
+                    id="campo-recado"
+                    rows="3"
+                    [value]="atual.comentarioProfessor"
+                    (blur)="salvarComentario(campoRecado.value)"
+                    #campoRecado
+                ></textarea>
+
+                @if (atual.comentarioIa && atual.comentarioIa === atual.comentarioProfessor) {
+                    <p class="recado__dica">Rascunho escrito pela IA. Edite à vontade.</p>
+                }
+            </section>
+
+            <div class="envio" [class.envio--confirmando]="confirmandoEnvio()">
+                @if (confirmandoEnvio()) {
+                    <p class="envio__texto">
+                        Enviar a devolutiva para <span class="envio__destaque">{{ atual.aluno }}</span>? Ele vai ver
+                        {{ validados() === 1 ? '1 correção' : validados() + ' correções' }} e o seu recado. Depois de
+                        enviada, ela não pode ser alterada.
+                    </p>
+
+                    <div class="envio__acoes">
+                        <button class="botao" type="button" (click)="confirmandoEnvio.set(false)">Voltar</button>
+                        <button class="botao botao--primario" type="button" [disabled]="ocupada()" (click)="enviar()">
+                            <app-icone nome="enviar" />
+                            Confirmar envio
+                        </button>
+                    </div>
+                } @else {
+                    <p class="envio__texto">
+                        @if (decisoes().pendentes) {
+                            Faltam
+                            <span class="envio__destaque">{{
+                                decisoes().pendentes === 1 ? '1 decisão' : decisoes().pendentes + ' decisões'
+                            }}</span>
+                            para liberar o envio.
+                        } @else {
+                            Tudo decidido. O aluno só recebe depois que você enviar.
+                        }
+                    </p>
+
+                    <button
+                        class="botao botao--primario"
+                        type="button"
+                        [disabled]="decisoes().pendentes > 0"
+                        (click)="confirmandoEnvio.set(true)"
+                    >
+                        <app-icone nome="enviar" />
+                        Enviar devolutiva
+                    </button>
+                }
+            </div>
+        }
+
+        @case ('devolvida') {
+            <p class="revisao__selo">
+                <app-icone nome="selo" />
+                <span>
+                    Devolutiva validada por você e enviada em {{ atual.enviadaEm | date: "dd/MM/yyyy 'às' HH:mm" }}. As
+                    decisões ficam registradas para as métricas da POC.
+                </span>
+            </p>
+
+            <div class="revisao__abas" role="group" aria-label="Visualização">
+                <button
+                    class="revisao__aba"
+                    type="button"
+                    [attr.aria-pressed]="visao() === 'aluno'"
+                    (click)="visao.set('aluno')"
+                >
+                    <app-icone nome="olho" />
+                    O que o aluno recebeu
+                </button>
+                <button
+                    class="revisao__aba"
+                    type="button"
+                    [attr.aria-pressed]="visao() === 'revisao'"
+                    (click)="visao.set('revisao')"
+                >
+                    <app-icone nome="lapis" />
+                    Sua revisão
+                </button>
+            </div>
+
+            @if (visao() === 'aluno') {
+                <app-devolutiva [redacao]="atual" />
+            } @else {
+                <div class="mesa">
+                    <article class="mesa__folha" aria-label="Texto do aluno">
+                        <app-texto-marcado
+                            [conteudo]="atual.conteudo"
+                            [apontamentos]="atual.apontamentos"
+                            [selecionadoId]="selecionadoId()"
+                            (selecionar)="selecionar($event, true)"
+                        />
+                    </article>
+
+                    <section class="mesa__painel" aria-label="Decisões registradas">
+                        @for (apontamento of atual.apontamentos; track apontamento.id; let i = $index) {
+                            <app-apontamento-item
+                                [attr.id]="'apontamento-' + apontamento.id"
+                                [apontamento]="apontamento"
+                                [numero]="i + 1"
+                                [selecionado]="apontamento.id === selecionadoId()"
+                                [bloqueado]="true"
+                                (selecionar)="selecionar(apontamento.id)"
+                            />
+                        }
+                    </section>
+                </div>
+            }
+        }
+
+        @default {
+            <div class="mesa">
+                <article class="mesa__folha" aria-label="Texto do aluno">
+                    <app-texto-marcado [conteudo]="atual.conteudo" [apontamentos]="[]" />
+                </article>
+
+                <section class="mesa__painel mesa__painel--espera">
+                    @if (atual.status === 'corrigindo') {
+                        <p class="mesa__espera" role="status">
+                            <span class="mesa__giro" aria-hidden="true"></span>
+                            A IA está lendo o texto. Os apontamentos aparecem aqui, a lápis, para você decidir.
+                        </p>
+                    } @else {
+                        <h2 class="mesa__painel-titulo">Ainda sem correção</h2>
+                        <p>
+                            A IA vai apontar desvios de ortografia e pontuação. Nada é enviado ao aluno até você
+                            revisar.
+                        </p>
+                        <button class="botao botao--primario" type="button" (click)="corrigirComIa()">
+                            <app-icone nome="lapis" />
+                            Corrigir com IA
+                        </button>
+                    }
+                </section>
+            </div>
+        }
+    }
+} @else {
+    <p class="revisao__aviso">Redação não encontrada. <a routerLink="/redacoes">Voltar para a lista</a></p>
+}

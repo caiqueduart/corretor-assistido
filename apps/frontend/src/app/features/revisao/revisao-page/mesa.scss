@@ -1,0 +1,142 @@
+@use 'variables' as *;
+@use 'functions' as *;
+@use 'mixins' as *;
+
+/* Mesa de revisão: texto do aluno à esquerda, apontamentos à direita no desktop. */
+.mesa {
+    display: grid;
+    gap: 1rem;
+
+    @media (width >= $breakpoint-lg) {
+        grid-template-columns: minmax(0, 1fr) minmax(20rem, 26rem);
+        align-items: start;
+    }
+
+    &__folha {
+        @include folha;
+        padding: 1.25rem;
+
+        @media (width >= $breakpoint-md) {
+            padding: 2rem 2.5rem;
+        }
+    }
+
+    &__painel {
+        @include folha;
+        overflow: hidden;
+
+        @media (width >= $breakpoint-lg) {
+            position: sticky;
+            top: 1rem;
+            max-height: calc(100dvh - 2rem);
+            overflow-y: auto;
+        }
+
+        &--espera {
+            display: grid;
+            gap: 0.75rem;
+            padding: 1.25rem;
+        }
+    }
+
+    &__painel-topo {
+        display: grid;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+
+    &__painel-titulo {
+        font-size: pxToRem(16px);
+        font-weight: 700;
+    }
+
+    &__lote {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    &__vazio,
+    &__atalhos {
+        padding: 1rem;
+        border-top: 1px solid var(--linha);
+        color: var(--texto-2);
+        font-size: pxToRem(13px);
+    }
+
+    &__atalhos kbd {
+        display: inline-block;
+        min-width: 1.25rem;
+        padding: 0 0.25rem;
+        border: 1px solid var(--linha-forte);
+        border-radius: 4px;
+        background: var(--folha-2);
+        font-family: inherit;
+        font-size: pxToRem(12px);
+        text-align: center;
+    }
+
+    &__espera {
+        display: flex;
+        gap: 0.75rem;
+        color: var(--grafite);
+    }
+
+    &__giro {
+        flex: none;
+        width: 1rem;
+        height: 1rem;
+        margin-top: 0.25rem;
+        border: 2px solid var(--linha-forte);
+        border-top-color: var(--grafite);
+        border-radius: 50%;
+        animation: girar 800ms linear infinite;
+    }
+}
+
+.legenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    margin: 1.5rem 0 0;
+    padding: 1rem 0 0;
+    border-top: 1px solid var(--linha);
+    list-style: none;
+    color: var(--texto-2);
+    font-size: pxToRem(13px);
+
+    &__item::before {
+        content: 'abc';
+        margin-right: 0.375rem;
+        font-family: var(--fonte-texto);
+        font-size: pxToRem(15px);
+        text-underline-offset: 0.25em;
+    }
+
+    &__item--lapis::before {
+        color: var(--texto);
+        text-decoration: underline dashed var(--grafite) 1.5px;
+    }
+
+    &__item--caneta::before {
+        color: var(--caneta);
+        font-weight: 600;
+    }
+
+    &__item--recusa::before {
+        color: var(--texto);
+        text-decoration: underline dotted var(--correcao) 1.5px;
+    }
+
+    &__item--variacao::before {
+        padding: 0 0.125rem;
+        background: var(--marca-texto-suave);
+        color: var(--texto);
+    }
+}
+
+@keyframes girar {
+    to {
+        transform: rotate(360deg);
+    }
+}

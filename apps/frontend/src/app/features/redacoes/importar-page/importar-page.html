@@ -1,0 +1,132 @@
+<a class="botao botao--discreto botao--pequeno importar__voltar" routerLink="/redacoes">
+    <app-icone nome="voltar" />
+    Redações
+</a>
+
+<app-cabecalho-pagina
+    titulo="Importar redação"
+    descricao="Depois de importar, a IA corrige e você revisa. O aluno é identificado só por código."
+/>
+
+<form class="importar" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+    <fieldset class="importar__bloco">
+        <legend class="importar__legenda">Texto do aluno</legend>
+
+        @if (arquivo(); as escolhido) {
+            <div class="importar__arquivo">
+                <app-icone nome="redacoes" />
+                <span class="importar__arquivo-nome">{{ escolhido.name }}</span>
+                <button class="botao botao--discreto botao--pequeno" type="button" (click)="removerArquivo()">
+                    Trocar
+                </button>
+            </div>
+        } @else {
+            <label class="importar__soltar" for="campo-arquivo">
+                <app-icone nome="importar" />
+                <span class="importar__soltar-titulo">Escolher arquivo</span>
+                <span class="importar__dica">PDF, TXT ou DOCX</span>
+            </label>
+
+            <input
+                class="visualmente-oculto"
+                id="campo-arquivo"
+                type="file"
+                accept=".pdf,.txt,.docx"
+                (change)="escolherArquivo($event)"
+            />
+
+            @if (erroArquivo(); as erro) {
+                <p class="importar__erro" role="alert">{{ erro }}</p>
+            }
+
+            <div class="importar__campo">
+                <label for="campo-texto">Ou cole o texto</label>
+                <textarea id="campo-texto" rows="8" formControlName="textoColado"></textarea>
+            </div>
+        }
+
+        @if (formulario.touched && !temTexto()) {
+            <p class="importar__erro" role="alert">Envie um arquivo ou cole o texto.</p>
+        }
+    </fieldset>
+
+    <fieldset class="importar__bloco">
+        <legend class="importar__legenda">Sobre o aluno</legend>
+
+        <div class="importar__grade">
+            <div class="importar__campo">
+                <label for="campo-aluno">Código do aluno</label>
+                <input
+                    id="campo-aluno"
+                    formControlName="aluno"
+                    autocomplete="off"
+                    placeholder="Ex.: 8A-07"
+                    aria-describedby="dica-aluno"
+                />
+                <p class="importar__dica" id="dica-aluno">Nunca use o nome do aluno.</p>
+
+                @if (formulario.controls.aluno.touched && formulario.controls.aluno.invalid) {
+                    <p class="importar__erro">Informe um código de 2 a 12 letras, números ou hífen.</p>
+                }
+            </div>
+
+            <div class="importar__campo">
+                <label for="campo-turma">Turma</label>
+                <input id="campo-turma" formControlName="turma" autocomplete="off" placeholder="Ex.: 8º A" />
+
+                @if (formulario.controls.turma.touched && formulario.controls.turma.invalid) {
+                    <p class="importar__erro">Informe a turma.</p>
+                }
+            </div>
+
+            <div class="importar__campo">
+                <label for="campo-titulo">Título <span class="importar__opcional">(opcional)</span></label>
+                <input id="campo-titulo" formControlName="titulo" autocomplete="off" />
+            </div>
+
+            <div class="importar__campo">
+                <label for="campo-origem">É reescrita de</label>
+                <select id="campo-origem" formControlName="origemId">
+                    <option value="">Não, é a 1ª versão</option>
+
+                    @for (redacao of versoesAnteriores(); track redacao.id) {
+                        <option [value]="redacao.id">{{ redacao.titulo }} · versão {{ redacao.versao }}</option>
+                    }
+                </select>
+            </div>
+
+            <div class="importar__campo">
+                <label for="campo-perfil">Perfil sociolinguístico</label>
+                <select id="campo-perfil" formControlName="perfil" aria-describedby="dica-perfil">
+                    @for (perfil of perfis; track perfil) {
+                        <option [value]="perfil">{{ perfil }}</option>
+                    }
+                </select>
+                <p class="importar__dica" id="dica-perfil">Só para a auditoria de equidade. Não é enviado à IA.</p>
+            </div>
+        </div>
+    </fieldset>
+
+    <label class="importar__consentimento">
+        <input type="checkbox" formControlName="consentimentoFamilia" />
+        <span>
+            <span class="importar__consentimento-titulo">A família deu consentimento informado</span>
+            <span class="importar__dica">Sem consentimento, o texto não entra na POC.</span>
+        </span>
+    </label>
+
+    @if (formulario.controls.consentimentoFamilia.touched && formulario.controls.consentimentoFamilia.invalid) {
+        <p class="importar__erro" role="alert">Confirme o consentimento da família para importar.</p>
+    }
+
+    @if (erroEnvio(); as erro) {
+        <p class="importar__erro" role="alert">{{ erro }}</p>
+    }
+
+    <div class="importar__acoes">
+        <a class="botao botao--discreto" routerLink="/redacoes">Cancelar</a>
+        <button class="botao botao--primario" type="submit" [disabled]="enviando()">
+            {{ enviando() ? 'Importando…' : 'Importar redação' }}
+        </button>
+    </div>
+</form>

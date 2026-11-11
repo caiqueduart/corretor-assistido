@@ -1,0 +1,40 @@
+@let atual = redacao();
+
+<article class="devolutiva__folha">
+    <h3 class="devolutiva__titulo">{{ atual.titulo }}</h3>
+
+    <app-texto-marcado [conteudo]="atual.conteudo" [apontamentos]="atual.apontamentos" [somenteValidados]="true" />
+</article>
+
+<aside class="devolutiva__lateral">
+    <section class="devolutiva__bloco">
+        <h3 class="devolutiva__subtitulo">Recado do professor</h3>
+        <p class="devolutiva__recado">{{ atual.comentarioProfessor || 'Sem recado.' }}</p>
+    </section>
+
+    <section class="devolutiva__bloco">
+        <h3 class="devolutiva__subtitulo">Para a reescrita</h3>
+
+        @if (validados().length) {
+            <ol class="devolutiva__lista">
+                @for (apontamento of validados(); track apontamento.id) {
+                    <li>
+                        <span class="devolutiva__troca">{{ apontamento.trecho }} → {{ textoFinal(apontamento) }}</span>
+                        <span class="devolutiva__explicacao">{{ apontamento.explicacao }}</span>
+                    </li>
+                }
+            </ol>
+        } @else {
+            <p class="devolutiva__vazio">Nenhuma correção. Só o recado.</p>
+        }
+
+        @if (ocultos()) {
+            <p class="devolutiva__nota">
+                {{
+                    ocultos() === 1 ? '1 sugestão da IA ficou de fora' : ocultos() + ' sugestões da IA ficaram de fora'
+                }}
+                porque você recusou ou ainda não decidiu.
+            </p>
+        }
+    </section>
+</aside>

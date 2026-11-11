@@ -1,1 +1,224 @@
-/* You can add global styles to this file, and also import other style files */
+/*
+ * Cores do corretor.
+ * lousa: barra de navegação. grafite: o que a IA sugeriu (ainda lápis).
+ * caneta: o que o professor validou. correcao: o que o professor recusou.
+ * marca-texto: variação linguística apontada pela IA.
+ */
+:root {
+    --fundo: #f3f5f3;
+    --folha: #ffffff;
+    --folha-2: #f8faf8;
+    --linha: #dde3df;
+    --linha-forte: #c3ccc6;
+    --texto: #18221d;
+    --texto-2: #55625b;
+
+    --lousa: #1c3a31;
+    --lousa-2: #24493e;
+    --lousa-texto: #e6efea;
+    --lousa-texto-2: #a9c0b5;
+
+    --caneta: #1f43b4;
+    --caneta-forte: #17348f;
+    --caneta-clara: #7d93d8;
+    --caneta-suave: #e8edfb;
+
+    --grafite: #5d6863;
+    --grafite-suave: #eceeed;
+
+    --correcao: #b3261e;
+    --correcao-suave: #fbeae8;
+
+    --marca-texto: #8a5a00;
+    --marca-texto-suave: #fdf0cf;
+
+    --sucesso: #1d6e47;
+    --sucesso-suave: #e2f2e9;
+
+    --foco: #1f43b4;
+    --raio: 8px;
+    --sombra-flutuante: 0 8px 24px rgb(24 34 29 / 12%), 0 2px 6px rgb(24 34 29 / 8%);
+
+    --fonte-ui: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --fonte-texto: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+
+    color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    background: var(--fundo);
+    color: var(--texto);
+    font-family: var(--fonte-ui);
+    font-size: 1rem;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+    margin: 0;
+}
+
+h1,
+h2,
+h3 {
+    text-wrap: balance;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+    color: inherit;
+}
+
+a {
+    color: var(--caneta);
+    text-underline-offset: 0.2em;
+}
+
+::selection {
+    background: var(--caneta-suave);
+    color: var(--caneta-forte);
+}
+
+:focus-visible {
+    outline: 2px solid var(--foco);
+    outline-offset: 2px;
+}
+
+.visualmente-oculto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* Botões compartilhados por todas as telas. */
+.botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.5rem;
+    padding: 0 1rem;
+    border: 1px solid var(--linha-forte);
+    border-radius: 6px;
+    background: var(--folha);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--texto);
+    cursor: pointer;
+    transition:
+        background-color 150ms ease-out,
+        border-color 150ms ease-out;
+
+    &:hover:not(:disabled) {
+        border-color: var(--texto-2);
+        background: var(--folha-2);
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    &--primario {
+        border-color: var(--caneta);
+        background: var(--caneta);
+        color: #ffffff;
+
+        &:hover:not(:disabled) {
+            border-color: var(--caneta-forte);
+            background: var(--caneta-forte);
+        }
+    }
+
+    &--discreto {
+        border-color: transparent;
+        background: transparent;
+        color: var(--texto-2);
+
+        &:hover:not(:disabled) {
+            border-color: transparent;
+            background: var(--grafite-suave);
+            color: var(--texto);
+        }
+    }
+
+    &--perigo {
+        color: var(--correcao);
+
+        &:hover:not(:disabled) {
+            border-color: var(--correcao);
+            background: var(--correcao-suave);
+        }
+    }
+
+    &--pequeno {
+        min-height: 2rem;
+        padding: 0 0.75rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Etiquetas curtas de estado e metadados. */
+.etiqueta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background: var(--grafite-suave);
+    color: var(--texto-2);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &--caneta {
+        background: var(--caneta-suave);
+        color: var(--caneta-forte);
+    }
+
+    &--marca-texto {
+        background: var(--marca-texto-suave);
+        color: var(--marca-texto);
+    }
+
+    &--sucesso {
+        background: var(--sucesso-suave);
+        color: var(--sucesso);
+    }
+
+    &--correcao {
+        background: var(--correcao-suave);
+        color: var(--correcao);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0ms !important;
+        animation-duration: 0ms !important;
+    }
+}

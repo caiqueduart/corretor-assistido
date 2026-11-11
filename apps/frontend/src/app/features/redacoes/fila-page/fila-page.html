@@ -1,0 +1,159 @@
+<app-cabecalho-pagina
+    titulo="Redações"
+    descricao="A IA corrige a lápis; você decide o que vale. Nada chega ao aluno sem o seu envio."
+>
+    <a class="botao botao--primario" routerLink="/redacoes/nova">
+        <app-icone nome="importar" />
+        Importar redação
+    </a>
+</app-cabecalho-pagina>
+
+@if (!redacoes.carregado()) {
+    <p class="fila__carregando" role="status">Carregando redações…</p>
+} @else {
+    @let grupos = redacoes.porStatus();
+
+    <section class="fila" aria-labelledby="titulo-revisar">
+        <header class="fila__cabecalho">
+            <h2 class="fila__titulo" id="titulo-revisar">Esperando a sua revisão</h2>
+            <span class="fila__total">{{ grupos.emRevisao.length }}</span>
+        </header>
+
+        @if (grupos.emRevisao.length) {
+            <ul class="fila__lista">
+                @for (redacao of grupos.emRevisao; track redacao.id) {
+                    @let decisoes = contarDecisoes(redacao.apontamentos);
+
+                    <li class="fila__item">
+                        <div class="fila__info">
+                            <p class="fila__aluno">
+                                {{ redacao.aluno }}
+                                <span class="fila__titulo-redacao">{{ redacao.titulo }}</span>
+                            </p>
+
+                            <p class="fila__meta">
+                                {{ redacao.turma }} · {{ redacao.versao === 1 ? '1ª versão' : 'Reescrita' }}
+
+                                @if (redacao.exemplo) {
+                                    <span class="etiqueta">Exemplo</span>
+                                }
+                            </p>
+                        </div>
+
+                        <div
+                            class="fila__progresso"
+                            [attr.aria-label]="
+                                'Decididos ' + (decisoes.total - decisoes.pendentes) + ' de ' + decisoes.total
+                            "
+                        >
+                            <span class="fila__barra" aria-hidden="true">
+                                <span
+                                    class="fila__barra-preenchida"
+                                    [style.width.%]="
+                                        decisoes.total
+                                            ? (100 * (decisoes.total - decisoes.pendentes)) / decisoes.total
+                                            : 0
+                                    "
+                                ></span>
+                            </span>
+
+                            <span class="fila__progresso-texto" aria-hidden="true">
+                                {{ decisoes.total - decisoes.pendentes }} de {{ decisoes.total }} decididos
+                            </span>
+                        </div>
+
+                        <a class="botao botao--primario botao--pequeno" [routerLink]="['/redacoes', redacao.id]">
+                            {{ decisoes.pendentes === decisoes.total ? 'Revisar' : 'Continuar' }}
+                        </a>
+                    </li>
+                }
+            </ul>
+        } @else {
+            <p class="fila__vazio">Nenhuma correção esperando por você.</p>
+        }
+    </section>
+
+    <section class="fila" aria-labelledby="titulo-corrigir">
+        <header class="fila__cabecalho">
+            <h2 class="fila__titulo" id="titulo-corrigir">Ainda sem correção da IA</h2>
+            <span class="fila__total">{{ grupos.aguardandoIa.length }}</span>
+        </header>
+
+        @if (grupos.aguardandoIa.length) {
+            <ul class="fila__lista">
+                @for (redacao of grupos.aguardandoIa; track redacao.id) {
+                    <li class="fila__item">
+                        <div class="fila__info">
+                            <p class="fila__aluno">
+                                {{ redacao.aluno }}
+                                <span class="fila__titulo-redacao">{{ redacao.titulo }}</span>
+                            </p>
+
+                            <p class="fila__meta">
+                                {{ redacao.turma }} · {{ contarPalavras(redacao.conteudo) }} palavras
+
+                                @if (redacao.exemplo) {
+                                    <span class="etiqueta">Exemplo</span>
+                                }
+                            </p>
+
+                            @if (erros()[redacao.id]; as erro) {
+                                <p class="fila__erro" role="alert">{{ erro }}</p>
+                            }
+                        </div>
+
+                        @if (redacao.status === 'corrigindo') {
+                            <p class="fila__corrigindo" role="status">
+                                <span class="fila__giro" aria-hidden="true"></span>
+                                A IA está lendo o texto…
+                            </p>
+                        } @else {
+                            <button class="botao botao--pequeno" type="button" (click)="corrigir(redacao)">
+                                <app-icone nome="lapis" />
+                                Corrigir com IA
+                            </button>
+                        }
+                    </li>
+                }
+            </ul>
+        } @else {
+            <p class="fila__vazio">
+                Todas as redações importadas já passaram pela IA.
+                <a routerLink="/redacoes/nova">Importar outra</a>
+            </p>
+        }
+    </section>
+
+    <section class="fila" aria-labelledby="titulo-devolvidas">
+        <header class="fila__cabecalho">
+            <h2 class="fila__titulo" id="titulo-devolvidas">Devolvidas ao aluno</h2>
+            <span class="fila__total">{{ grupos.devolvidas.length }}</span>
+        </header>
+
+        @if (grupos.devolvidas.length) {
+            <ul class="fila__lista">
+                @for (redacao of grupos.devolvidas; track redacao.id) {
+                    <li class="fila__item">
+                        <div class="fila__info">
+                            <p class="fila__aluno">
+                                {{ redacao.aluno }}
+                                <span class="fila__titulo-redacao">{{ redacao.titulo }}</span>
+                            </p>
+
+                            <p class="fila__meta">
+                                {{ redacao.versao === 1 ? '1ª versão' : 'Reescrita' }} · enviada em
+                                {{ redacao.enviadaEm | date: "dd/MM 'às' HH:mm" }}
+                            </p>
+                        </div>
+
+                        <a class="botao botao--discreto botao--pequeno" [routerLink]="['/redacoes', redacao.id]">
+                            Ver devolutiva
+                        </a>
+                    </li>
+                }
+            </ul>
+        } @else {
+            <p class="fila__vazio">Nenhuma devolutiva enviada ainda.</p>
+        }
+    </section>
+}

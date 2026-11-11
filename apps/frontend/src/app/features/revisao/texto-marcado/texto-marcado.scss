@@ -1,0 +1,102 @@
+@use 'functions' as *;
+
+:host {
+    display: block;
+    font-family: var(--fonte-texto);
+    font-size: pxToRem(18px);
+    line-height: 2;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    color: var(--texto);
+}
+
+.marca {
+    padding: 0 0.125rem;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    font: inherit;
+    line-height: inherit;
+    white-space: inherit;
+    text-align: inherit;
+    cursor: pointer;
+    transition:
+        background-color 150ms ease-out,
+        box-shadow 150ms ease-out;
+
+    &:hover {
+        background: var(--grafite-suave);
+    }
+
+    &__original {
+        text-decoration-thickness: 1px;
+    }
+
+    &__nova {
+        color: var(--caneta);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    &__numero {
+        margin-left: 0.125rem;
+        font-family: var(--fonte-ui);
+        font-size: pxToRem(11px);
+        font-weight: 700;
+        line-height: 0;
+        color: var(--grafite);
+    }
+
+    /* A lápis: a IA sugeriu, o professor ainda não decidiu. */
+    &--pendente &__original {
+        text-decoration: underline dashed var(--grafite);
+        text-decoration-thickness: 1.5px;
+        text-underline-offset: 0.3em;
+    }
+
+    /* A caneta: validado pelo professor. */
+    &--validada {
+        del {
+            margin-right: 0.25rem;
+            color: var(--texto-2);
+            text-decoration-color: var(--texto-2);
+        }
+    }
+
+    &--validada &__numero {
+        color: var(--caneta);
+    }
+
+    /* Recusado: o texto do aluno fica como está. */
+    &--recusada &__original {
+        text-decoration: underline dotted var(--correcao);
+        text-decoration-thickness: 1.5px;
+        text-underline-offset: 0.3em;
+    }
+
+    &--recusada &__numero {
+        color: var(--correcao);
+    }
+
+    &--variacao {
+        background: var(--marca-texto-suave);
+
+        &:hover {
+            background: var(--marca-texto-suave);
+            box-shadow: inset 0 -2px 0 var(--marca-texto);
+        }
+    }
+
+    &--selecionada,
+    &--selecionada:hover {
+        box-shadow: 0 0 0 2px var(--caneta);
+    }
+}
+
+span.marca {
+    cursor: auto;
+
+    &:hover {
+        background: transparent;
+    }
+}
