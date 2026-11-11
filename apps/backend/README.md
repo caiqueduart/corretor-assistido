@@ -88,6 +88,8 @@ curl -s $B/api/textos/ID/devolutiva -H "$H"
 
 ## Rotas
 
+Documentação interativa (Swagger UI) em **`/docs/`**, a partir da especificação OpenAPI em `/docs/openapi.json` (fonte: `internal/api/docs/openapi.json`). Para testar as rotas por lá, faça o login, copie o `token` e clique em **Authorize**. Ao criar ou mudar uma rota, atualize a especificação: `TestSpecCobreRotas` falha quando ela e `servidor.go` divergem.
+
 Todas as rotas `/api` (exceto o login) exigem `Authorization: Bearer <token>`. Os erros vêm como `{"erro":{"codigo":"...","mensagem":"..."}}`, com a mensagem pronta para mostrar ao usuário.
 
 | Método e rota | Perfil | O que faz |
@@ -144,7 +146,7 @@ Todas as rotas `/api` (exceto o login) exigem `Authorization: Bearer <token>`. O
 
 ```
 cmd/server          ponto de entrada, administrador inicial e encerramento gracioso
-internal/api        rotas HTTP, autenticação por perfil, correção em segundo plano
+internal/api        rotas HTTP, autenticação por perfil, correção em segundo plano, OpenAPI e Swagger UI (docs/)
 internal/corretor   motor da Claude API, motor simulado e localização dos trechos
 internal/extracao   leitura de PDF, DOCX e TXT
 internal/metricas   discordância, equidade e ganho entre versões

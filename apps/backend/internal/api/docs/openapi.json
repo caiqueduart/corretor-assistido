@@ -1,0 +1,938 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Corretor Textual 3.000 — API",
+    "version": "1.3.0",
+    "description": "API do corretor assistido de produções textuais (POC 1.3). A IA aponta os desvios, o professor decide cada um e só então a devolutiva chega ao estudante.\n\n**Autenticação:** faça `POST /api/auth/login`, copie o `token` e clique em **Authorize**. Todas as rotas `/api` (exceto o login) exigem `Authorization: Bearer <token>`.\n\n**Erros:** sempre no formato `{\"erro\":{\"codigo\":\"...\",\"mensagem\":\"...\"}}`, com a mensagem pronta para mostrar ao usuário.\n\n**Corpos JSON:** campos desconhecidos são recusados com `400 json_invalido`.\n\n**Fluxo de um texto:** `pendente` → corrigir → `corrigindo` → `revisao` → decidir cada apontamento → enviar → `concluido`.\n\n**Posições:** `inicio` e `fim` dos apontamentos são posições em unidades UTF-16 no `conteudo`, as mesmas de `String.prototype.slice` no navegador."
+  },
+  "servers": [{ "url": "/" }],
+  "tags": [
+    { "name": "Sistema" },
+    { "name": "Autenticação" },
+    { "name": "Configuração", "description": "Critérios de correção, perfis sociolinguísticos e limiar do alerta de viés." },
+    { "name": "Usuários" },
+    { "name": "Auditoria" },
+    { "name": "Textos", "description": "Criação, importação e consulta das produções textuais." },
+    { "name": "Correção e revisão", "description": "Correção (IA ou simulada), decisões do professor e envio da devolutiva." },
+    { "name": "Métricas" }
+  ],
+  "security": [{ "bearer": [] }],
+  "paths": {
+    "/healthz": {
+      "get": {
+        "tags": ["Sistema"],
+        "summary": "Saúde do serviço",
+        "description": "Verifica o banco e informa se a correção por IA está configurada.",
+        "operationId": "saude",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Serviço no ar.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "ia_configurada"],
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "ia_configurada": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "503": { "description": "`banco_indisponivel`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Entrar",
+        "description": "Bloqueia o e-mail por 15 minutos após 5 senhas erradas.",
+        "operationId": "login",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["email", "senha"],
+                "properties": {
+                  "email": { "type": "string", "format": "email", "example": "admin@escola.exemplo" },
+                  "senha": { "type": "string", "format": "password" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sessão criada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["token", "expira_em", "usuario"],
+                  "properties": {
+                    "token": { "type": "string", "description": "Use em `Authorization: Bearer <token>`." },
+                    "expira_em": { "type": "string", "format": "date-time" },
+                    "usuario": { "$ref": "#/components/schemas/Usuario" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/Erro" },
+          "401": { "description": "`credenciais_invalidas`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "429": { "description": "`muitas_tentativas`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": ["Autenticação"],
+        "summary": "Sair",
+        "description": "Encerra a sessão do token enviado. Todos os perfis.",
+        "operationId": "logout",
+        "responses": {
+          "204": { "description": "Sessão encerrada." },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" }
+        }
+      }
+    },
+    "/api/me": {
+      "get": {
+        "tags": ["Autenticação"],
+        "summary": "Usuário atual",
+        "description": "Todos os perfis.",
+        "operationId": "eu",
+        "responses": {
+          "200": { "description": "Usuário da sessão.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Usuario" } } } },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" }
+        }
+      }
+    },
+    "/api/config": {
+      "get": {
+        "tags": ["Configuração"],
+        "summary": "Ler configuração",
+        "description": "Critérios ativos, perfis sociolinguísticos, limiar de viés e critérios disponíveis. Todos os perfis.",
+        "operationId": "obterConfig",
+        "responses": {
+          "200": { "description": "Configuração atual.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RespostaConfig" } } } },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" }
+        }
+      },
+      "put": {
+        "tags": ["Configuração"],
+        "summary": "Alterar configuração",
+        "description": "Só `admin`. Os critérios seguem a ordem canônica. O perfil \"Não informado\" é sempre mantido. Máximo de 30 perfis, cada um com até 60 caracteres.",
+        "operationId": "salvarConfig",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["criterios", "grupos", "limiar_vies"],
+                "properties": {
+                  "criterios": { "type": "array", "minItems": 1, "items": { "$ref": "#/components/schemas/CriterioID" } },
+                  "grupos": { "type": "array", "items": { "type": "string", "maxLength": 60 }, "example": ["Urbano", "Rural"] },
+                  "limiar_vies": { "type": "integer", "minimum": 5, "maximum": 50, "description": "Pontos percentuais acima da discordância geral que disparam o alerta de viés." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Configuração salva.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RespostaConfig" } } } },
+          "400": { "$ref": "#/components/responses/Erro" },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "422": { "description": "`criterios_invalidos`, `grupo_invalido` ou `limiar_invalido`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/usuarios": {
+      "get": {
+        "tags": ["Usuários"],
+        "summary": "Listar usuários",
+        "description": "Só `admin`.",
+        "operationId": "listarUsuarios",
+        "responses": {
+          "200": {
+            "description": "Usuários cadastrados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["usuarios"],
+                  "properties": { "usuarios": { "type": "array", "items": { "$ref": "#/components/schemas/Usuario" } } }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" }
+        }
+      },
+      "post": {
+        "tags": ["Usuários"],
+        "summary": "Criar usuário",
+        "description": "Só `admin`.",
+        "operationId": "criarUsuario",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["nome", "email", "senha", "perfil"],
+                "properties": {
+                  "nome": { "type": "string", "maxLength": 100 },
+                  "email": { "type": "string", "format": "email", "maxLength": 254 },
+                  "senha": { "type": "string", "format": "password", "minLength": 10 },
+                  "perfil": { "$ref": "#/components/schemas/Perfil" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Usuário criado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Usuario" } } } },
+          "400": { "$ref": "#/components/responses/Erro" },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "409": { "description": "`email_em_uso`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "422": { "description": "`nome_invalido`, `email_invalido`, `perfil_invalido` ou `senha_fraca`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/usuarios/{id}": {
+      "patch": {
+        "tags": ["Usuários"],
+        "summary": "Alterar usuário",
+        "description": "Só `admin`. Envie só os campos que mudam. Trocar a senha encerra as sessões do usuário. O admin não pode rebaixar nem desativar a si mesmo.",
+        "operationId": "alterarUsuario",
+        "parameters": [{ "$ref": "#/components/parameters/Id" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "nome": { "type": "string", "maxLength": 100 },
+                  "perfil": { "$ref": "#/components/schemas/Perfil" },
+                  "ativo": { "type": "boolean" },
+                  "senha": { "type": "string", "format": "password", "minLength": 10 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Usuário atualizado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Usuario" } } } },
+          "400": { "$ref": "#/components/responses/Erro" },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "404": { "$ref": "#/components/responses/NaoEncontrado" },
+          "409": { "description": "`auto_rebaixamento`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "422": { "description": "`nome_invalido`, `perfil_invalido` ou `senha_fraca`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/auditoria": {
+      "get": {
+        "tags": ["Auditoria"],
+        "summary": "Registros de auditoria",
+        "description": "Só `admin`. Quem fez o quê, sem o conteúdo dos textos. Mais recentes primeiro.",
+        "operationId": "listarAuditoria",
+        "parameters": [
+          { "name": "limite", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 1000, "default": 100 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registros.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["registros"],
+                  "properties": { "registros": { "type": "array", "items": { "$ref": "#/components/schemas/RegistroAuditoria" } } }
+                }
+              }
+            }
+          },
+          "400": { "description": "`limite_invalido`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" }
+        }
+      }
+    },
+    "/api/textos": {
+      "get": {
+        "tags": ["Textos"],
+        "summary": "Listar textos",
+        "description": "Todos os perfis. Traz contagem de apontamentos e pendências, mas não os apontamentos.",
+        "operationId": "listarTextos",
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "$ref": "#/components/schemas/Status" } },
+          { "name": "turma", "in": "query", "schema": { "type": "string" } },
+          { "name": "grupo", "in": "query", "schema": { "type": "string" }, "description": "Perfil sociolinguístico." },
+          { "name": "aluno", "in": "query", "schema": { "type": "string" }, "description": "Código do estudante." }
+        ],
+        "responses": {
+          "200": {
+            "description": "Textos, mais recentes primeiro.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["textos"],
+                  "properties": { "textos": { "type": "array", "items": { "$ref": "#/components/schemas/Texto" } } }
+                }
+              }
+            }
+          },
+          "400": { "description": "`status_invalido`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" }
+        }
+      },
+      "post": {
+        "tags": ["Textos"],
+        "summary": "Criar texto colado",
+        "description": "Perfis `admin` e `professor`. Com `origem_id`, cria a reescrita (2ª versão) e herda estudante, perfil, turma e título da 1ª versão.",
+        "operationId": "criarTexto",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NovoTexto" } } }
+        },
+        "responses": {
+          "201": { "description": "Texto criado com status `pendente`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Texto" } } } },
+          "400": { "$ref": "#/components/responses/Erro" },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "422": { "description": "`consentimento_obrigatorio`, `conteudo_vazio`, `texto_longo`, `origem_invalida`, `aluno_divergente`, `aluno_obrigatorio`, `campo_longo` ou `grupo_invalido`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/textos/importar": {
+      "post": {
+        "tags": ["Textos"],
+        "summary": "Importar arquivos",
+        "description": "Perfis `admin` e `professor`. Até 20 arquivos (PDF, TXT ou DOCX) por envio, cada um até `MAX_UPLOAD_MB`. Sem `aluno_codigo`, o nome do arquivo (sem extensão) vira o código do estudante. Arquivos com problema entram em `erros` e não impedem os demais.",
+        "operationId": "importarTextos",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["arquivos", "consentimento"],
+                "properties": {
+                  "arquivos": { "type": "array", "maxItems": 20, "items": { "type": "string", "format": "binary" } },
+                  "aluno_codigo": { "type": "string", "maxLength": 40 },
+                  "turma": { "type": "string", "maxLength": 30 },
+                  "grupo": { "type": "string" },
+                  "titulo": { "type": "string", "maxLength": 120 },
+                  "origem_id": { "type": "string" },
+                  "consentimento": { "type": "string", "enum": ["true", "false", "1", "0", "on", "sim", "s"], "description": "Consentimento informado da família. Precisa ser verdadeiro." }
+                }
+              },
+              "encoding": { "arquivos": { "contentType": "application/pdf, text/plain, application/vnd.openxmlformats-officedocument.wordprocessingml.document" } }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Ao menos um texto criado.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResultadoImportacao" } } } },
+          "400": { "description": "`multipart_invalido`, `sem_arquivos` ou `arquivos_demais`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "413": { "description": "`upload_grande`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "422": {
+            "description": "Nenhum texto criado. Vem como `ResultadoImportacao` com `criados` vazio, ou como `Erro` (`consentimento_obrigatorio`).",
+            "content": {
+              "application/json": {
+                "schema": { "oneOf": [{ "$ref": "#/components/schemas/ResultadoImportacao" }, { "$ref": "#/components/schemas/Erro" }] }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/textos/exemplos": {
+      "post": {
+        "tags": ["Textos"],
+        "summary": "Carregar textos de exemplo",
+        "description": "Perfis `admin` e `professor`. Carrega os 8 textos do roteiro de demonstração.",
+        "operationId": "carregarExemplos",
+        "responses": {
+          "200": {
+            "description": "Exemplos carregados.",
+            "content": { "application/json": { "schema": { "type": "object", "required": ["criados"], "properties": { "criados": { "type": "integer" } } } } }
+          },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" }
+        }
+      },
+      "delete": {
+        "tags": ["Textos"],
+        "summary": "Remover textos de exemplo",
+        "description": "Perfis `admin` e `professor`.",
+        "operationId": "removerExemplos",
+        "responses": {
+          "200": {
+            "description": "Exemplos removidos.",
+            "content": { "application/json": { "schema": { "type": "object", "required": ["removidos"], "properties": { "removidos": { "type": "integer" } } } } }
+          },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" }
+        }
+      }
+    },
+    "/api/textos/{id}": {
+      "parameters": [{ "$ref": "#/components/parameters/Id" }],
+      "get": {
+        "tags": ["Textos"],
+        "summary": "Obter texto",
+        "description": "Todos os perfis. Traz os apontamentos.",
+        "operationId": "obterTexto",
+        "responses": {
+          "200": { "description": "Texto com apontamentos.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Texto" } } } },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "404": { "$ref": "#/components/responses/NaoEncontrado" }
+        }
+      },
+      "delete": {
+        "tags": ["Textos"],
+        "summary": "Excluir texto",
+        "description": "Perfis `admin` e `professor`.",
+        "operationId": "excluirTexto",
+        "responses": {
+          "204": { "description": "Texto excluído." },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "404": { "$ref": "#/components/responses/NaoEncontrado" }
+        }
+      }
+    },
+    "/api/textos/{id}/corrigir": {
+      "parameters": [{ "$ref": "#/components/parameters/Id" }],
+      "post": {
+        "tags": ["Correção e revisão"],
+        "summary": "Corrigir texto",
+        "description": "Perfis `admin` e `professor`. A correção roda em segundo plano: responde `202` e o status passa de `corrigindo` para `revisao` quando termina. Com `aguardar=true`, espera e responde `200` com o texto e os apontamentos. Se a correção falha, o texto volta ao status anterior e `erro_correcao` explica o motivo. Corrigir de novo um texto em `revisao` descarta as decisões anteriores.",
+        "operationId": "corrigir",
+        "parameters": [
+          { "name": "aguardar", "in": "query", "schema": { "type": "boolean", "default": false }, "description": "Aceita também `1`, `on`, `sim`, `s`." }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "motor": { "type": "string", "enum": ["ia", "simulado"], "description": "Sem motor, usa a IA quando configurada e o simulado caso contrário." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Com `aguardar=true`: texto depois da correção.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Texto" } } } },
+          "202": { "description": "Correção agendada. Texto com status `corrigindo`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Texto" } } } },
+          "400": { "description": "`json_invalido` ou `motor_invalido`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "404": { "$ref": "#/components/responses/NaoEncontrado" },
+          "409": { "description": "`estado_invalido`: correção já em andamento ou devolutiva já enviada.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "422": { "description": "`ia_nao_configurada`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/textos/{id}/apontamentos/{aid}": {
+      "parameters": [
+        { "$ref": "#/components/parameters/Id" },
+        { "name": "aid", "in": "path", "required": true, "schema": { "type": "string" }, "description": "ID do apontamento." }
+      ],
+      "patch": {
+        "tags": ["Correção e revisão"],
+        "summary": "Decidir apontamento",
+        "description": "Perfis `admin` e `professor`. Só com o texto em `revisao`. `decisao: null` desfaz a decisão. Editar para o mesmo texto da sugestão conta como `aceita`.",
+        "operationId": "decidir",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["decisao"],
+                "properties": {
+                  "decisao": { "allOf": [{ "$ref": "#/components/schemas/Decisao" }], "nullable": true },
+                  "sugestao_final": { "type": "string", "maxLength": 500, "description": "Obrigatória com `decisao: editada`." }
+                }
+              },
+              "examples": {
+                "aceitar": { "value": { "decisao": "aceita" } },
+                "editar": { "value": { "decisao": "editada", "sugestao_final": "para a roça" } },
+                "desfazer": { "value": { "decisao": null } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Decisão registrada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["apontamento", "pendentes"],
+                  "properties": {
+                    "apontamento": { "$ref": "#/components/schemas/Apontamento" },
+                    "pendentes": { "type": "integer", "description": "Apontamentos do texto ainda sem decisão." }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "`decisao_obrigatoria` ou `decisao_invalida`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "404": { "$ref": "#/components/responses/NaoEncontrado" },
+          "409": { "description": "`estado_invalido`: texto fora de `revisao`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "422": { "description": "`sugestao_final_obrigatoria` ou `campo_longo`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/textos/{id}/decisoes": {
+      "parameters": [{ "$ref": "#/components/parameters/Id" }],
+      "post": {
+        "tags": ["Correção e revisão"],
+        "summary": "Decidir toda a correção",
+        "description": "Perfis `admin` e `professor`. Aplica a mesma decisão a todos os apontamentos do texto em `revisao`.",
+        "operationId": "decidirTodos",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["decisao"],
+                "properties": { "decisao": { "type": "string", "enum": ["aceita", "recusada"] } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Texto com os apontamentos decididos.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Texto" } } } },
+          "400": { "description": "`decisao_invalida`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "404": { "$ref": "#/components/responses/NaoEncontrado" },
+          "409": { "description": "`estado_invalido`: texto fora de `revisao`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/textos/{id}/comentario": {
+      "parameters": [{ "$ref": "#/components/parameters/Id" }],
+      "put": {
+        "tags": ["Correção e revisão"],
+        "summary": "Salvar comentário do professor",
+        "description": "Perfis `admin` e `professor`. Só com o texto em `revisao`.",
+        "operationId": "comentar",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["comentario"],
+                "properties": { "comentario": { "type": "string", "maxLength": 2000 } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "Comentário salvo." },
+          "400": { "$ref": "#/components/responses/Erro" },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "404": { "$ref": "#/components/responses/NaoEncontrado" },
+          "409": { "description": "`estado_invalido`: texto fora de `revisao`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "422": { "description": "`campo_longo`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/textos/{id}/enviar": {
+      "parameters": [{ "$ref": "#/components/parameters/Id" }],
+      "post": {
+        "tags": ["Correção e revisão"],
+        "summary": "Enviar devolutiva",
+        "description": "Perfis `admin` e `professor`. Conclui a revisão: só é aceito quando todos os apontamentos têm decisão. O status passa a `concluido`.",
+        "operationId": "enviar",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": { "comentario": { "type": "string", "maxLength": 2000, "description": "Substitui o comentário salvo antes." } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Texto concluído.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Texto" } } } },
+          "400": { "$ref": "#/components/responses/Erro" },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "404": { "$ref": "#/components/responses/NaoEncontrado" },
+          "409": { "description": "`estado_invalido`: texto fora de `revisao` ou com apontamentos pendentes.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "422": { "description": "`campo_longo`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/textos/{id}/devolutiva": {
+      "parameters": [{ "$ref": "#/components/parameters/Id" }],
+      "get": {
+        "tags": ["Correção e revisão"],
+        "summary": "Devolutiva do estudante",
+        "description": "Todos os perfis. O que o estudante recebe: só os apontamentos aceitos ou editados.",
+        "operationId": "devolutiva",
+        "responses": {
+          "200": { "description": "Devolutiva.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Devolutiva" } } } },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "404": { "$ref": "#/components/responses/NaoEncontrado" },
+          "409": { "description": "`devolutiva_nao_enviada`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/metricas": {
+      "get": {
+        "tags": ["Métricas"],
+        "summary": "Métricas da POC",
+        "description": "Todos os perfis. Discordância professor × IA (geral e por critério), auditoria de equidade por perfil sociolinguístico e ganho entre a 1ª versão e a reescrita. Considera textos em `revisao` ou `concluido`. Um perfil só gera alerta com pelo menos 3 decisões.",
+        "operationId": "metricas",
+        "parameters": [{ "name": "turma", "in": "query", "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Resumo.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Metricas" } } } },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" }
+        }
+      }
+    },
+    "/api/metricas/decisoes.csv": {
+      "get": {
+        "tags": ["Métricas"],
+        "summary": "Exportar decisões (CSV)",
+        "description": "Todos os perfis. Uma linha por apontamento decidido, sem o conteúdo dos textos nem o código do estudante. Colunas: `texto_id, versao, turma, grupo, motor, criterio, variacao, decisao, decidido_em`.",
+        "operationId": "decisoesCSV",
+        "parameters": [{ "name": "turma", "in": "query", "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "Arquivo `decisoes.csv`.",
+            "content": {
+              "text/csv": {
+                "schema": { "type": "string" },
+                "example": "texto_id,versao,turma,grupo,motor,criterio,variacao,decisao,decidido_em\n"
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Token devolvido por `POST /api/auth/login`. Vale por `SESSAO_DURACAO` (padrão 12h)."
+      }
+    },
+    "parameters": {
+      "Id": { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "ID do recurso." }
+    },
+    "responses": {
+      "Erro": {
+        "description": "Erro com código e mensagem.",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } }
+      },
+      "NaoAutenticado": {
+        "description": "`nao_autenticado` (sem token) ou `sessao_expirada`.",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } }
+      },
+      "SemPermissao": {
+        "description": "`sem_permissao`: o perfil não permite esta ação.",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } }
+      },
+      "NaoEncontrado": {
+        "description": "`nao_encontrado`.",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } }
+      }
+    },
+    "schemas": {
+      "Erro": {
+        "type": "object",
+        "required": ["erro"],
+        "properties": {
+          "erro": {
+            "type": "object",
+            "required": ["codigo", "mensagem"],
+            "properties": {
+              "codigo": { "type": "string", "example": "nao_encontrado" },
+              "mensagem": { "type": "string", "example": "Texto não encontrado." }
+            }
+          }
+        }
+      },
+      "Perfil": { "type": "string", "enum": ["admin", "professor", "leitura"] },
+      "Status": { "type": "string", "enum": ["pendente", "corrigindo", "revisao", "concluido"] },
+      "Decisao": { "type": "string", "enum": ["aceita", "recusada", "editada"] },
+      "CriterioID": { "type": "string", "enum": ["Ortografia", "Pontuação", "Concordância", "Maiúsculas"] },
+      "Usuario": {
+        "type": "object",
+        "required": ["id", "nome", "email", "perfil", "ativo", "criado_em"],
+        "properties": {
+          "id": { "type": "string" },
+          "nome": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "perfil": { "$ref": "#/components/schemas/Perfil" },
+          "ativo": { "type": "boolean" },
+          "criado_em": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Configuracao": {
+        "type": "object",
+        "required": ["criterios", "grupos", "limiar_vies", "atualizado_em", "atualizado_por"],
+        "properties": {
+          "criterios": { "type": "array", "items": { "$ref": "#/components/schemas/CriterioID" } },
+          "grupos": { "type": "array", "items": { "type": "string" }, "description": "Perfis sociolinguísticos. O primeiro é sempre \"Não informado\"." },
+          "limiar_vies": { "type": "integer" },
+          "atualizado_em": { "type": "string", "format": "date-time" },
+          "atualizado_por": { "type": "string", "nullable": true }
+        }
+      },
+      "CriterioDisponivel": {
+        "type": "object",
+        "required": ["id", "descricao"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/CriterioID" },
+          "descricao": { "type": "string" }
+        }
+      },
+      "RespostaConfig": {
+        "type": "object",
+        "required": ["configuracao", "criterios_disponiveis", "ia_configurada"],
+        "properties": {
+          "configuracao": { "$ref": "#/components/schemas/Configuracao" },
+          "criterios_disponiveis": { "type": "array", "items": { "$ref": "#/components/schemas/CriterioDisponivel" } },
+          "ia_configurada": { "type": "boolean" }
+        }
+      },
+      "RegistroAuditoria": {
+        "type": "object",
+        "required": ["id", "usuario_id", "acao", "entidade", "entidade_id", "detalhe", "criado_em"],
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "usuario_id": { "type": "string", "nullable": true },
+          "acao": { "type": "string", "example": "enviar_devolutiva" },
+          "entidade": { "type": "string", "example": "texto" },
+          "entidade_id": { "type": "string" },
+          "detalhe": { "type": "string" },
+          "criado_em": { "type": "string", "format": "date-time" }
+        }
+      },
+      "NovoTexto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["conteudo", "consentimento"],
+        "properties": {
+          "aluno_codigo": { "type": "string", "maxLength": 40, "description": "Código do estudante, nunca o nome. Obrigatório na 1ª versão." },
+          "turma": { "type": "string", "maxLength": 30 },
+          "grupo": { "type": "string", "description": "Perfil sociolinguístico da configuração. Padrão: \"Não informado\"." },
+          "titulo": { "type": "string", "maxLength": 120 },
+          "conteudo": { "type": "string", "maxLength": 20000 },
+          "origem_id": { "type": "string", "description": "ID da 1ª versão, para cadastrar a reescrita." },
+          "consentimento": { "type": "boolean", "description": "Consentimento informado da família. Precisa ser `true`." }
+        },
+        "example": { "aluno_codigo": "8A-07", "turma": "8º A", "grupo": "Rural", "titulo": "Minhas férias", "conteudo": "Eu ja fui pra roça nas ferias.", "consentimento": true }
+      },
+      "Apontamento": {
+        "type": "object",
+        "required": ["id", "texto_id", "ordem", "criterio", "trecho", "inicio", "fim", "sugestao", "explicacao", "variacao", "decisao", "sugestao_final", "decidido_por", "decidido_em"],
+        "properties": {
+          "id": { "type": "string" },
+          "texto_id": { "type": "string" },
+          "ordem": { "type": "integer" },
+          "criterio": { "type": "string" },
+          "trecho": { "type": "string" },
+          "inicio": { "type": "integer", "description": "Posição inicial em unidades UTF-16." },
+          "fim": { "type": "integer", "description": "Posição final (exclusiva) em unidades UTF-16." },
+          "sugestao": { "type": "string" },
+          "explicacao": { "type": "string" },
+          "variacao": { "type": "boolean", "description": "Marca de variação linguística (não necessariamente erro)." },
+          "decisao": { "allOf": [{ "$ref": "#/components/schemas/Decisao" }], "nullable": true },
+          "sugestao_final": { "type": "string", "nullable": true },
+          "decidido_por": { "type": "string", "nullable": true },
+          "decidido_em": { "type": "string", "format": "date-time", "nullable": true }
+        }
+      },
+      "Texto": {
+        "type": "object",
+        "required": ["id", "aluno_codigo", "turma", "grupo", "titulo", "versao", "origem_id", "conteudo", "status", "consentimento", "exemplo", "motor", "criterios_usados", "comentario_ia", "comentario_professor", "descartados", "erro_correcao", "criado_por", "criado_em", "atualizado_em", "avaliado_em", "enviado_em", "enviado_por", "palavras", "total_apontamentos", "pendentes"],
+        "properties": {
+          "id": { "type": "string" },
+          "aluno_codigo": { "type": "string" },
+          "turma": { "type": "string" },
+          "grupo": { "type": "string" },
+          "titulo": { "type": "string" },
+          "versao": { "type": "integer", "enum": [1, 2] },
+          "origem_id": { "type": "string", "nullable": true, "description": "Na reescrita, ID da 1ª versão." },
+          "conteudo": { "type": "string" },
+          "status": { "$ref": "#/components/schemas/Status" },
+          "consentimento": { "type": "boolean" },
+          "exemplo": { "type": "boolean", "description": "Texto do roteiro de demonstração." },
+          "motor": { "type": "string", "description": "`ia`, `simulado` ou vazio antes da correção." },
+          "criterios_usados": { "type": "array", "nullable": true, "items": { "type": "string" } },
+          "comentario_ia": { "type": "string" },
+          "comentario_professor": { "type": "string" },
+          "descartados": { "type": "integer", "description": "Apontamentos da IA descartados por não corresponderem a nenhum trecho." },
+          "erro_correcao": { "type": "string", "description": "Motivo da última falha de correção, para mostrar ao professor." },
+          "criado_por": { "type": "string", "nullable": true },
+          "criado_em": { "type": "string", "format": "date-time" },
+          "atualizado_em": { "type": "string", "format": "date-time" },
+          "avaliado_em": { "type": "string", "format": "date-time", "nullable": true },
+          "enviado_em": { "type": "string", "format": "date-time", "nullable": true },
+          "enviado_por": { "type": "string", "nullable": true },
+          "apontamentos": { "type": "array", "items": { "$ref": "#/components/schemas/Apontamento" }, "description": "Presente ao obter um texto e nas respostas de correção e revisão. Ausente na listagem." },
+          "palavras": { "type": "integer" },
+          "total_apontamentos": { "type": "integer" },
+          "pendentes": { "type": "integer", "description": "Apontamentos ainda sem decisão." }
+        }
+      },
+      "ResultadoImportacao": {
+        "type": "object",
+        "required": ["criados", "erros"],
+        "properties": {
+          "criados": { "type": "array", "items": { "$ref": "#/components/schemas/Texto" } },
+          "erros": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["arquivo", "mensagem"],
+              "properties": {
+                "arquivo": { "type": "string" },
+                "mensagem": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "Segmento": {
+        "type": "object",
+        "required": ["tipo"],
+        "description": "`texto` traz `texto`; `correcao` traz `original` e `correcao`.",
+        "properties": {
+          "tipo": { "type": "string", "enum": ["texto", "correcao"] },
+          "texto": { "type": "string" },
+          "original": { "type": "string" },
+          "correcao": { "type": "string" }
+        }
+      },
+      "ItemReescrita": {
+        "type": "object",
+        "required": ["criterio", "trecho", "correcao", "explicacao"],
+        "properties": {
+          "criterio": { "type": "string" },
+          "trecho": { "type": "string" },
+          "correcao": { "type": "string" },
+          "explicacao": { "type": "string" }
+        }
+      },
+      "Devolutiva": {
+        "type": "object",
+        "required": ["texto_id", "aluno_codigo", "titulo", "versao", "enviado_em", "comentario", "texto_corrigido", "segmentos", "para_reescrita"],
+        "properties": {
+          "texto_id": { "type": "string" },
+          "aluno_codigo": { "type": "string" },
+          "titulo": { "type": "string" },
+          "versao": { "type": "integer" },
+          "enviado_em": { "type": "string", "format": "date-time" },
+          "comentario": { "type": "string", "description": "Comentário do professor." },
+          "texto_corrigido": { "type": "string", "description": "Conteúdo com as correções validadas aplicadas." },
+          "segmentos": { "type": "array", "items": { "$ref": "#/components/schemas/Segmento" }, "description": "Texto em pedaços, para destacar as correções." },
+          "para_reescrita": { "type": "array", "items": { "$ref": "#/components/schemas/ItemReescrita" } }
+        }
+      },
+      "MetricaCriterio": {
+        "type": "object",
+        "required": ["criterio", "apontamentos", "aceitas", "editadas", "recusadas", "discordancia"],
+        "properties": {
+          "criterio": { "type": "string" },
+          "apontamentos": { "type": "integer", "description": "Apontamentos decididos." },
+          "aceitas": { "type": "integer" },
+          "editadas": { "type": "integer" },
+          "recusadas": { "type": "integer" },
+          "discordancia": { "type": "integer", "nullable": true, "description": "Percentual de editadas + recusadas." }
+        }
+      },
+      "MetricaGrupo": {
+        "type": "object",
+        "required": ["grupo", "textos", "palavras", "apontamentos_por_100_palavras", "percentual_variacao", "discordancia", "decisoes", "alerta"],
+        "properties": {
+          "grupo": { "type": "string" },
+          "textos": { "type": "integer" },
+          "palavras": { "type": "integer" },
+          "apontamentos_por_100_palavras": { "type": "number", "nullable": true },
+          "percentual_variacao": { "type": "integer", "nullable": true },
+          "discordancia": { "type": "integer", "nullable": true },
+          "decisoes": { "type": "integer" },
+          "alerta": { "type": "string", "enum": ["verificar_vies", "ok", "poucos_dados"] }
+        }
+      },
+      "MetricaVersao": {
+        "type": "object",
+        "required": ["aluno_codigo", "titulo", "texto_v1", "texto_v2", "desvios_v1_por_100_palavras", "desvios_v2_por_100_palavras", "reducao"],
+        "properties": {
+          "aluno_codigo": { "type": "string" },
+          "titulo": { "type": "string" },
+          "texto_v1": { "type": "string", "description": "ID da 1ª versão." },
+          "texto_v2": { "type": "string", "description": "ID da reescrita." },
+          "desvios_v1_por_100_palavras": { "type": "number" },
+          "desvios_v2_por_100_palavras": { "type": "number" },
+          "reducao": { "type": "integer", "nullable": true, "description": "Redução percentual dos desvios validados." }
+        }
+      },
+      "Metricas": {
+        "type": "object",
+        "required": ["discordancia_geral", "apontamentos_decididos", "por_criterio", "equidade", "versoes", "reducao_media", "total_textos", "concluidos", "limiar_vies"],
+        "properties": {
+          "discordancia_geral": { "type": "integer", "nullable": true, "description": "Percentual dos apontamentos decididos que o professor recusou ou editou." },
+          "apontamentos_decididos": { "type": "integer" },
+          "por_criterio": { "type": "array", "items": { "$ref": "#/components/schemas/MetricaCriterio" } },
+          "equidade": { "type": "array", "items": { "$ref": "#/components/schemas/MetricaGrupo" } },
+          "versoes": { "type": "array", "items": { "$ref": "#/components/schemas/MetricaVersao" } },
+          "reducao_media": { "type": "integer", "nullable": true },
+          "total_textos": { "type": "integer" },
+          "concluidos": { "type": "integer" },
+          "limiar_vies": { "type": "integer" }
+        }
+      }
+    }
+  }
+}

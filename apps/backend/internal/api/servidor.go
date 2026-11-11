@@ -75,6 +75,10 @@ func (s *Servidor) rotas() {
 	m := s.mux
 	m.HandleFunc("GET /healthz", s.saude)
 
+	m.HandleFunc("GET /docs", s.docsRedirecionar)
+	m.HandleFunc("GET /docs/{$}", s.docsPagina)
+	m.HandleFunc("GET /docs/openapi.json", s.docsSpec)
+
 	m.HandleFunc("POST /api/auth/login", s.login)
 	m.Handle("POST /api/auth/logout", s.com(todos, s.logout))
 	m.Handle("GET /api/me", s.com(todos, s.eu))
