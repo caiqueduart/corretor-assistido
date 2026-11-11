@@ -1,0 +1,442 @@
+[
+ {
+  "id": "d-01",
+  "aluno_codigo": "8A-03",
+  "turma": "8º A",
+  "grupo": "Urbano",
+  "titulo": "A noite sem luz",
+  "versao": 1,
+  "conteudo": "Na semana passada faltou luz no meu bairro a noite inteira. Minha mãe acendeu velas e a gente jantou na varanda olhando as estrelas.\n\nMeu irmão menor ficou com medo mais meu pai contou historias de quando ele era criança. Ninguem mexeu no celular porque a bateria acabou rapido. Foi a melhor noite do mês.",
+  "status": "concluido",
+  "motor": "ia",
+  "criterios_usados": [
+   "Ortografia",
+   "Pontuação"
+  ],
+  "comentario_ia": "Que cena bonita você criou com a família na varanda! Na reescrita, revise os acentos e a vírgula antes de “mas”.",
+  "comentario_professor": "Que cena bonita você criou com a família na varanda! Na reescrita, revise os acentos e a vírgula antes de “mas”.",
+  "criado_em": "2026-10-05T13:00:00.000Z",
+  "avaliado_em": "2026-10-05T13:10:00.000Z",
+  "enviado_em": "2026-10-05T16:00:00.000Z",
+  "apontamentos": [
+   {
+    "criterio": "Pontuação",
+    "trecho": "Na semana passada faltou",
+    "inicio": 0,
+    "fim": 24,
+    "sugestao": "Na semana passada, faltou",
+    "explicacao": "Use vírgula depois da expressão de tempo no início da frase.",
+    "variacao": false,
+    "decisao": "aceita"
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "a gente jantou",
+    "inicio": 86,
+    "fim": 100,
+    "sugestao": "nós jantamos",
+    "explicacao": "“A gente” é coloquial; em textos formais use “nós”.",
+    "variacao": true,
+    "decisao": "recusada"
+   },
+   {
+    "criterio": "Pontuação",
+    "trecho": "medo mais",
+    "inicio": 160,
+    "fim": 169,
+    "sugestao": "medo, mas",
+    "explicacao": "Antes de “mas”, que indica oposição, use vírgula. “Mais” indica quantidade.",
+    "variacao": false,
+    "decisao": "aceita"
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "historias",
+    "inicio": 185,
+    "fim": 194,
+    "sugestao": "histórias",
+    "explicacao": "Paroxítona terminada em ditongo: histórias leva acento.",
+    "variacao": false,
+    "decisao": "aceita"
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "Ninguem",
+    "inicio": 222,
+    "fim": 229,
+    "sugestao": "Ninguém",
+    "explicacao": "Oxítona terminada em -em leva acento: ninguém.",
+    "variacao": false,
+    "decisao": "aceita"
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "rapido",
+    "inicio": 271,
+    "fim": 277,
+    "sugestao": "rápido",
+    "explicacao": "Proparoxítona: rápido leva acento.",
+    "variacao": false,
+    "decisao": "aceita"
+   }
+  ]
+ },
+ {
+  "id": "d-02",
+  "aluno_codigo": "8A-03",
+  "turma": "8º A",
+  "grupo": "Urbano",
+  "titulo": "A noite sem luz",
+  "versao": 2,
+  "origem_id": "d-01",
+  "conteudo": "Na semana passada, faltou luz no meu bairro a noite inteira. Minha mãe acendeu velas e a gente jantou na varanda olhando as estrelas.\n\nMeu irmão menor ficou com medo, mas meu pai contou histórias de quando ele era criança. Ninguem mexeu no celular porque a bateria acabou rápido. Foi a melhor noite do mês.",
+  "status": "concluido",
+  "motor": "ia",
+  "criterios_usados": [
+   "Ortografia",
+   "Pontuação"
+  ],
+  "comentario_ia": "Excelente reescrita! Falta só o acento em “ninguém”.",
+  "comentario_professor": "Excelente reescrita! Falta só o acento em “ninguém”.",
+  "criado_em": "2026-10-07T13:00:00.000Z",
+  "avaliado_em": "2026-10-07T13:10:00.000Z",
+  "enviado_em": "2026-10-07T16:00:00.000Z",
+  "apontamentos": [
+   {
+    "criterio": "Ortografia",
+    "trecho": "Ninguem",
+    "inicio": 223,
+    "fim": 230,
+    "sugestao": "Ninguém",
+    "explicacao": "Oxítona terminada em -em leva acento: ninguém.",
+    "variacao": false,
+    "decisao": "aceita"
+   }
+  ]
+ },
+ {
+  "id": "d-03",
+  "aluno_codigo": "8A-12",
+  "turma": "8º A",
+  "grupo": "Rural",
+  "titulo": "A feira de sábado",
+  "versao": 1,
+  "conteudo": "Todo sabado eu vou com meu avô vender pequi e pamonha na feira da cidade. A gente sai cedinho de caminhonete e o trem vai cheio de caixa.\n\nUai, tem dia que vende tudo antes das nove! Meu avô fala que cê tem que tratar bem o fregues pra ele voltar. Depois da feira nós almoça na casa da minha tia e volta pra roça de tarde.",
+  "status": "concluido",
+  "motor": "ia",
+  "criterios_usados": [
+   "Ortografia",
+   "Pontuação"
+  ],
+  "comentario_ia": "Você mostrou muito bem o trabalho na feira com seu avô. Na reescrita, revise os acentos e algumas formas da fala.",
+  "comentario_professor": "Você mostrou muito bem o trabalho na feira com seu avô. Na reescrita, revise os acentos e algumas formas da fala.",
+  "criado_em": "2026-10-05T17:48:00.000Z",
+  "avaliado_em": "2026-10-05T17:58:00.000Z",
+  "enviado_em": "2026-10-05T20:48:00.000Z",
+  "apontamentos": [
+   {
+    "criterio": "Ortografia",
+    "trecho": "sabado",
+    "inicio": 5,
+    "fim": 11,
+    "sugestao": "sábado",
+    "explicacao": "Proparoxítona: sábado leva acento.",
+    "variacao": false,
+    "decisao": "aceita"
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "trem",
+    "inicio": 113,
+    "fim": 117,
+    "sugestao": "carro",
+    "explicacao": "“Trem” é uma palavra informal; em textos escolares use o nome do objeto.",
+    "variacao": false,
+    "decisao": "recusada"
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "Uai,",
+    "inicio": 139,
+    "fim": 143,
+    "sugestao": "Nossa,",
+    "explicacao": "“Uai” é uma expressão regional; em textos formais use “Nossa”.",
+    "variacao": true,
+    "decisao": "recusada"
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "cê",
+    "inicio": 200,
+    "fim": 202,
+    "sugestao": "você",
+    "explicacao": "“Cê” é a forma falada; na escrita formal use “você”.",
+    "variacao": true,
+    "decisao": "aceita"
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "fregues",
+    "inicio": 224,
+    "fim": 231,
+    "sugestao": "freguês",
+    "explicacao": "Oxítona terminada em -es leva acento: freguês.",
+    "variacao": false,
+    "decisao": "aceita"
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "pra ele",
+    "inicio": 232,
+    "fim": 239,
+    "sugestao": "para ele",
+    "explicacao": "“Pra” é comum na fala. Em textos formais, prefira “para”.",
+    "variacao": true,
+    "decisao": "aceita"
+   },
+   {
+    "criterio": "Pontuação",
+    "trecho": "feira nós",
+    "inicio": 258,
+    "fim": 267,
+    "sugestao": "feira, nós",
+    "explicacao": "Use vírgula depois da expressão de tempo no início da frase.",
+    "variacao": false,
+    "decisao": "aceita"
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "pra roça",
+    "inicio": 304,
+    "fim": 312,
+    "sugestao": "para roça",
+    "explicacao": "“Pra” é comum na fala. Em textos formais, prefira “para”.",
+    "variacao": true,
+    "decisao": "editada",
+    "sugestao_final": "para a roça"
+   }
+  ]
+ },
+ {
+  "id": "d-04",
+  "aluno_codigo": "8A-12",
+  "turma": "8º A",
+  "grupo": "Rural",
+  "titulo": "A feira de sábado",
+  "versao": 2,
+  "origem_id": "d-03",
+  "conteudo": "Todo sábado eu vou com meu avô vender pequi e pamonha na feira da cidade. A gente sai cedinho de caminhonete e o trem vai cheio de caixa.\n\nUai, tem dia que vende tudo antes das nove! Meu avô fala que você tem que tratar bem o fregues para ele voltar. Depois da feira, nós almoçamos na casa da minha tia e voltamos para a roça de tarde.",
+  "status": "concluido",
+  "motor": "ia",
+  "criterios_usados": [
+   "Ortografia",
+   "Pontuação"
+  ],
+  "comentario_ia": "Ótimo trabalho! Seu texto ficou bem pontuado. Só falta o acento em “freguês”.",
+  "comentario_professor": "Ótimo trabalho! Seu texto ficou bem pontuado. Só falta o acento em “freguês”.",
+  "criado_em": "2026-10-07T17:48:00.000Z",
+  "avaliado_em": "2026-10-07T17:58:00.000Z",
+  "enviado_em": "2026-10-07T20:48:00.000Z",
+  "apontamentos": [
+   {
+    "criterio": "Ortografia",
+    "trecho": "trem",
+    "inicio": 113,
+    "fim": 117,
+    "sugestao": "carro",
+    "explicacao": "“Trem” é uma palavra informal; em textos escolares use o nome do objeto.",
+    "variacao": false,
+    "decisao": "recusada"
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "Uai,",
+    "inicio": 139,
+    "fim": 143,
+    "sugestao": "Nossa,",
+    "explicacao": "“Uai” é uma expressão regional; em textos formais use “Nossa”.",
+    "variacao": true,
+    "decisao": "recusada"
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "fregues",
+    "inicio": 226,
+    "fim": 233,
+    "sugestao": "freguês",
+    "explicacao": "Oxítona terminada em -es leva acento: freguês.",
+    "variacao": false,
+    "decisao": "aceita"
+   }
+  ]
+ },
+ {
+  "id": "d-05",
+  "aluno_codigo": "9B-07",
+  "turma": "9º B",
+  "grupo": "Migrante de outra região",
+  "titulo": "São João com a vó",
+  "versao": 1,
+  "conteudo": "Minha vó mora em Caruaru e todo ano a gente passa o São João com ela. Ela faz canjica, pamonha e um bolo de milho arretado.\n\nQuando eu cheguei em Goiânia eu sentia falta das quadrilhas e do forró pé de serra. Hoje eu ja tenho amigos aqui mas ainda conto os dias pra voltar em junho.",
+  "status": "revisao",
+  "motor": "ia",
+  "criterios_usados": [
+   "Ortografia",
+   "Pontuação"
+  ],
+  "comentario_ia": "Seu texto é cheio de afeto e de detalhes do São João. Revise as vírgulas e os acentos.",
+  "comentario_professor": "Seu texto é cheio de afeto e de detalhes do São João. Revise as vírgulas e os acentos.",
+  "criado_em": "2026-10-06T13:00:00.000Z",
+  "avaliado_em": "2026-10-06T13:10:00.000Z",
+  "apontamentos": [
+   {
+    "criterio": "Ortografia",
+    "trecho": "arretado",
+    "inicio": 114,
+    "fim": 122,
+    "sugestao": "delicioso",
+    "explicacao": "“Arretado” é uma expressão regional; em textos formais use “delicioso”.",
+    "variacao": true
+   },
+   {
+    "criterio": "Pontuação",
+    "trecho": "Goiânia eu",
+    "inicio": 146,
+    "fim": 156,
+    "sugestao": "Goiânia, eu",
+    "explicacao": "Use vírgula depois da oração que indica tempo, no início da frase.",
+    "variacao": false,
+    "decisao": "aceita"
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "ja",
+    "inicio": 217,
+    "fim": 219,
+    "sugestao": "já",
+    "explicacao": "O advérbio “já” é acentuado.",
+    "variacao": false,
+    "decisao": "aceita"
+   },
+   {
+    "criterio": "Pontuação",
+    "trecho": "aqui mas",
+    "inicio": 233,
+    "fim": 241,
+    "sugestao": "aqui, mas",
+    "explicacao": "Antes de “mas”, que indica oposição, use vírgula.",
+    "variacao": false
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "pra voltar",
+    "inicio": 262,
+    "fim": 272,
+    "sugestao": "para voltar",
+    "explicacao": "“Pra” é comum na fala. Em textos formais, prefira “para”.",
+    "variacao": true
+   }
+  ]
+ },
+ {
+  "id": "d-08",
+  "aluno_codigo": "8A-20",
+  "turma": "8º A",
+  "grupo": "Não informado",
+  "titulo": "A final do campeonato",
+  "versao": 1,
+  "conteudo": "Sabado passado meu time jogou a final do campeonato da escola. O jogo estava empatado e faltava so dois minutos.\n\nEntão o Lucas chutou de longe e a bola entrou no angulo. A torcida gritou tanto que eu fiquei rouco. Foi o dia mais feliz do ano",
+  "status": "revisao",
+  "motor": "ia",
+  "criterios_usados": [
+   "Ortografia",
+   "Pontuação"
+  ],
+  "comentario_ia": "Você criou suspense até o gol! Revise os acentos e não esqueça o ponto final.",
+  "comentario_professor": "Você criou suspense até o gol! Revise os acentos e não esqueça o ponto final.",
+  "criado_em": "2026-10-06T17:48:00.000Z",
+  "avaliado_em": "2026-10-06T17:58:00.000Z",
+  "apontamentos": [
+   {
+    "criterio": "Ortografia",
+    "trecho": "Sabado",
+    "inicio": 0,
+    "fim": 6,
+    "sugestao": "Sábado",
+    "explicacao": "Proparoxítona: sábado leva acento.",
+    "variacao": false,
+    "decisao": "aceita"
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "so",
+    "inicio": 96,
+    "fim": 98,
+    "sugestao": "só",
+    "explicacao": "O advérbio “só” é acentuado.",
+    "variacao": false,
+    "decisao": "aceita"
+   },
+   {
+    "criterio": "Pontuação",
+    "trecho": "longe e",
+    "inicio": 138,
+    "fim": 145,
+    "sugestao": "longe, e",
+    "explicacao": "A vírgula marca a pausa antes do resultado do chute.",
+    "variacao": false
+   },
+   {
+    "criterio": "Ortografia",
+    "trecho": "angulo",
+    "inicio": 163,
+    "fim": 169,
+    "sugestao": "ângulo",
+    "explicacao": "Proparoxítona: ângulo leva acento.",
+    "variacao": false,
+    "decisao": "aceita"
+   },
+   {
+    "criterio": "Pontuação",
+    "trecho": "do ano",
+    "inicio": 236,
+    "fim": 242,
+    "sugestao": "do ano.",
+    "explicacao": "Toda frase termina com um sinal de pontuação.",
+    "variacao": false
+   }
+  ]
+ },
+ {
+  "id": "d-06",
+  "aluno_codigo": "9B-02",
+  "turma": "9º B",
+  "grupo": "Bilíngue / outra língua materna",
+  "titulo": "Minha escola nova",
+  "versao": 1,
+  "conteudo": "Eu cheguei do Haiti faz dois anos com minha mãe e meu irmão. No Haiti a gente fala crioulo e francês, aqui eu aprendi o portugues na escola.\n\nNo começo era dificil porque eu não entendia as aulas, mas meus colegas me ajudaram muito. Hoje eu gosto de matematica e de jogar futebol no recreio. Quero ser engenheiro para construir casas fortes no meu pais.",
+  "status": "pendente",
+  "motor": "",
+  "criterios_usados": [],
+  "comentario_ia": "",
+  "comentario_professor": "",
+  "criado_em": "2026-10-08T13:00:00.000Z",
+  "apontamentos": []
+ },
+ {
+  "id": "d-07",
+  "aluno_codigo": "9B-15",
+  "turma": "9º B",
+  "grupo": "Urbano",
+  "titulo": "Redes sociais",
+  "versao": 1,
+  "conteudo": "As redes sociais fazem parte da vida dos jovens hoje em dia. Elas ajudam a gente a conversar com os amigos e aprender coisas novas porem tambem podem fazer mal.\n\nMuitos adolescentes passam horas no celular e acabam dormindo pouco. Alem disso tem muita noticia falsa circulando. Por isso eu acho que as escolas deveriam ensinar a usar as redes com responsabilidade.",
+  "status": "pendente",
+  "motor": "",
+  "criterios_usados": [],
+  "comentario_ia": "",
+  "comentario_professor": "",
+  "criado_em": "2026-10-08T15:24:00.000Z",
+  "apontamentos": []
+ }
+]
