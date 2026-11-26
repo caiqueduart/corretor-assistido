@@ -17,10 +17,6 @@
         <p class="item__etiquetas">
             <span class="etiqueta">{{ item.criterio }}</span>
 
-            @if (item.variacaoLinguistica) {
-                <span class="etiqueta etiqueta--marca-texto">Possível variação linguística</span>
-            }
-
             @if (item.decisao === 'ajustada') {
                 <span class="etiqueta etiqueta--caneta">IA sugeriu “{{ item.sugestaoIa }}”</span>
             }
@@ -30,13 +26,6 @@
             <span class="visualmente-oculto">Explicação para o aluno: </span>
             {{ item.explicacao }}
         </p>
-
-        @if (item.variacaoLinguistica && !item.decisao) {
-            <p class="item__aviso">
-                A IA indicou que esta forma pode ser da fala ou da região do aluno, e não um erro de escrita. Recuse se
-                ela fizer sentido no texto.
-            </p>
-        }
 
         @if (bloqueado()) {
             <p class="item__bloqueado">Devolutiva enviada. A decisão ficou registrada.</p>

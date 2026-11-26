@@ -85,17 +85,6 @@
             </div>
 
             <div class="importar__campo">
-                <label for="campo-origem">É reescrita de</label>
-                <select id="campo-origem" formControlName="origemId">
-                    <option value="">Não, é a 1ª versão</option>
-
-                    @for (redacao of versoesAnteriores(); track redacao.id) {
-                        <option [value]="redacao.id">{{ redacao.titulo }} · versão {{ redacao.versao }}</option>
-                    }
-                </select>
-            </div>
-
-            <div class="importar__campo">
                 <label for="campo-perfil">Perfil sociolinguístico</label>
                 <select id="campo-perfil" formControlName="perfil" aria-describedby="dica-perfil">
                     @for (perfil of perfis; track perfil) {

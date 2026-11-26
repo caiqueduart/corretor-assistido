@@ -78,15 +78,6 @@
         color: var(--correcao);
     }
 
-    &--variacao {
-        background: var(--marca-texto-suave);
-
-        &:hover {
-            background: var(--marca-texto-suave);
-            box-shadow: inset 0 -2px 0 var(--marca-texto);
-        }
-    }
-
     &--selecionada,
     &--selecionada:hover {
         box-shadow: 0 0 0 2px var(--caneta);

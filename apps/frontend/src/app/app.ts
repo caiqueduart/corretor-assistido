@@ -23,7 +23,6 @@ export class App {
     protected readonly navegacao: readonly ItemNavegacao[] = [
         { rota: '/redacoes', rotulo: 'Redações', icone: 'redacoes' },
         { rota: '/alunos', rotulo: 'Alunos', icone: 'alunos' },
-        { rota: '/metricas', rotulo: 'Métricas', icone: 'metricas' },
     ];
 
     constructor() {

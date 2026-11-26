@@ -85,14 +85,6 @@
         max-width: 60ch;
     }
 
-    &__aviso {
-        padding: 0.5rem 0.75rem;
-        border-radius: 6px;
-        background: var(--marca-texto-suave);
-        color: var(--marca-texto);
-        font-size: pxToRem(14px);
-    }
-
     &__bloqueado {
         color: var(--texto-2);
         font-size: pxToRem(14px);

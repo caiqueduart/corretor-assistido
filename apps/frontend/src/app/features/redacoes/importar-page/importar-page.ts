@@ -28,7 +28,6 @@ export class ImportarPage {
         turma: ['', Validators.required],
         titulo: [''],
         perfil: ['Não informado' as PerfilSociolinguistico],
-        origemId: [''],
         textoColado: [''],
         consentimentoFamilia: [false, Validators.requiredTrue],
     });
@@ -39,13 +38,6 @@ export class ImportarPage {
     protected readonly enviando = signal(false);
 
     private readonly valores = toSignal(this.formulario.valueChanges, { initialValue: this.formulario.getRawValue() });
-
-    /** Versões anteriores do mesmo aluno que podem receber esta reescrita. */
-    protected readonly versoesAnteriores = computed(() => {
-        const codigo = this.valores().aluno?.trim().toUpperCase();
-
-        return codigo ? this.redacoes.redacoes().filter((redacao) => redacao.aluno === codigo) : [];
-    });
 
     protected readonly temTexto = computed(() => !!this.arquivo() || !!this.valores().textoColado?.trim());
 
@@ -87,7 +79,7 @@ export class ImportarPage {
         try {
             const redacao = await this.redacoes.importar({
                 ...valores,
-                origemId: valores.origemId || null,
+                origemId: null,
                 arquivo: this.arquivo(),
             });
 

@@ -21,7 +21,6 @@
                 [class.marca--pendente]="!apontamento.decisao"
                 [class.marca--validada]="apontamento.decisao === 'aceita' || apontamento.decisao === 'ajustada'"
                 [class.marca--recusada]="apontamento.decisao === 'recusada'"
-                [class.marca--variacao]="apontamento.variacaoLinguistica"
                 [class.marca--selecionada]="apontamento.id === selecionadoId()"
                 [attr.aria-label]="rotulo(apontamento, trecho.indice)"
                 [attr.aria-pressed]="apontamento.id === selecionadoId()"

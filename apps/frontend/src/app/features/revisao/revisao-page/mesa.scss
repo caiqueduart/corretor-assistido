@@ -127,12 +127,6 @@
         color: var(--texto);
         text-decoration: underline dotted var(--correcao) 1.5px;
     }
-
-    &__item--variacao::before {
-        padding: 0 0.125rem;
-        background: var(--marca-texto-suave);
-        color: var(--texto);
-    }
 }
 
 @keyframes girar {
