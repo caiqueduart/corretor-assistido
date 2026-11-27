@@ -22,9 +22,12 @@ app-root {
 }
 
 .app {
+    --largura-menu: var(--sidebar-width);
+
     display: grid;
-    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    grid-template-columns: var(--largura-menu) minmax(0, 1fr);
     min-height: 100dvh;
+    transition: grid-template-columns var(--duration-base) var(--ease);
 }
 
 .sidebar {
@@ -84,6 +87,12 @@ app-root {
 
     &__marca {
         display: grid;
+        max-width: 12rem;
+        overflow: hidden;
+        white-space: nowrap;
+        transition:
+            opacity var(--duration-base) var(--ease),
+            max-width var(--duration-base) var(--ease);
     }
 
     &__versao {
@@ -114,6 +123,25 @@ app-root {
         font-weight: var(--weight-medium);
         letter-spacing: 0.08em;
         text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    &__footer {
+        padding: var(--space-3);
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+}
+
+/* Botão de recolher: mesmo visual dos itens do menu. */
+.sidebar__recolher {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+
+    app-icone {
+        transition: transform var(--duration-base) var(--ease);
     }
 }
 
@@ -158,6 +186,15 @@ app-root {
         }
     }
 
+    &__texto {
+        max-width: 12rem;
+        overflow: hidden;
+        white-space: nowrap;
+        transition:
+            opacity var(--duration-base) var(--ease),
+            max-width var(--duration-base) var(--ease);
+    }
+
     &__contador {
         min-width: 1.25rem;
         margin-left: auto;
@@ -169,6 +206,84 @@ app-root {
         font-weight: var(--weight-semibold);
         line-height: 1.25rem;
         text-align: center;
+    }
+}
+
+/* Menu recolhido (só no desktop): ícones, com o nome num tooltip ao passar o mouse ou focar. */
+@media (width > $celular) {
+    .app[data-recolhido='true'] {
+        --largura-menu: 4.5rem;
+
+        .sidebar__marca,
+        .nav-link__texto {
+            max-width: 0;
+            opacity: 0;
+        }
+
+        .sidebar__brand {
+            gap: 0;
+        }
+
+        /* O tooltip precisa sair da coluna do menu. */
+        .sidebar__nav {
+            overflow: visible;
+        }
+
+        .sidebar__group {
+            height: 1px;
+            margin: var(--space-2) var(--space-2) var(--space-1);
+            padding: 0;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.15);
+            color: transparent;
+        }
+
+        .nav-link {
+            justify-content: center;
+            gap: 0;
+            padding: 0;
+        }
+
+        .nav-link__contador {
+            position: absolute;
+            top: 0.25rem;
+            right: 0.375rem;
+            min-width: 1rem;
+            padding: 0 0.25rem;
+            font-size: 0.625rem;
+            line-height: 1rem;
+        }
+
+        .sidebar__recolher app-icone {
+            transform: rotate(180deg);
+        }
+
+        /* Atlas: ds-tooltip, posicionado à direita do ícone. */
+        .sidebar [data-rotulo]:is(:hover, :focus-visible)::after {
+            content: attr(data-rotulo);
+            position: absolute;
+            top: 50%;
+            left: calc(100% + 0.75rem);
+            z-index: 50;
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-md);
+            background: #18181b;
+            color: #fafafa;
+            box-shadow: var(--shadow-md);
+            font-size: var(--text-xs);
+            font-weight: var(--weight-medium);
+            white-space: nowrap;
+            pointer-events: none;
+            transform: translateY(-50%);
+            animation: tooltip-entrar var(--duration-fast) var(--ease);
+        }
+    }
+}
+
+@keyframes tooltip-entrar {
+    from {
+        opacity: 0;
+        transform: translate(-4px, -50%);
     }
 }
 
@@ -232,6 +347,11 @@ app-root {
             transform: none;
             box-shadow: var(--shadow-lg);
         }
+    }
+
+    /* No celular o menu já desliza por cima; recolher não se aplica. */
+    .sidebar__footer {
+        display: none;
     }
 
     .sidebar-scrim[data-open='true'] {

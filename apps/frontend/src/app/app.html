@@ -1,7 +1,7 @@
 @if (auth.usuario(); as usuario) {
     <a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
-    <div class="app">
+    <div class="app" [attr.data-recolhido]="recolhido()">
         <aside class="sidebar" id="menu-principal" [attr.data-open]="menuAberto()" aria-label="Navegação principal">
             <a class="sidebar__brand" routerLink="/inicio">
                 <span class="sidebar__logo"><app-icone nome="lapis" /></span>
@@ -17,9 +17,15 @@
                         <span class="sidebar__group">{{ secao.titulo }}</span>
 
                         @for (item of secao.itens; track item.rota) {
-                            <a class="nav-link" [routerLink]="item.rota" routerLinkActive ariaCurrentWhenActive="page">
+                            <a
+                                class="nav-link"
+                                [routerLink]="item.rota"
+                                routerLinkActive
+                                ariaCurrentWhenActive="page"
+                                [attr.data-rotulo]="item.rotulo"
+                            >
                                 <app-icone [nome]="item.icone" />
-                                <span>{{ item.rotulo }}</span>
+                                <span class="nav-link__texto">{{ item.rotulo }}</span>
 
                                 @if (item.rota === '/redacoes' && redacoes.porStatus().emRevisao.length) {
                                     <span class="nav-link__contador">
@@ -32,6 +38,21 @@
                     </div>
                 }
             </nav>
+
+            <div class="sidebar__footer">
+                <button
+                    class="nav-link sidebar__recolher"
+                    type="button"
+                    aria-controls="menu-principal"
+                    [attr.aria-expanded]="!recolhido()"
+                    [attr.aria-label]="recolhido() ? 'Expandir menu' : 'Recolher menu'"
+                    [attr.data-rotulo]="recolhido() ? 'Expandir menu' : null"
+                    (click)="alternarRecolhido()"
+                >
+                    <app-icone nome="recolher" />
+                    <span class="nav-link__texto">Recolher menu</span>
+                </button>
+            </div>
         </aside>
 
         <div class="sidebar-scrim" [attr.data-open]="menuAberto()" (click)="menuAberto.set(false)"></div>

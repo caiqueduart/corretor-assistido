@@ -38,6 +38,16 @@ const SISTEMA: SecaoNavegacao = {
     itens: [{ rota: '/admin', rotulo: 'Administração', icone: 'escudo' }],
 };
 
+const CHAVE_MENU = 'corretor.menu-recolhido';
+
+function lerPreferenciaMenu(): boolean {
+    try {
+        return localStorage.getItem(CHAVE_MENU) === '1';
+    } catch {
+        return false;
+    }
+}
+
 @Component({
     selector: 'app-root',
     imports: [RouterOutlet, RouterLink, RouterLinkActive, Icone, Topbar, Avisos, Confirmacao],
@@ -54,6 +64,9 @@ export class App {
 
     /** Menu lateral aberto no celular (no desktop ele fica sempre visível). */
     protected readonly menuAberto = signal(false);
+
+    /** No desktop, menu recolhido mostra só os ícones. A preferência fica salva no navegador. */
+    protected readonly recolhido = signal(lerPreferenciaMenu());
 
     protected readonly secoes = computed(() => (this.auth.temPerfil('admin') ? [PRINCIPAL, SISTEMA] : [PRINCIPAL]));
 
@@ -88,6 +101,17 @@ export class App {
                 this.menuAberto.set(false);
                 this.focarConteudo();
             });
+    }
+
+    protected alternarRecolhido(): void {
+        const recolher = !this.recolhido();
+        this.recolhido.set(recolher);
+
+        try {
+            localStorage.setItem(CHAVE_MENU, recolher ? '1' : '0');
+        } catch {
+            // Sem armazenamento: vale só nesta aba.
+        }
     }
 
     /**
