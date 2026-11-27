@@ -21,25 +21,25 @@
         </p>
     </header>
 
-    <ol class="etapas" aria-label="Andamento da correção">
+    <ol class="etapas" aria-label="O que falta fazer">
         <li
             class="etapas__item"
-            [class.etapas__item--feita]="atual.status !== 'aguardando-ia' && atual.status !== 'corrigindo'"
-            [class.etapas__item--atual]="atual.status === 'aguardando-ia' || atual.status === 'corrigindo'"
+            [class.etapas__item--feita]="atual.status === 'devolvida'"
+            [class.etapas__item--atual]="atual.status !== 'devolvida'"
         >
             <span class="etapas__marca" aria-hidden="true">1</span>
             <span class="etapas__texto">
-                <span class="etapas__nome">Correção da IA</span>
+                <span class="etapas__nome">Sua revisão</span>
                 <span class="etapas__detalhe">
                     @switch (atual.status) {
                         @case ('aguardando-ia') {
-                            Pendente
+                            Aguardando a correção da IA
                         }
                         @case ('corrigindo') {
-                            Em andamento…
+                            A IA está corrigindo…
                         }
                         @default {
-                            {{ decisoes().total === 1 ? '1 apontamento' : decisoes().total + ' apontamentos' }}
+                            {{ decisoes().total - decisoes().pendentes }} de {{ decisoes().total }} decididos
                         }
                     }
                 </span>
@@ -49,30 +49,16 @@
         <li
             class="etapas__item"
             [class.etapas__item--feita]="atual.status === 'devolvida'"
-            [class.etapas__item--atual]="atual.status === 'em-revisao'"
+            [class.etapas__item--atual]="atual.status === 'devolvida'"
         >
             <span class="etapas__marca" aria-hidden="true">2</span>
-            <span class="etapas__texto">
-                <span class="etapas__nome">Sua validação</span>
-                <span class="etapas__detalhe">
-                    @if (atual.status === 'em-revisao' || atual.status === 'devolvida') {
-                        {{ decisoes().total - decisoes().pendentes }} de {{ decisoes().total }} decididos
-                    } @else {
-                        Aceitar, ajustar ou recusar
-                    }
-                </span>
-            </span>
-        </li>
-
-        <li class="etapas__item" [class.etapas__item--feita]="atual.status === 'devolvida'">
-            <span class="etapas__marca" aria-hidden="true">3</span>
             <span class="etapas__texto">
                 <span class="etapas__nome">Devolutiva do aluno</span>
                 <span class="etapas__detalhe">
                     @if (atual.status === 'devolvida') {
                         Registrada em {{ atual.enviadaEm | date: "dd/MM 'às' HH:mm" }}
                     } @else {
-                        Após a validação
+                        Depois da revisão
                     }
                 </span>
             </span>
