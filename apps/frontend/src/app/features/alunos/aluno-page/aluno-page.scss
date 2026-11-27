@@ -1,5 +1,4 @@
 @use 'variables' as *;
-@use 'functions' as *;
 @use 'mixins' as *;
 
 :host {
@@ -20,8 +19,8 @@
     }
 
     &__titulo {
-        font-size: pxToRem(28px);
-        font-weight: 700;
+        font-size: var(--text-2xl);
+        font-weight: var(--weight-semibold);
     }
 
     &__bloco {
@@ -32,13 +31,13 @@
     }
 
     &__subtitulo {
-        font-size: pxToRem(16px);
-        font-weight: 700;
+        font-size: var(--text-md);
+        font-weight: var(--weight-semibold);
     }
 
     &__nota {
         color: var(--texto-2);
-        font-size: pxToRem(14px);
+        font-size: var(--text-base);
     }
 }
 

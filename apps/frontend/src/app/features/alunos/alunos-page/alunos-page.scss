@@ -1,5 +1,4 @@
 @use 'variables' as *;
-@use 'functions' as *;
 @use 'mixins' as *;
 
 .alunos {
@@ -28,24 +27,24 @@
         }
 
         tbody th {
-            font-weight: 400;
+            font-weight: var(--weight-regular);
             white-space: nowrap;
         }
     }
 
     &__link {
-        font-weight: 700;
+        font-weight: var(--weight-semibold);
     }
 
     &__turma {
         margin-left: 0.5rem;
         color: var(--texto-2);
-        font-size: pxToRem(14px);
+        font-size: var(--text-base);
     }
 
     &__perfil {
         color: var(--texto-2);
-        font-size: pxToRem(14px);
+        font-size: var(--text-base);
     }
 
     &__versoes {
@@ -61,7 +60,7 @@
 
     &__variacao {
         color: var(--caneta);
-        font-weight: 700;
+        font-weight: var(--weight-semibold);
 
         &--piora {
             color: var(--correcao);
@@ -71,6 +70,6 @@
     &__sem-dado,
     &__vazio {
         color: var(--texto-2);
-        font-size: pxToRem(14px);
+        font-size: var(--text-base);
     }
 }

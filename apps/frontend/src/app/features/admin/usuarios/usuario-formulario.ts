@@ -9,6 +9,7 @@ import {
 } from '../../../core/admin/usuarios.service';
 import { mensagemDeErro } from '../../../core/api/erro-api';
 import { DESCRICAO_PERFIL, PERFIS, Perfil, ROTULO_PERFIL, Usuario } from '../../../core/auth/auth.model';
+import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
 
 export interface UsuarioSalvo {
     readonly usuario: Usuario;
@@ -27,6 +28,7 @@ export interface UsuarioSalvo {
 })
 export class UsuarioFormulario implements OnInit {
     private readonly usuarios = inject(UsuariosService);
+    private readonly confirmacao = inject(ConfirmacaoService);
 
     readonly usuario = input<Usuario | null>(null);
     /** O admin está editando a si mesmo: não pode rebaixar o perfil nem se desativar. */
@@ -92,6 +94,22 @@ export class UsuarioFormulario implements OnInit {
         this.formulario.markAllAsTouched();
 
         if (this.formulario.invalid || this.salvando()) {
+            return;
+        }
+
+        const atual = this.usuario();
+
+        if (
+            atual?.ativo &&
+            !this.ehVoce() &&
+            !this.formulario.getRawValue().ativo &&
+            !(await this.confirmacao.confirmar({
+                titulo: `Desativar ${atual.nome}?`,
+                texto: 'A pessoa não consegue mais entrar e as sessões abertas são encerradas. O histórico é mantido e você pode reativar depois.',
+                confirmar: 'Desativar',
+                perigo: true,
+            }))
+        ) {
             return;
         }
 

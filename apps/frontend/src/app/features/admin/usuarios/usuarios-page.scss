@@ -32,7 +32,7 @@ app-cabecalho-pagina {
 
         code {
             padding: 0.125rem 0.5rem;
-            border-radius: 4px;
+            border-radius: var(--radius-sm);
             background: var(--folha);
             color: var(--texto);
             font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
@@ -75,7 +75,7 @@ app-cabecalho-pagina {
     }
 
     &__nome {
-        font-weight: 600;
+        font-weight: var(--weight-semibold);
         white-space: nowrap;
 
         .etiqueta {

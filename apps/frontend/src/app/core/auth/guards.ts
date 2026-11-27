@@ -22,7 +22,7 @@ export function perfilGuard(...perfis: Perfil[]): CanActivateFn {
 
         await auth.restaurar();
 
-        return auth.temPerfil(...perfis) || router.createUrlTree(['/redacoes']);
+        return auth.temPerfil(...perfis) || router.createUrlTree(['/inicio']);
     };
 }
 
@@ -33,12 +33,12 @@ export const visitanteGuard: CanActivateFn = async () => {
 
     await auth.restaurar();
 
-    return !auth.logado() || router.createUrlTree(['/redacoes']);
+    return !auth.logado() || router.createUrlTree(['/inicio']);
 };
 
 /** Aceita só caminhos internos, para não redirecionar para outro site após o login. */
 export function destinoSeguro(voltar: string | null | undefined): string {
     return voltar && voltar.startsWith('/') && !voltar.startsWith('//') && !voltar.startsWith('/login')
         ? voltar
-        : '/redacoes';
+        : '/inicio';
 }

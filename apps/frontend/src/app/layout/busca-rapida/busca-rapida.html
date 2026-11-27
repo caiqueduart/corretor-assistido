@@ -1,0 +1,56 @@
+<dialog #dialogo class="dialogo busca" aria-label="Buscar no corretor" (click)="$event.target === dialogo && fechar()">
+    <div class="busca__campo">
+        <app-icone nome="buscar" />
+        <input
+            #campo
+            type="text"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-controls="busca-resultados"
+            [attr.aria-activedescendant]="resultados().length ? 'busca-' + ativo() : null"
+            aria-expanded="true"
+            placeholder="Buscar aluno, redação ou página…"
+            autocomplete="off"
+            spellcheck="false"
+            [value]="termo()"
+            (input)="digitar($any($event.target).value)"
+            (keydown)="teclar($event)"
+        />
+        <kbd class="busca__tecla">Esc</kbd>
+    </div>
+
+    <div class="busca__lista" id="busca-resultados" role="listbox" aria-label="Resultados">
+        @for (grupo of grupos(); track grupo.nome) {
+            <div role="group" [attr.aria-label]="grupo.nome">
+                <p class="busca__grupo" aria-hidden="true">{{ grupo.nome }}</p>
+
+                @for (resultado of grupo.itens; track resultado.item.id) {
+                    <button
+                        class="busca__item"
+                        type="button"
+                        role="option"
+                        tabindex="-1"
+                        [id]="'busca-' + resultado.indice"
+                        [attr.aria-selected]="resultado.indice === ativo()"
+                        (mousemove)="ativo.set(resultado.indice)"
+                        (click)="ir(resultado.item)"
+                    >
+                        <app-icone [nome]="resultado.item.icone" />
+                        <span class="busca__textos">
+                            <span class="busca__titulo">{{ resultado.item.titulo }}</span>
+                            @if (resultado.item.detalhe) {
+                                <span class="busca__detalhe">{{ resultado.item.detalhe }}</span>
+                            }
+                        </span>
+                    </button>
+                }
+            </div>
+        } @empty {
+            <p class="busca__vazio">Nada encontrado para “{{ termo() }}”.</p>
+        }
+    </div>
+
+    <p class="busca__rodape" aria-hidden="true">
+        <kbd>↑</kbd><kbd>↓</kbd> navegar · <kbd>Enter</kbd> abrir · <kbd>Esc</kbd> fechar
+    </p>
+</dialog>

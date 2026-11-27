@@ -24,7 +24,7 @@
             <label class="importar__soltar" for="campo-arquivo">
                 <app-icone nome="importar" />
                 <span class="importar__soltar-titulo">Escolher arquivo</span>
-                <span class="importar__dica">PDF, TXT ou DOCX</span>
+                <span class="campo__dica">PDF, TXT ou DOCX</span>
             </label>
 
             <input
@@ -36,17 +36,17 @@
             />
 
             @if (erroArquivo(); as erro) {
-                <p class="importar__erro" role="alert">{{ erro }}</p>
+                <p class="campo__erro" role="alert">{{ erro }}</p>
             }
 
-            <div class="importar__campo">
+            <div class="campo">
                 <label for="campo-texto">Ou cole o texto</label>
                 <textarea id="campo-texto" rows="8" formControlName="textoColado"></textarea>
             </div>
         }
 
         @if (formulario.touched && !temTexto()) {
-            <p class="importar__erro" role="alert">Envie um arquivo ou cole o texto.</p>
+            <p class="campo__erro" role="alert">Envie um arquivo ou cole o texto.</p>
         }
     </fieldset>
 
@@ -54,7 +54,7 @@
         <legend class="importar__legenda">Sobre o aluno</legend>
 
         <div class="importar__grade">
-            <div class="importar__campo">
+            <div class="campo">
                 <label for="campo-aluno">Código do aluno</label>
                 <input
                     id="campo-aluno"
@@ -63,53 +63,53 @@
                     placeholder="Ex.: 8A-07"
                     aria-describedby="dica-aluno"
                 />
-                <p class="importar__dica" id="dica-aluno">Nunca use o nome do aluno.</p>
+                <p class="campo__dica" id="dica-aluno">Nunca use o nome do aluno.</p>
 
                 @if (formulario.controls.aluno.touched && formulario.controls.aluno.invalid) {
-                    <p class="importar__erro">Informe um código de 2 a 12 letras, números ou hífen.</p>
+                    <p class="campo__erro">Informe um código de 2 a 12 letras, números ou hífen.</p>
                 }
             </div>
 
-            <div class="importar__campo">
+            <div class="campo">
                 <label for="campo-turma">Turma</label>
                 <input id="campo-turma" formControlName="turma" autocomplete="off" placeholder="Ex.: 8º A" />
 
                 @if (formulario.controls.turma.touched && formulario.controls.turma.invalid) {
-                    <p class="importar__erro">Informe a turma.</p>
+                    <p class="campo__erro">Informe a turma.</p>
                 }
             </div>
 
-            <div class="importar__campo">
+            <div class="campo">
                 <label for="campo-titulo">Título <span class="importar__opcional">(opcional)</span></label>
                 <input id="campo-titulo" formControlName="titulo" autocomplete="off" />
             </div>
 
-            <div class="importar__campo">
+            <div class="campo">
                 <label for="campo-perfil">Perfil sociolinguístico</label>
                 <select id="campo-perfil" formControlName="perfil" aria-describedby="dica-perfil">
                     @for (perfil of perfis(); track perfil) {
                         <option [value]="perfil">{{ perfil }}</option>
                     }
                 </select>
-                <p class="importar__dica" id="dica-perfil">Só para a auditoria de equidade. Não é enviado à IA.</p>
+                <p class="campo__dica" id="dica-perfil">Só para a auditoria de equidade. Não é enviado à IA.</p>
             </div>
         </div>
     </fieldset>
 
-    <label class="importar__consentimento">
+    <label class="escolha">
         <input type="checkbox" formControlName="consentimentoFamilia" />
-        <span>
-            <span class="importar__consentimento-titulo">A família deu consentimento informado</span>
-            <span class="importar__dica">Sem consentimento, o texto não entra na POC.</span>
+        <span class="escolha__textos">
+            <span class="escolha__titulo">A família deu consentimento informado</span>
+            <span class="escolha__dica">Sem consentimento, o texto não entra na POC.</span>
         </span>
     </label>
 
     @if (formulario.controls.consentimentoFamilia.touched && formulario.controls.consentimentoFamilia.invalid) {
-        <p class="importar__erro" role="alert">Confirme o consentimento da família para importar.</p>
+        <p class="campo__erro" role="alert">Confirme o consentimento da família para importar.</p>
     }
 
     @if (erroEnvio(); as erro) {
-        <p class="importar__erro" role="alert">{{ erro }}</p>
+        <p class="campo__erro" role="alert">{{ erro }}</p>
     }
 
     <div class="importar__acoes">

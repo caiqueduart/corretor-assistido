@@ -4,6 +4,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { mensagemDeErro } from '../../../core/api/erro-api';
 import { COLUNAS_DECISOES, DecisoesCsvService } from '../../../core/metricas/decisoes-csv.service';
 import { Icone } from '../../../shared/icone/icone';
+import { AvisosService } from '../../../core/ui/avisos.service';
 
 /** Exporta as decisões do professor (CSV) para a análise da experimentação. */
 @Component({
@@ -15,6 +16,7 @@ import { Icone } from '../../../shared/icone/icone';
 })
 export class ExportarDecisoes {
     private readonly decisoes = inject(DecisoesCsvService);
+    private readonly avisos = inject(AvisosService);
 
     protected readonly colunas = COLUNAS_DECISOES.join(', ');
     protected readonly turma = signal('');
@@ -34,6 +36,7 @@ export class ExportarDecisoes {
         try {
             await this.decisoes.baixar(this.turma());
             this.concluido.set(true);
+            this.avisos.mostrar('Decisões exportadas', { texto: 'O arquivo CSV foi baixado.' });
         } catch (erro) {
             this.erro.set(await mensagemDeErroBlob(erro));
         } finally {

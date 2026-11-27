@@ -1,0 +1,61 @@
+<button
+    class="topbar__menu"
+    type="button"
+    aria-label="Abrir menu"
+    aria-controls="menu-principal"
+    (click)="abrirMenu.emit()"
+>
+    <app-icone nome="menu" />
+</button>
+
+<nav class="trilha" aria-label="Você está em">
+    <ol>
+        @for (migalha of trilha.migalhas(); track $index; let ultimo = $last) {
+            <li>
+                @if (migalha.link && !ultimo) {
+                    <a [routerLink]="migalha.link">{{ migalha.rotulo }}</a>
+                    <app-icone class="trilha__seta" nome="proximo" />
+                } @else {
+                    <span [attr.aria-current]="ultimo ? 'page' : null">{{ migalha.rotulo }}</span>
+                }
+            </li>
+        }
+    </ol>
+</nav>
+
+<span class="topbar__espaco"></span>
+
+<button
+    class="topbar__busca"
+    type="button"
+    aria-label="Buscar aluno, redação ou página (Ctrl+K)"
+    (click)="busca.abrir()"
+>
+    <app-icone nome="buscar" />
+    <span class="topbar__busca-texto">Buscar aluno ou redação</span>
+    <kbd class="topbar__tecla" aria-hidden="true">Ctrl K</kbd>
+</button>
+
+@if (admin() && ia() !== null) {
+    <span
+        class="etiqueta topbar__ia"
+        [class.etiqueta--sucesso]="ia()"
+        [class.etiqueta--marca-texto]="!ia()"
+        [title]="ia() ? 'A correção usa a IA.' : 'Sem chave da IA no servidor: a correção usa regras fixas.'"
+    >
+        <span class="topbar__ponto" aria-hidden="true"></span>
+        {{ ia() ? 'IA ativa' : 'Correção simulada' }}
+    </span>
+}
+
+@if (escritor()) {
+    <a class="botao botao--primario botao--pequeno topbar__importar" routerLink="/redacoes/nova">
+        <app-icone nome="mais" />
+        <span class="topbar__importar-texto">Importar redação</span>
+    </a>
+}
+
+<span class="topbar__divisor" aria-hidden="true"></span>
+<app-menu-usuario />
+
+<app-busca-rapida #busca />

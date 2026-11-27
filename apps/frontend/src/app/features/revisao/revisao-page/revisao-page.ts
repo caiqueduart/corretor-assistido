@@ -15,16 +15,19 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { apontamentosDaDevolutiva, contarDecisoes } from '../../../core/redacoes/analise';
 import { RedacoesService } from '../../../core/redacoes/redacoes.service';
+import { AvisosService } from '../../../core/ui/avisos.service';
+import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
 import { Icone } from '../../../shared/icone/icone';
 import { ApontamentoItem, EventoDecisao } from '../apontamento-item/apontamento-item';
 import { Devolutiva } from '../devolutiva/devolutiva';
 import { TextoMarcado } from '../texto-marcado/texto-marcado';
+import { Esqueleto } from '../../../shared/esqueleto/esqueleto';
 
 type Visao = 'revisao' | 'aluno';
 
 @Component({
     selector: 'app-revisao-page',
-    imports: [RouterLink, DatePipe, Icone, TextoMarcado, ApontamentoItem, Devolutiva],
+    imports: [RouterLink, DatePipe, Icone, TextoMarcado, ApontamentoItem, Devolutiva, Esqueleto],
     templateUrl: './revisao-page.html',
     styleUrls: ['./revisao-page.scss', './mesa.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +36,8 @@ type Visao = 'revisao' | 'aluno';
 export class RevisaoPage {
     protected readonly redacoes = inject(RedacoesService);
     private readonly auth = inject(AuthService);
+    private readonly avisos = inject(AvisosService);
+    private readonly confirmacao = inject(ConfirmacaoService);
 
     /** O perfil leitura vê tudo, mas não decide nem envia. */
     protected readonly podeEditar = computed(() => this.auth.temPerfil('admin', 'professor'));
@@ -101,11 +106,33 @@ export class RevisaoPage {
     }
 
     protected async decidirPendentes(decisao: 'aceita' | 'recusada'): Promise<void> {
+        const pendentes = this.decisoes().pendentes;
+
+        // Recusar em lote descarta o trabalho da IA: confirma antes.
+        if (
+            decisao === 'recusada' &&
+            !(await this.confirmacao.confirmar({
+                titulo: `Recusar ${pendentes === 1 ? 'o apontamento restante' : `os ${pendentes} apontamentos restantes`}?`,
+                texto: 'Eles não vão aparecer na devolutiva. Você ainda pode mudar cada decisão antes de enviar.',
+                confirmar: 'Recusar',
+                perigo: true,
+            }))
+        ) {
+            return;
+        }
+
         await this.tentar(() => this.redacoes.decidirPendentes(this.id(), decisao));
     }
 
     protected async corrigirComIa(): Promise<void> {
-        await this.tentar(() => this.redacoes.corrigirComIa(this.id()));
+        if (await this.tentar(() => this.redacoes.corrigirComIa(this.id()))) {
+            const n = this.apontamentos().length;
+            this.avisos.mostrar('Correção pronta', {
+                texto: n
+                    ? `${n} ${n === 1 ? 'apontamento' : 'apontamentos'} para você revisar.`
+                    : 'A IA não encontrou desvios.',
+            });
+        }
     }
 
     protected async salvarComentario(comentario: string): Promise<void> {
@@ -115,7 +142,11 @@ export class RevisaoPage {
     }
 
     protected async enviar(): Promise<void> {
-        await this.tentar(() => this.redacoes.enviarDevolutiva(this.id()));
+        if (await this.tentar(() => this.redacoes.enviarDevolutiva(this.id()))) {
+            this.avisos.mostrar('Devolutiva enviada', {
+                texto: `${this.redacao()?.aluno ?? 'O aluno'} já pode ver as correções.`,
+            });
+        }
         this.confirmandoEnvio.set(false);
     }
 
@@ -172,13 +203,16 @@ export class RevisaoPage {
         }
     }
 
-    private async tentar(acao: () => Promise<void>): Promise<void> {
+    /** Executa a ação e mostra o erro na tela; devolve se deu certo. */
+    private async tentar(acao: () => Promise<void>): Promise<boolean> {
         this.erro.set(null);
 
         try {
             await acao();
+            return true;
         } catch (erro) {
             this.mostrarErro(erro);
+            return false;
         }
     }
 

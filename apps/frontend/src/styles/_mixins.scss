@@ -1,15 +1,16 @@
-/* Folha branca sobre o fundo: superfícies de trabalho (texto, listas, tabelas). */
+/* Superfícies de trabalho (texto, listas, tabelas). Atlas: ds-card. */
 @mixin folha {
-    background: var(--folha);
-    border: 1px solid var(--linha);
-    border-radius: var(--raio);
+    background: var(--surface);
+    border: 1px solid transparent;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
 }
 
-/* Rótulo curto em caixa alta usado em cabeçalhos de coluna e legendas. */
+/* Rótulo curto em caixa alta usado em cabeçalhos de coluna e legendas. Atlas: ds-table th. */
 @mixin rotulo {
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--texto-2);
+    color: var(--text-muted);
 }
