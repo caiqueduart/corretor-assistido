@@ -48,12 +48,13 @@
                         autocomplete="current-password"
                     />
                     <button
-                        class="botao botao--discreto botao--pequeno"
+                        class="botao botao--discreto botao--pequeno login__olho"
                         type="button"
+                        [attr.aria-label]="senhaVisivel() ? 'Ocultar senha' : 'Mostrar senha'"
                         [attr.aria-pressed]="senhaVisivel()"
                         (click)="senhaVisivel.set(!senhaVisivel())"
                     >
-                        {{ senhaVisivel() ? 'Ocultar' : 'Mostrar' }}
+                        <app-icone [nome]="senhaVisivel() ? 'olhoFechado' : 'olho'" />
                     </button>
                 </div>
 

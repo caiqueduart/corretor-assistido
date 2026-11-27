@@ -148,7 +148,7 @@
         position: relative;
 
         input {
-            padding-right: 5.5rem !important;
+            padding-right: 3rem !important;
         }
 
         .botao {
@@ -157,6 +157,11 @@
             right: var(--space-1);
             transform: translateY(-50%);
         }
+    }
+
+    &__olho {
+        width: var(--control-sm);
+        padding: 0;
     }
 
     &__entrar {
