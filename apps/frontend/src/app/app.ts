@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, untracked } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { ROTULO_PERFIL } from './core/auth/auth.model';
@@ -36,8 +36,22 @@ export class App {
         this.auth.temPerfil('admin') ? [...NAVEGACAO, ITEM_ADMIN] : NAVEGACAO,
     );
 
+    /** Só a troca de usuário importa (não, por exemplo, a mudança do nome). */
+    private readonly idUsuario = computed(() => this.auth.usuario()?.id ?? null);
+
     constructor() {
-        void this.redacoes.carregar();
+        // As redações exigem login: carrega ao entrar e esquece ao sair.
+        effect(() => {
+            const id = this.idUsuario();
+
+            untracked(() => {
+                this.redacoes.limpar();
+
+                if (id) {
+                    void this.redacoes.carregar();
+                }
+            });
+        });
     }
 
     protected sair(): void {

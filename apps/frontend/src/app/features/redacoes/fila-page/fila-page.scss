@@ -145,3 +145,23 @@
         transform: rotate(360deg);
     }
 }
+
+.fila__erro-carga {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.fila__inicio {
+    display: grid;
+    gap: 0.75rem;
+    justify-items: start;
+}
+
+.fila__inicio-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}

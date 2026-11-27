@@ -1,16 +1,20 @@
-export type Criterio = 'Ortografia' | 'Pontuação';
+/** Critério de correção. Os ativos são definidos pelo admin (`/api/config`). */
+export type Criterio = string;
 
+/** Critérios da especificação da POC, usados quando a configuração não está disponível. */
 export const CRITERIOS: readonly Criterio[] = ['Ortografia', 'Pontuação'];
 
-export const PERFIS_SOCIOLINGUISTICOS = [
+/** Perfis padrão do back-end, usados quando a configuração não está disponível. */
+export const PERFIS_SOCIOLINGUISTICOS: readonly PerfilSociolinguistico[] = [
     'Não informado',
     'Urbano',
     'Rural',
     'Migrante de outra região',
     'Bilíngue / outra língua materna',
-] as const;
+];
 
-export type PerfilSociolinguistico = (typeof PERFIS_SOCIOLINGUISTICOS)[number];
+/** Perfil sociolinguístico. A lista é definida pelo admin (`/api/config`). */
+export type PerfilSociolinguistico = string;
 
 /**
  * aguardando-ia: importada, ainda sem correção.
@@ -57,6 +61,8 @@ export interface Redacao {
     readonly enviadaEm: string | null;
     /** Texto fictício de demonstração. */
     readonly exemplo: boolean;
+    /** Motivo da última correção que falhou, para o professor tentar de novo. */
+    readonly erroCorrecao?: string;
 }
 
 export interface NovaRedacao {

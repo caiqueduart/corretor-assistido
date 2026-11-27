@@ -14,6 +14,8 @@ export class RedacoesService {
 
     readonly redacoes = this.estado.asReadonly();
     readonly carregado = signal(false);
+    /** Mensagem quando a lista não pôde ser carregada. */
+    readonly erroCarga = signal<string | null>(null);
 
     readonly porStatus = computed(() => {
         const ordenadas = [...this.estado()].sort((a, b) => b.criadaEm.localeCompare(a.criadaEm));
@@ -28,12 +30,42 @@ export class RedacoesService {
     });
 
     carregar(): Promise<void> {
-        this.carregamento ??= this.api.listar().then((redacoes) => {
-            this.estado.set(redacoes);
-            this.carregado.set(true);
-        });
+        this.carregamento ??= this.api.listar().then(
+            (redacoes) => {
+                this.estado.set(redacoes);
+                this.erroCarga.set(null);
+                this.carregado.set(true);
+            },
+            (erro: unknown) => {
+                // Permite tentar de novo com outra chamada a carregar().
+                this.carregamento = null;
+                this.erroCarga.set(erro instanceof Error ? erro.message : 'Não foi possível carregar as redações.');
+            },
+        );
 
         return this.carregamento;
+    }
+
+    /** Busca a lista de novo no servidor (ex.: depois de carregar exemplos). */
+    recarregar(): Promise<void> {
+        this.carregamento = null;
+
+        return this.carregar();
+    }
+
+    /** Esquece os dados ao sair, para o próximo usuário não ver a lista do anterior. */
+    limpar(): void {
+        this.carregamento = null;
+        this.estado.set([]);
+        this.carregado.set(false);
+        this.erroCarga.set(null);
+    }
+
+    async carregarExemplos(): Promise<number> {
+        const criados = await this.api.carregarExemplos();
+        await this.recarregar();
+
+        return criados;
     }
 
     redacao(id: Signal<string>): Signal<Redacao | undefined> {

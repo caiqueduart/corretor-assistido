@@ -4,7 +4,7 @@
 />
 
 @if (!redacoes.carregado()) {
-    <p class="alunos__vazio" role="status">Carregando alunos…</p>
+    <p class="alunos__vazio" role="status">{{ redacoes.erroCarga() ?? 'Carregando alunos…' }}</p>
 } @else {
     <div class="alunos">
         <table class="alunos__tabela">

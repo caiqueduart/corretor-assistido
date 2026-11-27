@@ -1,8 +1,8 @@
 import { Decisao, NovaRedacao, Redacao } from './redacao.model';
 
 /**
- * Contrato de acesso às redações. Hoje é atendido por `RedacoesMockApi`;
- * quando o back-end existir, basta registrar uma implementação HTTP em `app.config.ts`.
+ * Contrato de acesso às redações. Em produção é atendido por `RedacoesHttpApi`
+ * (back-end em Go); `RedacoesMockApi` fica para os testes.
  */
 export abstract class RedacoesApi {
     abstract listar(): Promise<Redacao[]>;
@@ -26,4 +26,7 @@ export abstract class RedacoesApi {
 
     /** Valida a revisão e libera a devolutiva ao estudante. */
     abstract enviarDevolutiva(id: string): Promise<Redacao>;
+
+    /** Carrega os textos fictícios do roteiro de demonstração. Devolve quantos foram criados. */
+    abstract carregarExemplos(): Promise<number>;
 }

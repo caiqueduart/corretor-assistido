@@ -4,7 +4,7 @@
 />
 
 @if (!redacoes.carregado()) {
-    <p class="metricas__nota" role="status">Calculando…</p>
+    <p class="metricas__nota" role="status">{{ redacoes.erroCarga() ?? 'Calculando…' }}</p>
 } @else {
     <section class="metricas__bloco" aria-labelledby="titulo-resumo">
         <h2 class="metricas__subtitulo" id="titulo-resumo">Resumo</h2>
