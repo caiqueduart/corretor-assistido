@@ -1,0 +1,17 @@
+@if (contas.length) {
+    <div class="demo" role="group" aria-label="Acesso rápido com contas de teste">
+        <span class="demo__rotulo">Testar como:</span>
+        @for (conta of contas; track conta.perfil) {
+            <button
+                class="demo__opcao"
+                type="button"
+                [title]="conta.descricao"
+                [attr.aria-pressed]="escolhida() === conta.perfil"
+                (click)="escolhida.set(conta.perfil); escolher.emit(conta)"
+            >
+                <app-icone [nome]="iconePerfil[conta.perfil]" />
+                <span class="demo__perfil">{{ rotuloPerfil[conta.perfil] }}</span>
+            </button>
+        }
+    </div>
+}

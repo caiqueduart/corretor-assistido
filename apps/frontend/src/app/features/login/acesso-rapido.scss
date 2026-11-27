@@ -1,0 +1,46 @@
+/* Acesso rápido com contas de teste (só em desenvolvimento). Atlas: ds-chip. */
+:host {
+    display: block;
+}
+
+.demo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1) var(--space-2);
+
+    &__rotulo {
+        color: var(--text-subtle);
+        font-size: var(--text-xs);
+    }
+
+    &__opcao {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+        height: 1.75rem;
+        padding: 0 var(--space-3);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-full);
+        background: var(--surface);
+        color: var(--text-muted);
+        font-size: var(--text-xs);
+        font-weight: var(--weight-medium);
+        transition:
+            background var(--duration-fast) var(--ease),
+            border-color var(--duration-fast) var(--ease),
+            color var(--duration-fast) var(--ease);
+
+        &:hover {
+            border-color: var(--text-disabled);
+            color: var(--text);
+        }
+
+        &[aria-pressed='true'] {
+            border-color: var(--primary);
+            background: var(--primary-soft);
+            color: var(--primary-soft-text);
+        }
+    }
+}

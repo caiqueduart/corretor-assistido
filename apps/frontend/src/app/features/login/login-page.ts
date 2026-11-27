@@ -6,10 +6,12 @@ import { mensagemDeErro } from '../../core/api/erro-api';
 import { AuthService } from '../../core/auth/auth.service';
 import { destinoSeguro } from '../../core/auth/guards';
 import { Icone } from '../../shared/icone/icone';
+import { AcessoRapido } from './acesso-rapido';
+import { ContaDemo } from './contas-demo';
 
 @Component({
     selector: 'app-login-page',
-    imports: [ReactiveFormsModule, Icone],
+    imports: [ReactiveFormsModule, Icone, AcessoRapido],
     templateUrl: './login-page.html',
     styleUrl: './login-page.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,6 +32,13 @@ export class LoginPage {
     protected readonly entrando = signal(false);
     protected readonly erro = signal<string | null>(null);
     protected readonly senhaVisivel = signal(false);
+
+    /** Preenche e-mail e senha da conta de teste; o usuário confirma em "Entrar". */
+    protected preencher(conta: ContaDemo): void {
+        this.formulario.setValue({ email: conta.email, senha: conta.senha });
+        this.formulario.markAsPristine();
+        this.erro.set(null);
+    }
 
     protected async entrar(): Promise<void> {
         this.formulario.markAllAsTouched();
