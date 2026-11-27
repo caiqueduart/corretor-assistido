@@ -12,6 +12,7 @@ import { EstadoVazio } from '../../../shared/estado-vazio/estado-vazio';
 import { Icone, NomeIcone } from '../../../shared/icone/icone';
 import { normalizar } from '../../../layout/busca-rapida/busca';
 import { PropostasService } from '../../../core/propostas/propostas.service';
+import { ChamadaService } from '../../../core/alunos/chamada.service';
 
 type Aba = 'revisar' | 'aguardando' | 'devolvidas' | 'todas';
 
@@ -76,6 +77,7 @@ const ROTULO_STATUS: Readonly<Record<StatusRedacao, string>> = {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FilaPage {
+    protected readonly chamada = inject(ChamadaService);
     protected readonly redacoes = inject(RedacoesService);
     private readonly avisos = inject(AvisosService);
 

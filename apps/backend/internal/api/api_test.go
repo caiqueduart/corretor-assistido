@@ -11,6 +11,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -571,4 +572,98 @@ func TestPropostas(t *testing.T) {
 	if r.status != 404 || !strings.Contains(string(r.bruto), "Proposta não encontrada") {
 		t.Fatalf("404: %d %s", r.status, r.bruto)
 	}
+}
+
+func TestEnvioPeloAluno(t *testing.T) {
+	c, _ := novoAmbiente(t, nil)
+	admin := c.login("admin@escola.test", "senha-do-admin")
+	prof := novoProfessor(c, admin)
+	cfg := c.chamar("GET", "/api/config", admin, nil).corpo["configuracao"].(map[string]any)
+	grupo := lista(cfg["grupos"])[1].(string)
+
+	p := c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "A vida no campo", "genero": "Narrativo", "turmas": []string{"8º A"}})
+	propostaID := p.corpo["id"].(string)
+	outra := c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "Outra turma", "genero": "Relato", "turmas": []string{"9º B"}}).corpo["id"].(string)
+	segunda := c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "Minha escola", "genero": "Relato", "turmas": []string{"8º A"}}).corpo["id"].(string)
+
+	alunos := []map[string]any{{"aluno_codigo": "Ipê Lilás", "turma": "8º A", "grupo": grupo}, {"aluno_codigo": "Onça Jade", "turma": "8º A"}}
+	exigir(t, c.chamar("POST", "/api/codigos", prof, map[string]any{"alunos": alunos}), 422, "sem consentimento")
+	r := c.chamar("POST", "/api/codigos", prof, map[string]any{"alunos": alunos, "consentimento": true})
+	exigir(t, r, 201, "gerar códigos")
+	codigos := lista(r.corpo["codigos"])
+	codigo := codigos[0].(map[string]any)["codigo"].(string)
+	codigoOnca := codigos[1].(map[string]any)["codigo"].(string)
+	if len(codigo) != 9 || codigo[4] != '-' {
+		t.Fatalf("formato do código: %q", codigo)
+	}
+	if n := len(lista(c.chamar("GET", "/api/codigos?turma="+url.QueryEscape("8º A"), prof, nil).corpo["codigos"])); n != 2 {
+		t.Fatalf("códigos ativos: %d", n)
+	}
+
+	// Acesso: código errado não entra; o certo funciona sem hífen e em minúsculas.
+	exigir(t, c.chamar("POST", "/api/aluno/acesso", "", map[string]string{"codigo": "AAAA-BBBB"}), 401, "código errado")
+	r = c.chamar("POST", "/api/aluno/acesso", "", map[string]string{"codigo": strings.ToLower(strings.ReplaceAll(codigo, "-", ""))})
+	exigir(t, r, 200, "acesso")
+	if r.corpo["aluno"] != "Ipê Lilás" || len(lista(r.corpo["propostas"])) != 2 {
+		t.Fatalf("painel do aluno: %s", r.bruto)
+	}
+
+	// Entrega por texto colado: entra na fila do professor como enviada pelo aluno.
+	exigir(t, c.chamar("POST", "/api/aluno/entregas", "", map[string]string{"codigo": codigo, "proposta_id": outra, "conteudo": "Texto."}), 422, "proposta de outra turma")
+	r = c.chamar("POST", "/api/aluno/entregas", "", map[string]string{"codigo": codigo, "proposta_id": propostaID, "conteudo": "Eu ja fui na roça."})
+	exigir(t, r, 201, "entrega")
+	textoID := r.corpo["texto_id"].(string)
+	texto := c.chamar("GET", "/api/textos/"+textoID, prof, nil).corpo
+	if texto["origem"] != "aluno" || texto["grupo"] != grupo || texto["proposta_id"] != propostaID || texto["titulo"] != "A vida no campo" {
+		t.Fatalf("texto do aluno: %v", texto)
+	}
+
+	// Reenvio troca o texto enquanto a correção não começou.
+	r = c.chamar("POST", "/api/aluno/entregas", "", map[string]string{"codigo": codigo, "proposta_id": propostaID, "conteudo": "Eu já fui na roça, e voltei."})
+	exigir(t, r, 200, "reenvio")
+	if c.chamar("GET", "/api/textos/"+textoID, prof, nil).corpo["conteudo"] != "Eu já fui na roça, e voltei." {
+		t.Fatal("o reenvio não trocou o texto")
+	}
+
+	// Entrega por arquivo, em outra proposta.
+	var corpo bytes.Buffer
+	mw := multipart.NewWriter(&corpo)
+	_ = mw.WriteField("codigo", codigo)
+	_ = mw.WriteField("proposta_id", segunda)
+	fw, _ := mw.CreateFormFile("arquivo", "redacao.txt")
+	_, _ = fw.Write([]byte("Na minha escola tem uma horta."))
+	mw.Close()
+	req, _ := http.NewRequest("POST", c.url+"/api/aluno/entregas", &corpo)
+	req.Header.Set("Content-Type", mw.FormDataContentType())
+	exigir(t, c.enviar(req), 201, "entrega por arquivo")
+
+	// Devolutiva: só depois do envio pelo professor, e só do próprio aluno.
+	exigir(t, c.chamar("POST", "/api/aluno/devolutiva", "", map[string]string{"codigo": codigo, "texto_id": textoID}), 409, "antes do envio")
+	exigir(t, c.chamar("POST", "/api/aluno/devolutiva", "", map[string]string{"codigo": codigoOnca, "texto_id": textoID}), 404, "devolutiva de outro aluno")
+	exigir(t, c.chamar("POST", "/api/textos/"+textoID+"/corrigir?aguardar=true", prof, nil), 200, "corrigir")
+	exigir(t, c.chamar("POST", "/api/aluno/entregas", "", map[string]string{"codigo": codigo, "proposta_id": propostaID, "conteudo": "Outro."}), 409, "reenvio depois da correção")
+	exigir(t, c.chamar("POST", "/api/textos/"+textoID+"/decisoes", prof, map[string]any{"decisao": "aceita"}), 200, "decidir")
+	exigir(t, c.chamar("POST", "/api/textos/"+textoID+"/enviar", prof, map[string]string{"comentario": "Muito bem!"}), 200, "enviar")
+	r = c.chamar("POST", "/api/aluno/devolutiva", "", map[string]string{"codigo": codigo, "texto_id": textoID})
+	exigir(t, r, 200, "devolutiva")
+	if r.corpo["comentario"] != "Muito bem!" {
+		t.Fatalf("devolutiva: %s", r.bruto)
+	}
+	if n := len(lista(c.chamar("POST", "/api/aluno/acesso", "", map[string]string{"codigo": codigo}).corpo["devolutivas"])); n != 1 {
+		t.Fatalf("devolutivas no painel: %d", n)
+	}
+
+	// Regenerar revoga o código anterior; revogar tira o acesso.
+	novo := lista(c.chamar("POST", "/api/codigos", prof, map[string]any{"alunos": alunos[:1], "consentimento": true}).corpo["codigos"])[0].(map[string]any)["codigo"].(string)
+	exigir(t, c.chamar("POST", "/api/aluno/acesso", "", map[string]string{"codigo": codigo}), 401, "código antigo")
+	exigir(t, c.chamar("POST", "/api/aluno/acesso", "", map[string]string{"codigo": novo}), 200, "código novo")
+	exigir(t, c.chamar("DELETE", "/api/codigos/"+url.PathEscape("Ipê Lilás"), prof, nil), 204, "revogar")
+	exigir(t, c.chamar("POST", "/api/aluno/acesso", "", map[string]string{"codigo": novo}), 401, "revogado")
+
+	// Limite de tentativas erradas por IP.
+	var ultimo resposta
+	for i := 0; i < 12; i++ {
+		ultimo = c.chamar("POST", "/api/aluno/acesso", "", map[string]string{"codigo": "ZZZZ-ZZZZ"})
+	}
+	exigir(t, ultimo, 429, "muitas tentativas")
 }

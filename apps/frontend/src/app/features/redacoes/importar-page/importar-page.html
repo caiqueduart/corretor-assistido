@@ -17,6 +17,29 @@
 
 <form class="importar" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
     <fieldset class="importar__bloco">
+        <legend class="importar__legenda">Proposta</legend>
+
+        <div class="campo">
+            <label for="campo-proposta">Proposta de redação</label>
+            <select
+                id="campo-proposta"
+                [value]="formulario.controls.propostaId.value"
+                (change)="escolherProposta($any($event.target).value)"
+            >
+                <option value="">Sem proposta (redação avulsa)</option>
+                @for (opcao of abertas(); track opcao.id) {
+                    <option [value]="opcao.id">{{ opcao.tema }} · {{ opcao.turmas.join(', ') }}</option>
+                }
+            </select>
+            @if (escolhida(); as proposta) {
+                <p class="campo__dica">{{ proposta.genero }} · {{ descreverPrazo(proposta.prazo) }}</p>
+            } @else if (!abertas().length) {
+                <p class="campo__dica">Nenhuma proposta aberta. Crie uma em Propostas para organizar as redações.</p>
+            }
+        </div>
+    </fieldset>
+
+    <fieldset class="importar__bloco">
         <legend class="importar__legenda">Texto do aluno</legend>
 
         @if (arquivo(); as escolhido) {
@@ -92,10 +115,32 @@
                             placeholder="Ex.: 8A-07"
                             aria-describedby="dica-aluno"
                         />
-                        <p class="campo__dica" id="dica-aluno">Use o código da turma. Nunca o nome do aluno.</p>
+                        <div class="importar__sortear">
+                            <button class="botao botao--discreto botao--pequeno" type="button" (click)="sortear()">
+                                Sortear apelido
+                            </button>
+                            <span class="campo__dica">ou use um apelido de fauna e flora, como "Ipê Lilás"</span>
+                        </div>
+                        <p class="campo__dica" id="dica-aluno">
+                            Use o código da turma ou um apelido. Nunca o nome do aluno.
+                        </p>
                         @if (formulario.controls.aluno.touched && formulario.controls.aluno.invalid) {
                             <p class="campo__erro">Informe o código do aluno.</p>
                         }
+                    </div>
+
+                    <div class="campo">
+                        <label for="campo-nome">Nome do aluno <span class="importar__opcional">(opcional)</span></label>
+                        <input
+                            id="campo-nome"
+                            formControlName="nomeLocal"
+                            autocomplete="off"
+                            aria-describedby="dica-nome"
+                        />
+                        <p class="campo__dica" id="dica-nome">
+                            Fica só neste computador, para você reconhecer o aluno. Não vai para o servidor nem para a
+                            IA.
+                        </p>
                     </div>
                 } @else {
                     <div class="campo">

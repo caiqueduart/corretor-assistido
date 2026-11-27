@@ -1,0 +1,153 @@
+<div class="preparar">
+    <header class="preparar__cabecalho">
+        <h2 class="preparar__titulo" id="titulo-preparar">
+            {{ resultado() ? 'Códigos gerados' : 'Preparar turma para o envio pelos alunos' }}
+        </h2>
+        <p class="preparar__subtitulo">
+            @if (resultado()) {
+                Entregue a cada aluno o seu código. Eles enviam a redação na <strong>Área do aluno</strong>.
+            } @else {
+                Cada aluno recebe um código para enviar redações e ver devolutivas, sem criar conta.
+            }
+        </p>
+    </header>
+
+    @if (resultado(); as gerados) {
+        <div class="preparar__corpo">
+            <p class="aviso aviso--atencao">
+                <strong>Guarde ou imprima agora:</strong> os códigos não aparecem de novo. Se um aluno perder o dele,
+                gere outro.
+            </p>
+
+            <div class="tabela-folha">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Apelido</th>
+                            <th scope="col">Nome <span class="preparar__opcional">(só neste computador)</span></th>
+                            <th scope="col">Código</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of gerados; track item.aluno) {
+                            <tr>
+                                <th scope="row">{{ item.aluno }}</th>
+                                <td>
+                                    <input
+                                        class="preparar__nome"
+                                        [value]="chamada.nome(item.aluno) ?? ''"
+                                        [attr.aria-label]="'Nome de ' + item.aluno"
+                                        placeholder="Opcional"
+                                        maxlength="80"
+                                        (change)="chamada.definir(item.aluno, $any($event.target).value)"
+                                    />
+                                </td>
+                                <td class="preparar__codigo">{{ item.codigo }}</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer class="preparar__acoes">
+            <button class="botao" type="button" (click)="imprimir()">
+                <app-icone nome="baixar" />
+                Imprimir lista
+            </button>
+            <button class="botao botao--primario" type="button" (click)="fechado.emit()">Concluir</button>
+        </footer>
+    } @else {
+        <div class="preparar__corpo">
+            <div class="campo">
+                <label for="preparar-turma">Turma</label>
+                <input
+                    id="preparar-turma"
+                    list="preparar-turmas"
+                    autocomplete="off"
+                    placeholder="Ex.: 8º A"
+                    [value]="turma()"
+                    (input)="escolherTurma($any($event.target).value)"
+                />
+                <datalist id="preparar-turmas">
+                    @for (t of turmasConhecidas(); track t) {
+                        <option [value]="t"></option>
+                    }
+                </datalist>
+            </div>
+
+            @if (existentes().length) {
+                <fieldset class="preparar__existentes">
+                    <legend class="campo__rotulo">Alunos já acompanhados nesta turma</legend>
+                    @for (aluno of existentes(); track aluno.aluno) {
+                        <label class="escolha">
+                            <input
+                                type="checkbox"
+                                [checked]="marcados().has(aluno.aluno)"
+                                (change)="alternar(aluno.aluno)"
+                            />
+                            <span class="escolha__textos">
+                                <span class="escolha__titulo">{{ aluno.rotulo }}</span>
+                                <span class="escolha__dica">
+                                    {{ aluno.temCodigo ? 'Já tem código: um novo substitui o anterior' : 'Sem código' }}
+                                </span>
+                            </span>
+                        </label>
+                    }
+                </fieldset>
+            }
+
+            <div class="preparar__grade">
+                <div class="campo">
+                    <label for="preparar-novos">Alunos novos</label>
+                    <input
+                        id="preparar-novos"
+                        type="number"
+                        min="0"
+                        max="60"
+                        [value]="novos()"
+                        (input)="novos.set(+$any($event.target).value || 0)"
+                    />
+                    <p class="campo__dica">Cada um recebe um apelido sorteado, como "Ipê Lilás".</p>
+                </div>
+                <div class="campo">
+                    <label for="preparar-grupo">Perfil dos alunos novos</label>
+                    <select id="preparar-grupo" [value]="grupo()" (change)="grupo.set($any($event.target).value)">
+                        @for (g of grupos(); track g) {
+                            <option [value]="g">{{ g }}</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <label class="escolha">
+                <input
+                    type="checkbox"
+                    [checked]="consentimento()"
+                    (change)="consentimento.set($any($event.target).checked)"
+                />
+                <span class="escolha__textos">
+                    <span class="escolha__titulo">As famílias deram consentimento informado</span>
+                    <span class="escolha__dica">Sem consentimento, as redações não entram na POC.</span>
+                </span>
+            </label>
+
+            @if (erro(); as mensagem) {
+                <p class="aviso aviso--erro" role="alert">{{ mensagem }}</p>
+            }
+        </div>
+
+        <footer class="preparar__acoes">
+            <button class="botao botao--discreto" type="button" (click)="fechado.emit()">Cancelar</button>
+            <button class="botao botao--primario" type="button" [disabled]="gerando()" (click)="gerar()">
+                {{
+                    gerando()
+                        ? 'Gerando…'
+                        : total()
+                          ? 'Gerar ' + total() + (total() === 1 ? ' código' : ' códigos')
+                          : 'Gerar códigos'
+                }}
+            </button>
+        </footer>
+    }
+</div>

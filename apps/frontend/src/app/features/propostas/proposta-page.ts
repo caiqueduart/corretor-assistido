@@ -24,6 +24,8 @@ import { EstadoVazio } from '../../shared/estado-vazio/estado-vazio';
 import { Icone } from '../../shared/icone/icone';
 import { PropostaFormulario } from './proposta-formulario';
 import { tomPrazo } from './propostas-page';
+import { ChamadaService } from '../../core/alunos/chamada.service';
+import { CodigosService } from '../../core/alunos/codigos.service';
 
 const ROTULO_STATUS: Readonly<Record<StatusRedacao, string>> = {
     'aguardando-ia': 'Aguardando IA',
@@ -43,6 +45,8 @@ export class PropostaPage {
     protected readonly propostas = inject(PropostasService);
     protected readonly redacoes = inject(RedacoesService);
     private readonly alunos = inject(AlunosService);
+    private readonly codigos = inject(CodigosService);
+    protected readonly chamada = inject(ChamadaService);
     private readonly avisos = inject(AvisosService);
     private readonly confirmacao = inject(ConfirmacaoService);
     private readonly router = inject(Router);
@@ -84,15 +88,34 @@ export class PropostaPage {
         }
 
         const entregaram = new Set(this.itens().map((item) => item.redacao.aluno));
+        const comCodigo = new Set(this.codigos.ativos().map((c) => c.aluno));
+        const turmaDe = new Map<string, string>();
 
-        return this.alunos
-            .alunos()
-            .filter((aluno) => proposta.turmas.includes(aluno.turma) && !entregaram.has(aluno.codigo))
-            .map((aluno) => ({ codigo: aluno.codigo, turma: aluno.turma, rotulo: aluno.codigo }))
+        // Alunos já acompanhados (por redações) e os que só têm código de acesso.
+        for (const aluno of this.alunos.alunos()) {
+            turmaDe.set(aluno.codigo, aluno.turma);
+        }
+        for (const c of this.codigos.ativos()) {
+            turmaDe.set(c.aluno, c.turma);
+        }
+
+        return [...turmaDe]
+            .filter(([codigo, turma]) => proposta.turmas.includes(turma) && !entregaram.has(codigo))
+            .map(([codigo, turma]) => ({
+                codigo,
+                turma,
+                temCodigo: comCodigo.has(codigo),
+                rotulo: this.chamada.rotulo(codigo),
+            }))
             .sort((a, b) => a.rotulo.localeCompare(b.rotulo, 'pt-BR'));
     });
 
     constructor() {
+        // Mostra quem já tem código de acesso entre os que ainda não entregaram.
+        if (!this.codigos.carregado()) {
+            void this.codigos.carregar().catch(() => undefined);
+        }
+
         effect(() => {
             const dialogo = this.dialogo()?.nativeElement;
 

@@ -6,10 +6,13 @@ import { AuthService } from './auth.service';
 import { SessaoService } from './sessao.service';
 
 const ROTA_LOGIN = '/api/auth/login';
+const ROTA_ALUNO = '/api/aluno/';
 
 /** Envia o token nas chamadas à API e trata a sessão expirada (401). */
 export const autenticacaoInterceptor: HttpInterceptorFn = (requisicao, proximo) => {
-    if (!requisicao.url.startsWith('/api/')) {
+    // Rotas do aluno usam o código de acesso, não a sessão do professor: um código
+    // errado (401) não pode derrubar a sessão de quem estiver logado no navegador.
+    if (!requisicao.url.startsWith('/api/') || requisicao.url.startsWith(ROTA_ALUNO)) {
         return proximo(requisicao);
     }
 

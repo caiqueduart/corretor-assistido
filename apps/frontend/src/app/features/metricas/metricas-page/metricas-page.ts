@@ -1,0 +1,29 @@
+import { DecimalPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+
+import { MetricasService } from '../../../core/redacoes/metricas.service';
+import { RedacoesService } from '../../../core/redacoes/redacoes.service';
+import { CabecalhoPagina } from '../../../shared/cabecalho-pagina/cabecalho-pagina';
+import { Icone } from '../../../shared/icone/icone';
+import { ExportarDecisoes } from '../exportar-decisoes/exportar-decisoes';
+import { Esqueleto } from '../../../shared/esqueleto/esqueleto';
+import { PropostasService } from '../../../core/propostas/propostas.service';
+
+@Component({
+    selector: 'app-metricas-page',
+    imports: [DecimalPipe, CabecalhoPagina, Icone, ExportarDecisoes, Esqueleto],
+    templateUrl: './metricas-page.html',
+    styleUrl: './metricas-page.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class MetricasPage {
+    protected readonly redacoes = inject(RedacoesService);
+    protected readonly metricas = inject(MetricasService);
+    protected readonly propostas = inject(PropostasService);
+
+    protected readonly limiar = this.metricas.limiar;
+
+    protected porcentagem(parte: number, total: number): number {
+        return total ? (100 * parte) / total : 0;
+    }
+}

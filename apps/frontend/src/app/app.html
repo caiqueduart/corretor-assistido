@@ -1,4 +1,4 @@
-@if (auth.usuario(); as usuario) {
+@if (auth.usuario() && !areaDoAluno()) {
     <a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
     <div class="app" [attr.data-recolhido]="recolhido()">

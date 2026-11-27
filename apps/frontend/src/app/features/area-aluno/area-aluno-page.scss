@@ -1,0 +1,169 @@
+/* Área do aluno: celular primeiro, linguagem simples. */
+:host {
+    display: block;
+    min-height: 100dvh;
+    background: var(--bg);
+}
+
+.area {
+    &__topo {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 3.5rem;
+        padding: 0 var(--space-4);
+        background: var(--sidebar-bg);
+        color: #fff;
+    }
+
+    &__marca {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-weight: var(--weight-semibold);
+    }
+
+    &__logo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: var(--radius-md);
+        background: #fff;
+        color: var(--primary-hover);
+    }
+
+    &__topo .botao {
+        color: #fff;
+
+        &:hover {
+            background: var(--sidebar-hover);
+            color: #fff;
+        }
+    }
+
+    &__conteudo {
+        display: grid;
+        gap: var(--space-4);
+        max-width: 40rem;
+        margin: 0 auto;
+        padding: var(--space-6) var(--space-4) var(--space-12);
+    }
+
+    &__titulo {
+        font-size: var(--text-xl);
+        font-weight: var(--weight-semibold);
+    }
+
+    &__subtitulo {
+        margin-top: calc(var(--space-3) * -1);
+        color: var(--text-muted);
+    }
+
+    &__secao {
+        margin: var(--space-2) 0 var(--space-3);
+        font-size: var(--text-md);
+        font-weight: var(--weight-semibold);
+    }
+
+    &__proposta {
+        margin-bottom: var(--space-3);
+        gap: var(--space-2);
+
+        > .botao {
+            justify-self: start;
+            align-self: flex-start;
+        }
+    }
+
+    &__etiquetas {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+    }
+
+    &__enunciado {
+        color: var(--text-muted);
+        white-space: pre-line;
+    }
+
+    &__situacao {
+        font-size: var(--text-sm);
+        font-weight: var(--weight-medium);
+        color: var(--text-subtle);
+
+        &--pronta {
+            color: var(--success);
+        }
+    }
+
+    &__vazio {
+        color: var(--text-muted);
+    }
+
+    &__entrada {
+        gap: var(--space-4);
+        margin-top: 8vh;
+    }
+
+    &__codigo {
+        height: var(--control-lg) !important;
+        font-family: var(--font-mono);
+        font-size: var(--text-lg) !important;
+        letter-spacing: 0.15em;
+        text-align: center;
+    }
+
+    &__entrar {
+        width: 100%;
+        height: var(--control-lg);
+    }
+
+    &__rodape {
+        color: var(--text-muted);
+        font-size: var(--text-sm);
+        text-align: center;
+    }
+
+    &__voltar {
+        justify-self: start;
+    }
+
+    &__rotulo {
+        color: var(--text-muted);
+        font-size: var(--text-xs);
+        font-weight: var(--weight-medium);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    &__recado {
+        padding: var(--space-3) var(--space-4);
+        border-radius: var(--radius-lg);
+        background: var(--primary-soft);
+    }
+
+    &__texto {
+        font-family: var(--fonte-texto);
+        font-size: var(--text-md);
+        line-height: 1.7;
+        white-space: pre-line;
+    }
+
+    &__ajuste {
+        align-items: flex-start;
+
+        s {
+            color: var(--danger-text);
+        }
+
+        strong {
+            color: var(--primary-soft-text);
+        }
+
+        .lista__detalhe {
+            display: block;
+        }
+    }
+}

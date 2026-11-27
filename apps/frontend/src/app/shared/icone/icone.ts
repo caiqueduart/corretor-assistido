@@ -40,6 +40,14 @@ const ICONES = {
     ],
     baixar: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M7 10l5 5 5-5', 'M12 15V3'],
     escudo: ['M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z'],
+    enviar: ['M22 2 11 13', 'M22 2l-7 20-4-9-9-4Z'],
+    alunos: [
+        'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2',
+        'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z',
+        'M22 21v-2a4 4 0 0 0-3-3.9',
+        'M16 3.1a4 4 0 0 1 0 7.8',
+    ],
+    metricas: ['M3 3v18h18', 'M7 15l4-4 3 3 5-6'],
 } as const;
 
 export type NomeIcone = keyof typeof ICONES;

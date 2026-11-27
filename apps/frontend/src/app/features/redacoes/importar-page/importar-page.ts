@@ -10,6 +10,8 @@ import { RedacoesService } from '../../../core/redacoes/redacoes.service';
 import { CabecalhoPagina } from '../../../shared/cabecalho-pagina/cabecalho-pagina';
 import { Icone } from '../../../shared/icone/icone';
 import { AvisosService } from '../../../core/ui/avisos.service';
+import { gerarApelido } from '../../../core/alunos/apelidos';
+import { ChamadaService } from '../../../core/alunos/chamada.service';
 
 const EXTENSOES_ACEITAS = ['pdf', 'txt', 'docx'];
 
@@ -26,6 +28,7 @@ export class ImportarPage implements OnInit {
     private readonly avisos = inject(AvisosService);
     private readonly alunos = inject(AlunosService);
     private readonly propostas = inject(PropostasService);
+    protected readonly chamada = inject(ChamadaService);
 
     /** Query params (?proposta=&aluno=) vindos da página da proposta. */
     readonly proposta = input<string>();
@@ -42,6 +45,8 @@ export class ImportarPage implements OnInit {
         aluno: ['', [Validators.required, Validators.maxLength(40)]],
         /** Proposta de redação; vazio = redação avulsa. */
         propostaId: [''],
+        /** Nome real do aluno novo: fica só neste computador (lista de chamada local). */
+        nomeLocal: ['', Validators.maxLength(80)],
         turma: ['', Validators.required],
         titulo: [''],
         perfil: [GRUPO_NAO_INFORMADO],
@@ -100,13 +105,20 @@ export class ImportarPage implements OnInit {
     protected readonly existentes = computed(() =>
         this.alunos
             .alunos()
-            .map((aluno) => ({ ...aluno, rotulo: aluno.codigo }))
+            .map((aluno) => ({ ...aluno, rotulo: this.chamada.rotulo(aluno.codigo) }))
             .sort((a, b) => a.rotulo.localeCompare(b.rotulo, 'pt-BR')),
     );
 
     protected mudarModo(modo: 'novo' | 'existente'): void {
         this.modo.set(modo);
         this.formulario.controls.aluno.reset('');
+        this.formulario.controls.nomeLocal.reset('');
+    }
+
+    /** Preenche o código com um apelido de fauna e flora que ninguém usa ainda. */
+    protected sortear(): void {
+        this.formulario.controls.aluno.setValue(gerarApelido(this.alunos.alunos().map((aluno) => aluno.codigo)));
+        this.formulario.controls.aluno.markAsTouched();
     }
 
     /** Ao escolher um aluno já acompanhado, repete a turma e o perfil dele. */
@@ -150,7 +162,7 @@ export class ImportarPage implements OnInit {
             return;
         }
 
-        const { propostaId, ...valores } = this.formulario.getRawValue();
+        const { propostaId, nomeLocal, ...valores } = this.formulario.getRawValue();
         this.enviando.set(true);
         this.erroEnvio.set(null);
 
@@ -162,6 +174,10 @@ export class ImportarPage implements OnInit {
                 propostaId: propostaId || null,
                 arquivo: this.arquivo(),
             });
+
+            if (this.modo() === 'novo' && nomeLocal.trim()) {
+                this.chamada.definir(redacao.aluno, nomeLocal);
+            }
 
             this.avisos.mostrar('Redação importada', { texto: 'Agora peça a correção da IA.' });
             await this.router.navigate(['/redacoes', redacao.id]);

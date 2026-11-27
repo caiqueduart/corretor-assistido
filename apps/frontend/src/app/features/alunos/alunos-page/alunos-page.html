@@ -1,0 +1,128 @@
+<app-cabecalho-pagina
+    titulo="Alunos"
+    descricao="Cada reescrita volta ao ciclo de correção. A evolução compara os desvios que você validou em cada versão."
+/>
+
+@if (podeEditar()) {
+    <app-acesso-alunos />
+}
+
+@if (!redacoes.carregado()) {
+    @if (redacoes.erroCarga(); as erro) {
+        <p class="aviso aviso--erro" role="alert">{{ erro }}</p>
+    } @else {
+        <div class="cartao"><app-esqueleto [quantidade]="6" rotulo="Carregando alunos…" /></div>
+    }
+} @else {
+    <section class="cartao chamada" aria-labelledby="titulo-chamada">
+        <div class="chamada__texto">
+            <h2 class="cartao__titulo" id="titulo-chamada">Nomes neste computador</h2>
+            <p class="cartao__descricao">
+                No sistema, cada aluno é identificado só pelo apelido. Para reconhecê-los, associe o nome real: ele fica
+                <strong>só neste navegador</strong>, nunca vai para o servidor, para a IA nem para as métricas.
+                {{ chamada.total() }} de {{ alunos().length }} alunos com nome.
+            </p>
+        </div>
+        <div class="chamada__acoes">
+            <button class="botao botao--pequeno" type="button" [disabled]="!chamada.total()" (click)="exportar()">
+                <app-icone nome="baixar" />
+                Exportar cópia
+            </button>
+            <label class="botao botao--pequeno">
+                <app-icone nome="importar" />
+                Importar cópia
+                <input
+                    class="visualmente-oculto"
+                    type="file"
+                    accept=".json,application/json"
+                    (change)="importar($event)"
+                />
+            </label>
+            @if (chamada.total()) {
+                <button class="botao botao--discreto botao--pequeno botao--perigo" type="button" (click)="esquecer()">
+                    Apagar nomes
+                </button>
+            }
+        </div>
+    </section>
+
+    <div class="alunos">
+        <table class="alunos__tabela">
+            <thead>
+                <tr>
+                    <th scope="col">Aluno</th>
+                    <th scope="col">Perfil</th>
+                    <th scope="col">Versões</th>
+                    <th scope="col" class="alunos__numero">Evolução</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @for (aluno of alunos(); track aluno.codigo) {
+                    <tr>
+                        <th scope="row">
+                            @if (editando() === aluno.codigo) {
+                                <form
+                                    class="alunos__nome-form"
+                                    (submit)="$event.preventDefault(); salvarNome(aluno.codigo, campoNome.value)"
+                                >
+                                    <input
+                                        #campoNome
+                                        [value]="chamada.nome(aluno.codigo) ?? ''"
+                                        [attr.aria-label]="'Nome de ' + aluno.codigo"
+                                        placeholder="Nome do aluno"
+                                        maxlength="80"
+                                        autofocus
+                                        (keydown.escape)="editando.set(null)"
+                                    />
+                                    <button class="botao botao--primario botao--pequeno" type="submit">Salvar</button>
+                                </form>
+                            } @else {
+                                <a class="alunos__link" [routerLink]="['/alunos', aluno.codigo]">
+                                    {{ chamada.nome(aluno.codigo) ?? aluno.codigo }}
+                                </a>
+                                <button
+                                    class="alunos__editar"
+                                    type="button"
+                                    [attr.aria-label]="
+                                        (chamada.nome(aluno.codigo) ? 'Editar o nome de ' : 'Dar nome a ') +
+                                        aluno.codigo
+                                    "
+                                    (click)="editando.set(aluno.codigo)"
+                                >
+                                    <app-icone nome="ajustar" />
+                                </button>
+                            }
+                            <span class="alunos__turma">
+                                @if (chamada.nome(aluno.codigo)) {
+                                    {{ aluno.codigo }} ·
+                                }
+                                {{ aluno.turma }}
+                            </span>
+                        </th>
+
+                        <td class="alunos__perfil">{{ aluno.perfil }}</td>
+
+                        <td>
+                            <span class="alunos__versoes">
+                                @for (versao of aluno.versoes; track versao.id) {
+                                    <app-situacao-versao [redacao]="versao" />
+                                }
+                            </span>
+                        </td>
+
+                        <td class="alunos__numero">
+                            @if (aluno.variacao === null) {
+                                <span class="alunos__sem-dado">aguardando reescrita</span>
+                            } @else {
+                                <span class="alunos__variacao" [class.alunos__variacao--piora]="aluno.variacao > 0">
+                                    {{ aluno.variacao > 0 ? '+' : '' }}{{ aluno.variacao }}% desvios
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

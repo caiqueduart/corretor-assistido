@@ -1,0 +1,87 @@
+<section class="cartao" aria-labelledby="titulo-acesso">
+    <header class="acesso__cabecalho">
+        <div>
+            <h2 class="cartao__titulo" id="titulo-acesso">Acesso dos alunos</h2>
+            <p class="cartao__descricao">
+                Com o código, o aluno envia a redação e vê a devolutiva na <strong>Área do aluno</strong> (/aluno), sem
+                criar conta.
+            </p>
+        </div>
+        <button class="botao botao--primario botao--pequeno" type="button" (click)="preparando.set(true)">
+            <app-icone nome="mais" />
+            Preparar turma
+        </button>
+    </header>
+
+    @if (novo(); as gerado) {
+        <div class="aviso aviso--sucesso acesso__novo" role="status">
+            <p>
+                Novo código de <strong>{{ chamada.rotulo(gerado.aluno) }}</strong>:
+                <code>{{ gerado.codigo }}</code>
+            </p>
+            <p class="acesso__dica">Ele não aparece de novo. Entregue ao aluno ou imprima.</p>
+            <div class="acesso__acoes">
+                <button class="botao botao--pequeno" type="button" (click)="imprimirNovo(gerado)">Imprimir</button>
+                <button class="botao botao--discreto botao--pequeno" type="button" (click)="novo.set(null)">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    }
+
+    @if (erro(); as mensagem) {
+        <p class="aviso aviso--erro" role="alert">{{ mensagem }}</p>
+    } @else if (linhas().length) {
+        <div class="tabela-folha acesso__tabela">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">Aluno</th>
+                        <th scope="col">Turma</th>
+                        <th scope="col">Último acesso</th>
+                        <th scope="col"><span class="visualmente-oculto">Ações</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (linha of linhas(); track linha.aluno) {
+                        <tr>
+                            <th scope="row">{{ linha.rotulo }}</th>
+                            <td>{{ linha.turma }}</td>
+                            <td class="acesso__uso">
+                                {{ linha.ultimoUso ? tempo(linha.ultimoUso) : 'ainda não usou' }}
+                            </td>
+                            <td class="acesso__botoes">
+                                <button
+                                    class="botao botao--discreto botao--pequeno"
+                                    type="button"
+                                    (click)="regenerar(linha)"
+                                >
+                                    Novo código
+                                </button>
+                                <button
+                                    class="botao botao--discreto botao--pequeno botao--perigo"
+                                    type="button"
+                                    (click)="revogar(linha)"
+                                >
+                                    Revogar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    } @else if (codigos.carregado()) {
+        <app-estado-vazio
+            icone="alunos"
+            titulo="Nenhum aluno com código ainda"
+            texto="Prepare a turma para que os alunos enviem as redações pela Área do aluno."
+        />
+    }
+</section>
+
+<dialog #dialogo class="dialogo dialogo--largo" aria-labelledby="titulo-preparar" (close)="preparando.set(false)">
+    @if (preparando()) {
+        <app-preparar-turma (fechado)="preparando.set(false)" />
+    }
+</dialog>

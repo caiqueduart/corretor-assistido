@@ -5,6 +5,7 @@ import {
     AuditoriaService,
     LIMITES_AUDITORIA,
     RegistroAuditoria,
+    autorDe,
     descreverAlvo,
     descreverDetalhe,
     rotuloAcao,
@@ -63,7 +64,7 @@ export class AuditoriaPage implements OnInit {
         return this.registros().map((r) => ({
             id: r.id,
             criadoEm: r.criadoEm,
-            autor: r.usuarioId ? (nomes.get(r.usuarioId) ?? 'Usuário removido') : 'Sistema',
+            autor: autorDe(r, nomes),
             acao: r.acao,
             rotulo: rotuloAcao(r.acao),
             alvo: descreverAlvo(r, nomes),

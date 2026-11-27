@@ -16,6 +16,7 @@ Prioridades: **Alta** (indispensável para o lançamento), **Média** (important
 | RF08 | O administrador deve cadastrar os professores e os demais usuários.                | Alta       |
 | RF09 | O professor deve gerar a devolutiva validada em PDF para entregar ao aluno.        | Alta       |
 | RF10 | O professor deve organizar as redações em propostas (tema, gênero, turmas, prazo). | Média      |
+| RF11 | O aluno pode enviar a redação e ver a devolutiva registrada com um código de acesso, sem conta. | Média      |
 
 ## Perfis
 
@@ -24,7 +25,7 @@ Prioridades: **Alta** (indispensável para o lançamento), **Média** (important
 | Administrador | Cadastrar e gerenciar usuários, definir critérios e perfis sociolinguísticos, ver a auditoria.                                 |
 | Professor     | Criar propostas, importar redações, pedir a correção da IA, aceitar, recusar ou ajustar, registrar a devolutiva e gerar o PDF. |
 
-O estudante não acessa o sistema: é identificado só por código e recebe do professor o PDF da devolutiva validada. O administrador não corrige redações.
+O estudante não tem conta: é identificado só por código (ou apelido) e recebe do professor o PDF da devolutiva validada. Se o professor gerar um código de acesso, o estudante também pode enviar redações e ver a devolutiva registrada na Área do aluno (RF11). O administrador não corrige redações.
 
 ## Critérios de correção
 

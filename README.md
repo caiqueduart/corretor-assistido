@@ -19,6 +19,18 @@ corretor-assistido/
 - Node.js 22 ou superior e npm 11 (front-end)
 - Go 1.24 ou superior e um compilador C (back-end; o driver do SQLite usa cgo). Alternativa: Docker.
 
+## Demonstração rápida
+
+Para apresentar o sistema com dados fictícios (5 propostas, 30 alunos, mais de 50 redações em todas as situações, decisões, alerta de viés e histórico):
+
+```bash
+cd apps/backend
+go run ./cmd/demo -recriar               # cria dados/demo.db (pode rodar de novo para recomeçar)
+DB_PATH=dados/demo.db go run ./cmd/server
+```
+
+E, em outro terminal, `npm start` na raiz. O comando mostra as contas (admin, professores e leitura) e os códigos da Área do aluno (`DEMO-0001` a `DEMO-0003`, em http://localhost:4200/aluno). Em `dados/` ficam também a lista de chamada fictícia (importe em **Alunos › Importar cópia** para ver nomes no lugar dos apelidos) e todos os códigos dos alunos.
+
 ## Como rodar
 
 Com o Docker Desktop instalado, um comando na raiz sobe tudo:
@@ -67,6 +79,9 @@ Todas as telas usam o back-end:
 | Propostas de redação (tema, gênero, turmas, prazo)                  | professor | `/api/propostas`                                 |
 | Redações: importar, corrigir, validar, registrar, PDF da devolutiva | professor | `/api/textos` (`RedacoesHttpApi`)                |
 | Administração: usuários, configuração, auditoria                    | admin     | `/api/usuarios`, `/api/config`, `/api/auditoria` |
+| Alunos: preparar turma e códigos de acesso | professor | `/api/codigos` |
+| Administração › Métricas | admin | `/api/textos?completo=true`, `/api/metricas/decisoes.csv` |
+| Área do aluno (`/aluno`, sem login, só com o código) | aluno | `/api/aluno/*` |
 
 Perfis (os mesmos da POC): o **administrador** cadastra professores e outros usuários e cuida da configuração e da auditoria, sem corrigir redações. O **professor** importa, corrige, valida e registra a devolutiva. Depois do registro, o botão "Gerar PDF para o aluno" abre a impressão do navegador só com a devolutiva; escolha "Salvar como PDF". O estudante não tem login. As telas de evolução do aluno e de métricas da POC ainda não fazem parte desta versão (as rotas `/api/metricas` do back-end continuam disponíveis).
 
@@ -76,4 +91,5 @@ Perfis (os mesmos da POC): o **administrador** cadastra professores e outros usu
 - Com o banco vazio, a tela de Redações oferece "Carregar textos de exemplo".
 - Propostas organizam as redações por atividade: a importação pode escolher a proposta (turma e título vêm dela), e a fila, as métricas e o CSV filtram por proposta. Proposta encerrada não recebe redações novas.
 - Alunos são identificados por apelidos de fauna e flora ("Ipê Lilás"). O nome real é opcional e fica só no navegador do professor (lista de chamada local), nunca no servidor.
+- O professor importa as redações **ou** o aluno envia pela Área do aluno (`/aluno`) com o código de acesso gerado em **Alunos › Preparar turma**. O código fica só como hash no servidor e aparece uma única vez. A devolutiva só aparece para o aluno depois que o professor envia.
 - `RedacoesMockApi` (em `core/redacoes/mock/`) fica só para os testes.

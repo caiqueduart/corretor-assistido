@@ -60,40 +60,38 @@
                 @let proposta = item.proposta;
 
                 <li>
-                    <a class="cartao proposta" [routerLink]="['/propostas', proposta.id]">
-                        <span class="proposta__topo">
-                            <span class="etiqueta">{{ proposta.genero }}</span>
-                            @if (proposta.encerrada) {
-                                <span class="etiqueta">Encerrada</span>
-                            } @else if (tomPrazo(proposta.prazo); as tom) {
-                                <span
-                                    class="etiqueta"
-                                    [class.etiqueta--marca-texto]="tom === 'perto'"
-                                    [class.etiqueta--correcao]="tom === 'vencido'"
-                                >
-                                    <app-icone nome="calendario" />
-                                    {{ descreverPrazo(proposta.prazo) }}
+                    <a class="proposta" [routerLink]="['/propostas', proposta.id]">
+                        <span class="proposta__meta">{{ proposta.genero }} · {{ proposta.turmas.join(', ') }}</span>
+                        <span class="proposta__tema">{{ proposta.tema }}</span>
+
+                        <span class="proposta__rodape">
+                            <span
+                                class="proposta__prazo"
+                                [class.proposta__prazo--perto]="
+                                    !proposta.encerrada && tomPrazo(proposta.prazo) === 'perto'
+                                "
+                                [class.proposta__prazo--vencido]="
+                                    !proposta.encerrada && tomPrazo(proposta.prazo) === 'vencido'
+                                "
+                            >
+                                <app-icone nome="calendario" />
+                                {{ proposta.encerrada ? 'Encerrada' : descreverPrazo(proposta.prazo) }}
+                            </span>
+
+                            @if (item.progresso.total) {
+                                <span class="proposta__contagem">
+                                    @if (item.progresso.revisao) {
+                                        <span class="proposta__revisar">{{ item.progresso.revisao }} para revisar</span>
+                                    }
+                                    {{ item.progresso.devolvidas }}/{{ item.progresso.total }} devolvidas
                                 </span>
+                            } @else {
+                                <span class="proposta__contagem">Sem redações</span>
                             }
                         </span>
 
-                        <span class="proposta__tema">{{ proposta.tema }}</span>
-                        <span class="proposta__turmas">{{ proposta.turmas.join(' · ') }}</span>
-
-                        <span class="proposta__progresso">
-                            <span class="progresso" aria-hidden="true">
-                                <span class="progresso__barra" [style.width.%]="item.porcentagem"></span>
-                            </span>
-                            <span class="proposta__numeros">
-                                @if (item.progresso.total) {
-                                    {{ item.progresso.total }}
-                                    {{ item.progresso.total === 1 ? 'redação' : 'redações' }} ·
-                                    {{ item.progresso.revisao }} para revisar ·
-                                    {{ item.progresso.devolvidas }} devolvidas
-                                } @else {
-                                    Nenhuma redação importada
-                                }
-                            </span>
+                        <span class="proposta__barra" aria-hidden="true">
+                            <span [style.width.%]="item.porcentagem"></span>
                         </span>
                     </a>
                 </li>

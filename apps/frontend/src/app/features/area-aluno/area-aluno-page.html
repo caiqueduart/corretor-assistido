@@ -1,0 +1,170 @@
+<div class="area">
+    <header class="area__topo">
+        <p class="area__marca">
+            <span class="area__logo"><app-icone nome="lapis" /></span>
+            Corretor Assistido
+        </p>
+        @if (area.painel()) {
+            <button class="botao botao--discreto botao--pequeno" type="button" (click)="sair()">
+                <app-icone nome="sair" />
+                Sair
+            </button>
+        }
+    </header>
+
+    <main class="area__conteudo" id="conteudo">
+        @if (area.painel(); as painel) {
+            @if (devolutiva(); as atual) {
+                <button
+                    class="botao botao--discreto botao--pequeno area__voltar"
+                    type="button"
+                    (click)="devolutiva.set(null)"
+                >
+                    <app-icone nome="voltar" />
+                    Minhas propostas
+                </button>
+
+                <article class="cartao">
+                    <h1 class="area__titulo">{{ atual.titulo }}</h1>
+                    @if (atual.comentario) {
+                        <div class="area__recado">
+                            <p class="area__rotulo">Recado do professor</p>
+                            <p>{{ atual.comentario }}</p>
+                        </div>
+                    }
+                    <p class="area__rotulo">Seu texto com as correções</p>
+                    <p class="area__texto">{{ atual.textoCorrigido }}</p>
+                </article>
+
+                @if (atual.paraReescrita.length) {
+                    <section class="cartao" aria-labelledby="titulo-ajustes">
+                        <h2 class="cartao__titulo" id="titulo-ajustes">O que ajustar na reescrita</h2>
+                        <ul class="lista" role="list">
+                            @for (item of atual.paraReescrita; track $index) {
+                                <li class="lista__item area__ajuste">
+                                    <span class="etiqueta etiqueta--caneta">{{ item.criterio }}</span>
+                                    <span>
+                                        <s>{{ item.trecho }}</s> → <strong>{{ item.correcao }}</strong>
+                                        @if (item.explicacao) {
+                                            <span class="lista__detalhe">{{ item.explicacao }}</span>
+                                        }
+                                    </span>
+                                </li>
+                            }
+                        </ul>
+                    </section>
+                }
+            } @else {
+                <h1 class="area__titulo">Olá, {{ painel.aluno }}!</h1>
+                <p class="area__subtitulo">Turma {{ painel.turma }}</p>
+
+                @if (confirmacao(); as mensagem) {
+                    <p class="aviso aviso--sucesso" role="status">{{ mensagem }}</p>
+                }
+                @if (erro(); as mensagem) {
+                    <p class="aviso aviso--erro" role="alert">{{ mensagem }}</p>
+                }
+
+                <section aria-labelledby="titulo-propostas">
+                    <h2 class="area__secao" id="titulo-propostas">Propostas de redação</h2>
+
+                    @for (proposta of painel.propostas; track proposta.id) {
+                        <article class="cartao area__proposta">
+                            <p class="area__etiquetas">
+                                <span class="etiqueta">{{ proposta.genero }}</span>
+                                <span class="etiqueta">{{ descreverPrazo(proposta.prazo) }}</span>
+                            </p>
+                            <h3 class="cartao__titulo">{{ proposta.tema }}</h3>
+                            @if (proposta.enunciado) {
+                                <p class="area__enunciado">{{ proposta.enunciado }}</p>
+                            }
+                            <p
+                                class="area__situacao"
+                                [class.area__situacao--pronta]="proposta.entrega?.status === 'concluido'"
+                            >
+                                {{ situacao(proposta) }}
+                            </p>
+
+                            @if (enviandoPara() === proposta.id) {
+                                <app-envio-aluno
+                                    [propostaId]="proposta.id"
+                                    [reenvio]="!!proposta.entrega"
+                                    (enviado)="aoEnviar($event)"
+                                    (cancelado)="enviandoPara.set(null)"
+                                />
+                            } @else if (!proposta.entrega || proposta.entrega.podeReenviar) {
+                                <button
+                                    class="botao"
+                                    [class.botao--primario]="!proposta.entrega"
+                                    type="button"
+                                    (click)="confirmacao.set(null); enviandoPara.set(proposta.id)"
+                                >
+                                    {{ proposta.entrega ? 'Trocar o texto' : 'Enviar redação' }}
+                                </button>
+                            } @else if (proposta.entrega.status === 'concluido') {
+                                <button
+                                    class="botao botao--primario"
+                                    type="button"
+                                    (click)="abrirDevolutiva(proposta.entrega.textoId)"
+                                >
+                                    Ver devolutiva
+                                </button>
+                            }
+                        </article>
+                    } @empty {
+                        <p class="cartao area__vazio">Nenhuma proposta aberta para a sua turma agora.</p>
+                    }
+                </section>
+
+                @if (painel.devolutivas.length) {
+                    <section aria-labelledby="titulo-devolutivas">
+                        <h2 class="area__secao" id="titulo-devolutivas">Minhas devolutivas</h2>
+                        <ul class="cartao lista" role="list">
+                            @for (item of painel.devolutivas; track item.textoId) {
+                                <li class="lista__item">
+                                    <span class="lista__textos"
+                                        ><span class="lista__titulo">{{ item.titulo }}</span></span
+                                    >
+                                    <button
+                                        class="botao botao--pequeno"
+                                        type="button"
+                                        [disabled]="carregandoDevolutiva()"
+                                        (click)="abrirDevolutiva(item.textoId)"
+                                    >
+                                        Abrir
+                                    </button>
+                                </li>
+                            }
+                        </ul>
+                    </section>
+                }
+            }
+        } @else {
+            <form class="cartao area__entrada" (submit)="$event.preventDefault(); entrar()">
+                <h1 class="area__titulo">Área do aluno</h1>
+                <p class="area__subtitulo">Digite o código que o seu professor entregou para enviar a redação.</p>
+                <div class="campo">
+                    <label for="codigo-aluno">Código de acesso</label>
+                    <input
+                        id="codigo-aluno"
+                        class="area__codigo"
+                        inputmode="text"
+                        autocomplete="off"
+                        autocapitalize="characters"
+                        spellcheck="false"
+                        placeholder="ABCD-EFGH"
+                        [value]="codigoDigitado()"
+                        (input)="digitar($any($event.target).value)"
+                    />
+                </div>
+                @if (erro(); as mensagem) {
+                    <p class="aviso aviso--erro" role="alert">{{ mensagem }}</p>
+                }
+                <button class="botao botao--primario area__entrar" type="submit" [disabled]="entrando()">
+                    {{ entrando() ? 'Entrando…' : 'Entrar' }}
+                </button>
+                <p class="area__rodape">É professor? <a routerLink="/login">Entre por aqui</a></p>
+            </form>
+        }
+    </main>
+</div>
