@@ -13,7 +13,13 @@ export const routes: Routes = [
         path: '',
         canActivate: [autenticadoGuard],
         children: [
-            { path: '', pathMatch: 'full', redirectTo: 'redacoes' },
+            { path: '', pathMatch: 'full', redirectTo: 'inicio' },
+            {
+                path: 'inicio',
+                title: 'Início · Corretor Assistido',
+                data: { trilha: [{ rotulo: 'Início' }] },
+                loadComponent: () => import('./features/inicio/inicio-page').then((m) => m.InicioPage),
+            },
             {
                 path: 'redacoes',
                 title: 'Redações · Corretor Assistido',
@@ -55,5 +61,5 @@ export const routes: Routes = [
             },
         ],
     },
-    { path: '**', redirectTo: 'redacoes' },
+    { path: '**', redirectTo: 'inicio' },
 ];

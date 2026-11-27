@@ -23,6 +23,7 @@ interface SecaoNavegacao {
 const PRINCIPAL: SecaoNavegacao = {
     titulo: 'Principal',
     itens: [
+        { rota: '/inicio', rotulo: 'Início', icone: 'inicio' },
         { rota: '/redacoes', rotulo: 'Redações', icone: 'redacoes' },
         { rota: '/alunos', rotulo: 'Alunos', icone: 'alunos' },
     ],

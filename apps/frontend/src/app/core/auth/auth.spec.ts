@@ -193,10 +193,10 @@ describe('guards', () => {
 
     it('destinoSeguro só aceita caminhos internos', () => {
         expect(destinoSeguro('/admin/usuarios')).toBe('/admin/usuarios');
-        expect(destinoSeguro('//site.exemplo')).toBe('/redacoes');
-        expect(destinoSeguro('https://site.exemplo')).toBe('/redacoes');
-        expect(destinoSeguro('/login')).toBe('/redacoes');
-        expect(destinoSeguro(undefined)).toBe('/redacoes');
+        expect(destinoSeguro('//site.exemplo')).toBe('/inicio');
+        expect(destinoSeguro('https://site.exemplo')).toBe('/inicio');
+        expect(destinoSeguro('/login')).toBe('/inicio');
+        expect(destinoSeguro(undefined)).toBe('/inicio');
     });
 });
 
