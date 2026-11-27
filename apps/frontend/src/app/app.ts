@@ -41,6 +41,11 @@ const SISTEMA: SecaoNavegacao = {
 
 const CHAVE_MENU = 'corretor.menu-recolhido';
 
+/** "/aluno" (área do aluno), mas não "/alunos" (tela dos professores). */
+export function ehAreaDoAluno(url: string): boolean {
+    return /^\/aluno(?:[/?#]|$)/.test(url);
+}
+
 function lerPreferenciaMenu(): boolean {
     try {
         return localStorage.getItem(CHAVE_MENU) === '1';
@@ -104,7 +109,7 @@ export class App {
                 takeUntilDestroyed(),
             )
             .subscribe((evento) => {
-                this.areaDoAluno.set(evento.urlAfterRedirects.startsWith('/aluno'));
+                this.areaDoAluno.set(ehAreaDoAluno(evento.urlAfterRedirects));
                 this.menuAberto.set(false);
                 this.focarConteudo();
             });
