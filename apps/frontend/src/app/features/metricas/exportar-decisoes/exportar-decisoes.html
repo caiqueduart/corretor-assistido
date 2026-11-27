@@ -1,0 +1,40 @@
+<section class="exportar" aria-labelledby="titulo-exportar">
+    <div class="exportar__textos">
+        <h2 class="exportar__titulo" id="titulo-exportar">Dados para análise</h2>
+        <p class="exportar__descricao">
+            Uma linha por decisão do professor sobre um apontamento da IA, com perfil, critério e decisão. Não inclui o
+            conteúdo dos textos nem o código do estudante.
+        </p>
+        <details class="exportar__colunas">
+            <summary>Colunas do arquivo</summary>
+            <code>{{ colunas }}</code>
+            <p>Separado por vírgula, em UTF-8. No Excel, abra por Dados › De Texto/CSV.</p>
+        </details>
+    </div>
+
+    <form class="exportar__acoes" (submit)="$event.preventDefault(); exportar()">
+        <div class="campo">
+            <label for="exportar-turma">Turma <span class="exportar__opcional">(opcional)</span></label>
+            <input
+                id="exportar-turma"
+                [value]="turma()"
+                placeholder="Todas as turmas"
+                autocomplete="off"
+                (input)="turma.set($any($event.target).value)"
+            />
+        </div>
+
+        <button class="botao botao--primario" type="submit" [disabled]="baixando()">
+            <app-icone nome="baixar" />
+            {{ baixando() ? 'Exportando…' : 'Exportar decisões (CSV)' }}
+        </button>
+    </form>
+
+    <div class="exportar__situacao" role="status">
+        @if (erro(); as mensagem) {
+            <p class="aviso aviso--erro">{{ mensagem }}</p>
+        } @else if (concluido()) {
+            <p class="exportar__ok">Arquivo baixado.</p>
+        }
+    </div>
+</section>

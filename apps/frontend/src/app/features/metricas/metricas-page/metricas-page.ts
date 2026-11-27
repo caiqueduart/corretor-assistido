@@ -5,10 +5,11 @@ import { LIMIAR_ALERTA_VIES, MetricasService } from '../../../core/redacoes/metr
 import { RedacoesService } from '../../../core/redacoes/redacoes.service';
 import { CabecalhoPagina } from '../../../shared/cabecalho-pagina/cabecalho-pagina';
 import { Icone } from '../../../shared/icone/icone';
+import { ExportarDecisoes } from '../exportar-decisoes/exportar-decisoes';
 
 @Component({
     selector: 'app-metricas-page',
-    imports: [DecimalPipe, CabecalhoPagina, Icone],
+    imports: [DecimalPipe, CabecalhoPagina, Icone, ExportarDecisoes],
     templateUrl: './metricas-page.html',
     styleUrl: './metricas-page.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
