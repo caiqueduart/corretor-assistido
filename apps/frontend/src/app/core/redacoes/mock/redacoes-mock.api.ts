@@ -40,7 +40,7 @@ export class RedacoesMockApi extends RedacoesApi {
         const origem = nova.origemId ? this.buscar(nova.origemId) : null;
         const redacao: Redacao = {
             id: `r-${Date.now().toString(36)}`,
-            aluno: nova.aluno.trim().toUpperCase(),
+            aluno: nova.aluno.trim(),
             turma: nova.turma.trim(),
             perfil: nova.perfil,
             titulo: nova.titulo.trim() || origem?.titulo || 'Sem título',

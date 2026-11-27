@@ -6,6 +6,7 @@ import { RedacoesService } from '../../../core/redacoes/redacoes.service';
 import { Icone } from '../../../shared/icone/icone';
 import { SituacaoVersao } from '../situacao-versao/situacao-versao';
 import { Esqueleto } from '../../../shared/esqueleto/esqueleto';
+import { ChamadaService } from '../../../core/alunos/chamada.service';
 
 @Component({
     selector: 'app-aluno-page',
@@ -15,6 +16,7 @@ import { Esqueleto } from '../../../shared/esqueleto/esqueleto';
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlunoPage {
+    protected readonly chamada = inject(ChamadaService);
     protected readonly redacoes = inject(RedacoesService);
     private readonly alunos = inject(AlunosService);
 

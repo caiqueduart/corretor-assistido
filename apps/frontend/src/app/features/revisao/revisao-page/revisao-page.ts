@@ -22,6 +22,7 @@ import { ApontamentoItem, EventoDecisao } from '../apontamento-item/apontamento-
 import { Devolutiva } from '../devolutiva/devolutiva';
 import { TextoMarcado } from '../texto-marcado/texto-marcado';
 import { Esqueleto } from '../../../shared/esqueleto/esqueleto';
+import { ChamadaService } from '../../../core/alunos/chamada.service';
 
 type Visao = 'revisao' | 'aluno';
 
@@ -34,6 +35,7 @@ type Visao = 'revisao' | 'aluno';
     host: { '(document:keydown)': 'atalho($event)' },
 })
 export class RevisaoPage {
+    protected readonly chamada = inject(ChamadaService);
     protected readonly redacoes = inject(RedacoesService);
     private readonly auth = inject(AuthService);
     private readonly avisos = inject(AvisosService);
@@ -144,7 +146,7 @@ export class RevisaoPage {
     protected async enviar(): Promise<void> {
         if (await this.tentar(() => this.redacoes.enviarDevolutiva(this.id()))) {
             this.avisos.mostrar('Devolutiva enviada', {
-                texto: `${this.redacao()?.aluno ?? 'O aluno'} já pode ver as correções.`,
+                texto: `${this.chamada.rotulo(this.redacao()?.aluno ?? 'O aluno')} já pode ver as correções.`,
             });
         }
         this.confirmandoEnvio.set(false);

@@ -4,6 +4,7 @@ import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
 import { filter, map } from 'rxjs';
 
 import { RedacoesService } from '../redacoes/redacoes.service';
+import { ChamadaService } from '../alunos/chamada.service';
 
 /** Um passo do caminho mostrado no topo ("Redações › 8A-07 · Minha cidade"). */
 export interface Migalha {
@@ -36,6 +37,7 @@ export function coletarTrilha(raiz: ActivatedRouteSnapshot): Coleta {
 export class TrilhaService {
     private readonly router = inject(Router);
     private readonly redacoes = inject(RedacoesService);
+    private readonly chamada = inject(ChamadaService);
 
     private readonly coleta = toSignal(
         this.router.events.pipe(
@@ -55,11 +57,11 @@ export class TrilhaService {
         if (rotulo === ':redacao') {
             const redacao = this.redacoes.redacoes().find((item) => item.id === params['id']);
 
-            return redacao ? `${redacao.aluno} · ${redacao.titulo}` : 'Redação';
+            return redacao ? `${this.chamada.rotulo(redacao.aluno)} · ${redacao.titulo}` : 'Redação';
         }
 
         if (rotulo === ':aluno') {
-            return params['codigo'] ?? 'Aluno';
+            return params['codigo'] ? this.chamada.rotulo(params['codigo']) : 'Aluno';
         }
 
         return rotulo;

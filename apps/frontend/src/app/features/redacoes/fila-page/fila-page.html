@@ -87,7 +87,8 @@
                         <li class="lista__item fila__item">
                             <span class="lista__textos">
                                 <span class="lista__titulo">
-                                    {{ redacao.aluno }} <span class="fila__titulo">· {{ redacao.titulo }}</span>
+                                    {{ chamada.rotulo(redacao.aluno) }}
+                                    <span class="fila__titulo">· {{ redacao.titulo }}</span>
                                 </span>
                                 <span class="fila__meta">
                                     {{ redacao.turma }} · {{ redacao.versao === 1 ? '1ª versão' : 'Reescrita' }}
@@ -134,7 +135,7 @@
                                         [routerLink]="['/redacoes', redacao.id]"
                                     >
                                         {{ !podeEditar() ? 'Ver' : item.feitas ? 'Continuar' : 'Revisar' }}
-                                        <span class="visualmente-oculto">{{ redacao.aluno }}</span>
+                                        <span class="visualmente-oculto">{{ chamada.rotulo(redacao.aluno) }}</span>
                                     </a>
                                 }
                                 @case ('corrigindo') {
@@ -148,7 +149,7 @@
                                         <button class="botao botao--pequeno" type="button" (click)="corrigir(redacao)">
                                             <app-icone nome="lapis" />
                                             {{ redacao.erroCorrecao ? 'Tentar de novo' : 'Corrigir com IA' }}
-                                            <span class="visualmente-oculto">{{ redacao.aluno }}</span>
+                                            <span class="visualmente-oculto">{{ chamada.rotulo(redacao.aluno) }}</span>
                                         </button>
                                     }
                                 }
@@ -158,7 +159,7 @@
                                         [routerLink]="['/redacoes', redacao.id]"
                                     >
                                         Ver devolutiva
-                                        <span class="visualmente-oculto">{{ redacao.aluno }}</span>
+                                        <span class="visualmente-oculto">{{ chamada.rotulo(redacao.aluno) }}</span>
                                     </a>
                                 }
                             }
