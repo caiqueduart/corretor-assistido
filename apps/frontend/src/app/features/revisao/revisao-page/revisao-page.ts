@@ -1,12 +1,10 @@
 import { DatePipe } from '@angular/common';
 import {
-    afterNextRender,
     ChangeDetectionStrategy,
     Component,
     computed,
     effect,
     inject,
-    Injector,
     input,
     signal,
     untracked,
@@ -35,7 +33,6 @@ type Visao = 'revisao' | 'aluno';
 export class RevisaoPage {
     protected readonly redacoes = inject(RedacoesService);
     private readonly titulo = inject(Title);
-    private readonly injector = inject(Injector);
 
     /** Vem do parâmetro `:id` da rota. */
     readonly id = input.required<string>();
@@ -68,17 +65,11 @@ export class RevisaoPage {
                 }
             });
         });
-
-        effect(() => {
-            if (this.redacao()?.status === 'devolvida') {
-                untracked(() => this.visao.set('aluno'));
-            }
-        });
     }
 
     /**
-     * Abre a impressão do navegador só com a devolutiva, para salvar em PDF e entregar ao aluno.
-     * O título da página vira o nome sugerido do arquivo.
+     * Abre a impressão do navegador só com a devolutiva (bloco `revisao__pdf`), para salvar em PDF e
+     * entregar ao aluno. O título da página vira o nome sugerido do arquivo.
      */
     protected gerarPdf(): void {
         const redacao = this.redacao();
@@ -87,18 +78,11 @@ export class RevisaoPage {
             return;
         }
 
-        this.visao.set('aluno');
+        const anterior = this.titulo.getTitle();
 
-        afterNextRender(
-            () => {
-                const anterior = this.titulo.getTitle();
-
-                this.titulo.setTitle(`Devolutiva ${redacao.aluno} - ${redacao.titulo || 'redação'}`);
-                window.print();
-                this.titulo.setTitle(anterior);
-            },
-            { injector: this.injector },
-        );
+        this.titulo.setTitle(`Devolutiva ${redacao.aluno} - ${redacao.titulo || 'redação'}`);
+        window.print();
+        this.titulo.setTitle(anterior);
     }
 
     protected selecionar(apontamentoId: string, rolar = false): void {

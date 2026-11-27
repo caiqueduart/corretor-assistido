@@ -30,17 +30,17 @@
         >
             <span class="etapas__marca" aria-hidden="true">1</span>
             <span class="etapas__texto">
-                <span class="etapas__nome">IA sugere</span>
+                <span class="etapas__nome">Correção da IA</span>
                 <span class="etapas__detalhe">
                     @switch (atual.status) {
                         @case ('aguardando-ia') {
-                            Ainda não corrigiu
+                            Pendente
                         }
                         @case ('corrigindo') {
-                            Lendo o texto…
+                            Em andamento…
                         }
                         @default {
-                            {{ decisoes().total }} apontamentos a lápis
+                            {{ decisoes().total === 1 ? '1 apontamento' : decisoes().total + ' apontamentos' }}
                         }
                     }
                 </span>
@@ -54,7 +54,7 @@
         >
             <span class="etapas__marca" aria-hidden="true">2</span>
             <span class="etapas__texto">
-                <span class="etapas__nome">Você decide</span>
+                <span class="etapas__nome">Sua validação</span>
                 <span class="etapas__detalhe">
                     @if (atual.status === 'em-revisao' || atual.status === 'devolvida') {
                         {{ decisoes().total - decisoes().pendentes }} de {{ decisoes().total }} decididos
@@ -68,12 +68,12 @@
         <li class="etapas__item" [class.etapas__item--feita]="atual.status === 'devolvida'">
             <span class="etapas__marca" aria-hidden="true">3</span>
             <span class="etapas__texto">
-                <span class="etapas__nome">Aluno recebe</span>
+                <span class="etapas__nome">Devolutiva do aluno</span>
                 <span class="etapas__detalhe">
                     @if (atual.status === 'devolvida') {
-                        Enviada em {{ atual.enviadaEm | date: "dd/MM 'às' HH:mm" }}
+                        Registrada em {{ atual.enviadaEm | date: "dd/MM 'às' HH:mm" }}
                     } @else {
-                        Só depois do seu envio
+                        Após a validação
                     }
                 </span>
             </span>
@@ -106,7 +106,7 @@
                     (click)="visao.set('aluno')"
                 >
                     <app-icone nome="olho" />
-                    Prévia do aluno
+                    Prévia da devolutiva
                 </button>
             </div>
 
@@ -173,7 +173,7 @@
                         } @empty {
                             <p class="mesa__vazio">
                                 A IA não encontrou desvios de ortografia ou pontuação. Leia o texto e, se concordar,
-                                envie só o recado.
+                                registre a devolutiva só com o recado.
                             </p>
                         }
 
@@ -188,7 +188,7 @@
             } @else {
                 <p class="revisao__previa">
                     <app-icone nome="olho" />
-                    Prévia. O aluno ainda não recebeu nada; isto é o que ele vai ver quando você enviar.
+                    Prévia da devolutiva, como vai sair no PDF depois de registrada.
                 </p>
 
                 <app-devolutiva [redacao]="atual" />
@@ -213,16 +213,16 @@
             <div class="envio" [class.envio--confirmando]="confirmandoEnvio()">
                 @if (confirmandoEnvio()) {
                     <p class="envio__texto">
-                        Enviar a devolutiva para <span class="envio__destaque">{{ atual.aluno }}</span>? Ele vai ver
+                        Registrar a devolutiva de <span class="envio__destaque">{{ atual.aluno }}</span>? Ela terá
                         {{ validados() === 1 ? '1 correção' : validados() + ' correções' }} e o seu recado. Depois de
-                        enviada, ela não pode ser alterada.
+                        registrada, ela não pode ser alterada.
                     </p>
 
                     <div class="envio__acoes">
                         <button class="botao" type="button" (click)="confirmandoEnvio.set(false)">Voltar</button>
                         <button class="botao botao--primario" type="button" [disabled]="ocupada()" (click)="enviar()">
-                            <app-icone nome="enviar" />
-                            Confirmar envio
+                            <app-icone nome="selo" />
+                            Confirmar registro
                         </button>
                     </div>
                 } @else {
@@ -232,9 +232,9 @@
                             <span class="envio__destaque">{{
                                 decisoes().pendentes === 1 ? '1 decisão' : decisoes().pendentes + ' decisões'
                             }}</span>
-                            para liberar o envio.
+                            para registrar a devolutiva.
                         } @else {
-                            Tudo decidido. O aluno só recebe depois que você enviar.
+                            Tudo decidido. Registre a devolutiva para gerar o PDF do aluno.
                         }
                     </p>
 
@@ -244,57 +244,27 @@
                         [disabled]="decisoes().pendentes > 0"
                         (click)="confirmandoEnvio.set(true)"
                     >
-                        <app-icone nome="enviar" />
-                        Enviar devolutiva
+                        <app-icone nome="selo" />
+                        Registrar devolutiva
                     </button>
                 }
             </div>
         }
 
         @case ('devolvida') {
-            <p class="revisao__selo">
-                <app-icone nome="selo" />
-                <span>
-                    Devolutiva validada por você e enviada em {{ atual.enviadaEm | date: "dd/MM/yyyy 'às' HH:mm" }}. As
-                    decisões ficam registradas para as métricas da POC.
-                </span>
-            </p>
+            <div class="revisao__registrada">
+                <p class="revisao__selo">
+                    <app-icone nome="selo" />
+                    <span>Devolutiva validada em {{ atual.enviadaEm | date: "dd/MM/yyyy 'às' HH:mm" }}.</span>
+                </p>
 
-            <p class="revisao__impressao">
-                Devolutiva validada pelo professor em {{ atual.enviadaEm | date: 'dd/MM/yyyy' }}.
-            </p>
-
-            <div class="revisao__acoes">
-                <div class="revisao__abas" role="group" aria-label="Visualização">
-                    <button
-                        class="revisao__aba"
-                        type="button"
-                        [attr.aria-pressed]="visao() === 'aluno'"
-                        (click)="visao.set('aluno')"
-                    >
-                        <app-icone nome="olho" />
-                        O que o aluno recebeu
-                    </button>
-                    <button
-                        class="revisao__aba"
-                        type="button"
-                        [attr.aria-pressed]="visao() === 'revisao'"
-                        (click)="visao.set('revisao')"
-                    >
-                        <app-icone nome="lapis" />
-                        Sua revisão
-                    </button>
-                </div>
-
-                <button class="botao" type="button" (click)="gerarPdf()">
+                <button class="botao botao--primario" type="button" (click)="gerarPdf()">
                     <app-icone nome="baixar" />
                     Gerar PDF para o aluno
                 </button>
             </div>
 
-            @if (visao() === 'aluno') {
-                <app-devolutiva [redacao]="atual" />
-            } @else {
+            <div class="revisao__resumo">
                 <div class="mesa">
                     <article class="mesa__folha" aria-label="Texto do aluno">
                         <app-texto-marcado
@@ -318,7 +288,16 @@
                         }
                     </section>
                 </div>
-            }
+            </div>
+
+            <!-- Conteúdo do PDF: aparece só na impressão. -->
+            <div class="revisao__pdf">
+                <p class="revisao__impressao">
+                    Devolutiva validada pelo professor em {{ atual.enviadaEm | date: 'dd/MM/yyyy' }}.
+                </p>
+
+                <app-devolutiva [redacao]="atual" />
+            </div>
         }
 
         @default {

@@ -10,7 +10,7 @@ export const ROTULO_PERFIL: Readonly<Record<Perfil, string>> = {
 
 export const DESCRICAO_PERFIL: Readonly<Record<Perfil, string>> = {
     admin: 'Cadastra usuários, define a configuração da correção e acompanha métricas e auditoria.',
-    professor: 'Importa, corrige, revisa e envia devolutivas.',
+    professor: 'Importa, corrige, valida e registra devolutivas.',
 };
 
 /** Tela inicial de cada perfil: o professor trabalha nas redações; o admin, na administração. */

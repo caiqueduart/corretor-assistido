@@ -1,6 +1,6 @@
 <app-cabecalho-pagina
     titulo="Redações"
-    descricao="A IA corrige a lápis; você decide o que vale. Nada chega ao aluno sem o seu envio."
+    descricao="Importe as redações, valide a correção da IA e registre a devolutiva de cada aluno."
 >
     <a class="botao botao--primario" routerLink="/redacoes/nova">
         <app-icone nome="importar" />
@@ -152,7 +152,7 @@
 
     <section class="fila" aria-labelledby="titulo-devolvidas">
         <header class="fila__cabecalho">
-            <h2 class="fila__titulo" id="titulo-devolvidas">Devolvidas ao aluno</h2>
+            <h2 class="fila__titulo" id="titulo-devolvidas">Devolutiva registrada</h2>
             <span class="fila__total">{{ grupos.devolvidas.length }}</span>
         </header>
 
@@ -167,7 +167,7 @@
                             </p>
 
                             <p class="fila__meta">
-                                {{ redacao.versao === 1 ? '1ª versão' : 'Reescrita' }} · enviada em
+                                {{ redacao.versao === 1 ? '1ª versão' : 'Reescrita' }} · registrada em
                                 {{ redacao.enviadaEm | date: "dd/MM 'às' HH:mm" }}
                             </p>
                         </div>
@@ -179,7 +179,7 @@
                 }
             </ul>
         } @else {
-            <p class="fila__vazio">Nenhuma devolutiva enviada ainda.</p>
+            <p class="fila__vazio">Nenhuma devolutiva registrada ainda.</p>
         }
     </section>
 }

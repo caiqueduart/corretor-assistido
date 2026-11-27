@@ -18,10 +18,10 @@ Prioridades: **Alta** (indispensável para o lançamento), **Média** (important
 
 ## Perfis
 
-| Perfil        | Pode                                                                                                       |
-| ------------- | ---------------------------------------------------------------------------------------------------------- |
-| Administrador | Cadastrar e gerenciar usuários, definir critérios e perfis sociolinguísticos, ver métricas e auditoria.    |
-| Professor     | Importar redações, pedir a correção da IA, aceitar, recusar ou ajustar, enviar a devolutiva e gerar o PDF. |
+| Perfil        | Pode                                                                                                          |
+| ------------- | ------------------------------------------------------------------------------------------------------------- |
+| Administrador | Cadastrar e gerenciar usuários, definir critérios e perfis sociolinguísticos, ver métricas e auditoria.       |
+| Professor     | Importar redações, pedir a correção da IA, aceitar, recusar ou ajustar, registrar a devolutiva e gerar o PDF. |
 
 O estudante não acessa o sistema: é identificado só por código e recebe do professor o PDF da devolutiva validada. O administrador não corrige redações.
 
@@ -36,8 +36,8 @@ O estudante não acessa o sistema: é identificado só por código e recebe do p
 | ---- | --------------------------------------------------------------------------------------- |
 | RN01 | Nenhuma devolutiva chega ao estudante sem a validação do professor.                     |
 | RN02 | Só entram no sistema textos de estudantes cujas famílias deram consentimento informado. |
-| RN03 | Só o professor importa, corrige, revisa e envia devolutivas.                            |
-| RN04 | O PDF da devolutiva só pode ser gerado depois do envio, com as correções validadas.     |
+| RN03 | Só o professor importa, corrige, valida e registra devolutivas.                         |
+| RN04 | O PDF da devolutiva só pode ser gerado depois do registro, com as correções validadas.  |
 
 ## Requisitos não funcionais
 

@@ -26,7 +26,7 @@ A IA nunca fala direto com o estudante. O professor é o filtro obrigatório e a
 
 ## Operating Context
 
-Fluxo: importar texto (PDF, TXT ou DOCX) com código do aluno, turma, perfil sociolinguístico e consentimento da família → IA corrige → professor revisa apontamento a apontamento → envia devolutiva → gera o PDF e entrega ao aluno → aluno reescreve → v2 entra no mesmo ciclo e mostra o ganho.
+Fluxo: importar texto (PDF, TXT ou DOCX) com código do aluno, turma, perfil sociolinguístico e consentimento da família → IA corrige → professor revisa apontamento a apontamento → registra a devolutiva → gera o PDF e entrega ao aluno → aluno reescreve → v2 entra no mesmo ciclo e mostra o ganho.
 
 ## Capabilities and Constraints
 

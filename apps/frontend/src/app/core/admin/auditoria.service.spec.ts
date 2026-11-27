@@ -41,7 +41,7 @@ describe('AuditoriaService', () => {
 
 describe('descrição dos registros', () => {
     it('traduz as ações conhecidas e mantém as desconhecidas legíveis', () => {
-        expect(rotuloAcao('enviar_devolutiva')).toBe('Enviou devolutiva');
+        expect(rotuloAcao('enviar_devolutiva')).toBe('Registrou devolutiva');
         expect(rotuloAcao('acao_nova')).toBe('Acao nova');
     });
 

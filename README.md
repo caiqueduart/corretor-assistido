@@ -61,15 +61,15 @@ Testes do back-end: `cd apps/backend && go test ./...`.
 
 Todas as telas usam o back-end:
 
-| Área                                                             | Perfil    | Rotas                                                      |
-| ---------------------------------------------------------------- | --------- | ---------------------------------------------------------- |
-| Login e sessão                                                   | todos     | `/api/auth`, `/api/me`                                     |
-| Redações: importar, corrigir, revisar, enviar, PDF da devolutiva | professor | `/api/textos` (`RedacoesHttpApi`)                          |
-| Alunos                                                           | professor | `/api/textos?completo=true`, calculadas na tela            |
-| Administração: usuários, configuração, auditoria                 | admin     | `/api/usuarios`, `/api/config`, `/api/auditoria`           |
-| Administração › Métricas                                         | admin     | `/api/textos?completo=true` e `/api/metricas/decisoes.csv` |
+| Área                                                                | Perfil    | Rotas                                                      |
+| ------------------------------------------------------------------- | --------- | ---------------------------------------------------------- |
+| Login e sessão                                                      | todos     | `/api/auth`, `/api/me`                                     |
+| Redações: importar, corrigir, validar, registrar, PDF da devolutiva | professor | `/api/textos` (`RedacoesHttpApi`)                          |
+| Alunos                                                              | professor | `/api/textos?completo=true`, calculadas na tela            |
+| Administração: usuários, configuração, auditoria                    | admin     | `/api/usuarios`, `/api/config`, `/api/auditoria`           |
+| Administração › Métricas                                            | admin     | `/api/textos?completo=true` e `/api/metricas/decisoes.csv` |
 
-Perfis (os mesmos da POC): o **administrador** cadastra professores e outros usuários e cuida da configuração, das métricas e da auditoria, sem corrigir redações. O **professor** importa, corrige, revisa e envia a devolutiva. Depois do envio, o botão "Gerar PDF para o aluno" abre a impressão do navegador só com a devolutiva; escolha "Salvar como PDF". O estudante não tem login.
+Perfis (os mesmos da POC): o **administrador** cadastra professores e outros usuários e cuida da configuração, das métricas e da auditoria, sem corrigir redações. O **professor** importa, corrige, valida e registra a devolutiva. Depois do registro, o botão "Gerar PDF para o aluno" abre a impressão do navegador só com a devolutiva; escolha "Salvar como PDF". O estudante não tem login.
 
 - O token de acesso fica no `localStorage` até expirar (`SESSAO_DURACAO`, 12h por padrão). Uma resposta 401 encerra a sessão e volta ao login.
 - A configuração do admin (critérios, perfis sociolinguísticos e limiar de viés) vale na importação e nas métricas.
