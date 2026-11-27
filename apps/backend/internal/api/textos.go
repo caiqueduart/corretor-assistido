@@ -290,7 +290,13 @@ func (s *Servidor) listarTextos(w http.ResponseWriter, r *http.Request, u domini
 		falha(w, http.StatusBadRequest, "status_invalido", "Use status pendente, corrigindo, revisao ou concluido.")
 		return
 	}
-	ts, err := s.st.ListarTextos(r.Context(), f)
+	// Com completo=true, cada texto vem com os apontamentos (a interface calcula
+	// evolução dos alunos e métricas a partir deles).
+	listar := s.st.ListarTextos
+	if valorBool(q.Get("completo")) {
+		listar = s.st.ListarTextosCompletos
+	}
+	ts, err := listar(r.Context(), f)
 	if err != nil {
 		s.falhaInterna(w, r, err)
 		return
@@ -505,7 +511,8 @@ func (s *Servidor) decidir(w http.ResponseWriter, r *http.Request, u dominio.Usu
 
 func (s *Servidor) decidirTodos(w http.ResponseWriter, r *http.Request, u dominio.Usuario) {
 	var in struct {
-		Decisao dominio.Decisao `json:"decisao"`
+		Decisao         dominio.Decisao `json:"decisao"`
+		ApenasPendentes bool            `json:"apenas_pendentes"`
 	}
 	if !lerJSON(w, r, &in) {
 		return
@@ -515,12 +522,12 @@ func (s *Servidor) decidirTodos(w http.ResponseWriter, r *http.Request, u domini
 		return
 	}
 	id := r.PathValue("id")
-	n, err := s.st.DecidirTodos(r.Context(), id, in.Decisao, u.ID)
+	n, err := s.st.DecidirTodos(r.Context(), id, in.Decisao, u.ID, in.ApenasPendentes)
 	if err != nil {
 		s.falhaStore(w, r, err, "Texto")
 		return
 	}
-	s.auditar(r, &u, "decidir_todos", "texto", id, fmt.Sprintf("decisao=%s apontamentos=%d", in.Decisao, n))
+	s.auditar(r, &u, "decidir_todos", "texto", id, fmt.Sprintf("decisao=%s apontamentos=%d pendentes=%t", in.Decisao, n, in.ApenasPendentes))
 	t, err := s.st.BuscarTexto(r.Context(), id, true)
 	if err != nil {
 		s.falhaStore(w, r, err, "Texto")

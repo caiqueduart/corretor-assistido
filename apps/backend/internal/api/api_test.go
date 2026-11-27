@@ -427,3 +427,65 @@ func TestFalhaNaCorrecaoVoltaParaPendente(t *testing.T) {
 		t.Fatalf("falha: %s", r.bruto)
 	}
 }
+
+// iaDupla aponta "ja" e "nos" (dois apontamentos), sem demora.
+type iaDupla struct{}
+
+func (iaDupla) Nome() string { return "ia" }
+func (iaDupla) Corrigir(context.Context, string, []string) (corretor.Resposta, error) {
+	return corretor.Resposta{Apontamentos: []corretor.Bruto{
+		{Trecho: "ja", Sugestao: "já", Criterio: "Ortografia", Explicacao: "Leva acento."},
+		{Trecho: "nos", Sugestao: "nós", Criterio: "Ortografia", Explicacao: "Leva acento."},
+	}}, nil
+}
+
+func TestListarCompletoEDecidirSoPendentes(t *testing.T) {
+	c, _ := novoAmbiente(t, iaDupla{})
+	admin := c.login("admin@escola.test", "senha-do-admin")
+	r := c.chamar("POST", "/api/textos", admin, map[string]any{"aluno_codigo": "X1", "conteudo": "Eu ja fui e nos vamos.", "consentimento": true})
+	id := r.corpo["id"].(string)
+	r = c.chamar("POST", "/api/textos/"+id+"/corrigir?aguardar=true", admin, nil)
+	exigir(t, r, 200, "corrigir")
+	aps := lista(r.corpo["apontamentos"])
+	if len(aps) != 2 {
+		t.Fatalf("esperava 2 apontamentos: %s", r.bruto)
+	}
+
+	// A listagem padrão vem sem apontamentos; com completo=true, vem com eles.
+	if _, tem := lista(c.chamar("GET", "/api/textos", admin, nil).corpo["textos"])[0].(map[string]any)["apontamentos"]; tem {
+		t.Fatal("a listagem padrão não deveria trazer apontamentos")
+	}
+	completo := lista(c.chamar("GET", "/api/textos?completo=true", admin, nil).corpo["textos"])[0].(map[string]any)
+	if len(lista(completo["apontamentos"])) != 2 {
+		t.Fatalf("completo=true sem apontamentos: %v", completo)
+	}
+
+	// O professor ajusta o primeiro; "aceitar pendentes" não pode apagar esse ajuste.
+	primeiro := aps[0].(map[string]any)["id"].(string)
+	exigir(t, c.chamar("PATCH", "/api/textos/"+id+"/apontamentos/"+primeiro, admin,
+		map[string]any{"decisao": "editada", "sugestao_final": "já agora"}), 200, "editar")
+	r = c.chamar("POST", "/api/textos/"+id+"/decisoes", admin, map[string]any{"decisao": "aceita", "apenas_pendentes": true})
+	exigir(t, r, 200, "aceitar pendentes")
+	for _, a := range lista(r.corpo["apontamentos"]) {
+		ap := a.(map[string]any)
+		quero := "aceita"
+		if ap["id"] == primeiro {
+			quero = "editada"
+		}
+		if ap["decisao"] != quero {
+			t.Fatalf("apontamento %v: decisão %v, quero %s", ap["id"], ap["decisao"], quero)
+		}
+	}
+	if ap := lista(r.corpo["apontamentos"])[0].(map[string]any); ap["id"] == primeiro && ap["sugestao_final"] != "já agora" {
+		t.Fatalf("o ajuste do professor foi perdido: %s", r.bruto)
+	}
+
+	// Sem a opção, o comportamento antigo continua: decide tudo.
+	r = c.chamar("POST", "/api/textos/"+id+"/decisoes", admin, map[string]any{"decisao": "recusada"})
+	exigir(t, r, 200, "recusar tudo")
+	for _, a := range lista(r.corpo["apontamentos"]) {
+		if a.(map[string]any)["decisao"] != "recusada" {
+			t.Fatalf("recusar tudo: %s", r.bruto)
+		}
+	}
+}
