@@ -116,7 +116,7 @@ func (s *Servidor) criarUsuario(w http.ResponseWriter, r *http.Request, u domini
 		falha(w, http.StatusUnprocessableEntity, "email_invalido", "Informe um e-mail válido.")
 		return
 	case !in.Perfil.Valido():
-		falha(w, http.StatusUnprocessableEntity, "perfil_invalido", "Use perfil admin, professor ou leitura.")
+		falha(w, http.StatusUnprocessableEntity, "perfil_invalido", "Use perfil admin ou professor.")
 		return
 	}
 	hash, err := auth.GerarHash(in.Senha)
@@ -163,7 +163,7 @@ func (s *Servidor) alterarUsuario(w http.ResponseWriter, r *http.Request, u domi
 	}
 	if in.Perfil != nil {
 		if !in.Perfil.Valido() {
-			falha(w, http.StatusUnprocessableEntity, "perfil_invalido", "Use perfil admin, professor ou leitura.")
+			falha(w, http.StatusUnprocessableEntity, "perfil_invalido", "Use perfil admin ou professor.")
 			return
 		}
 		alt.Perfil = in.Perfil

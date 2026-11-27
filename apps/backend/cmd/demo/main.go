@@ -36,7 +36,6 @@ var usuariosDemo = []usuarioDemo{
 	{"Paula Ribeiro", "professor@escola.exemplo", "senha-professor-1", dominio.PerfilProfessor, true},
 	{"João Mendes", "joao@escola.exemplo", "senha-professor-2", dominio.PerfilProfessor, true},
 	{"Carla Nunes", "carla@escola.exemplo", "senha-professor-3", dominio.PerfilProfessor, true},
-	{"Lia Coordenação", "lia@escola.exemplo", "senha-leitura-1", dominio.PerfilLeitura, true},
 	{"Bruno Oliveira", "bruno@escola.exemplo", "senha-professor-4", dominio.PerfilProfessor, false},
 }
 

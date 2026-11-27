@@ -1,37 +1,3 @@
-<section class="cartao" aria-labelledby="titulo-equidade">
-    <header class="cartao__cabecalho">
-        <h2 class="cartao__titulo" id="titulo-equidade">Equidade da correção</h2>
-        <a class="cartao__link" routerLink="/admin/metricas">Ver métricas</a>
-    </header>
-
-    <dl class="numeros">
-        <div>
-            <dt>Discordância professor × IA</dt>
-            <dd>{{ metricas.discordanciaGeral() === null ? '—' : metricas.discordanciaGeral() + '%' }}</dd>
-        </div>
-        <div>
-            <dt>Decisões registradas</dt>
-            <dd>{{ metricas.decisoesRegistradas() }}</dd>
-        </div>
-    </dl>
-
-    @if (alertas().length) {
-        <div class="aviso aviso--erro">
-            <p class="alerta__titulo">
-                <app-icone nome="alerta" />
-                Possível viés em {{ alertas().length === 1 ? '1 perfil' : alertas().length + ' perfis' }}
-            </p>
-            <ul class="alerta__lista">
-                @for (linha of alertas(); track linha.perfil) {
-                    <li>{{ linha.perfil }}: {{ linha.discordancia }}% de discordância</li>
-                }
-            </ul>
-        </div>
-    } @else {
-        <p class="aviso aviso--sucesso">Nenhum perfil acima do limiar de {{ metricas.limiar() }} pontos.</p>
-    }
-</section>
-
 <section class="cartao" aria-labelledby="titulo-sistema">
     <header class="cartao__cabecalho">
         <h2 class="cartao__titulo" id="titulo-sistema">Sistema</h2>

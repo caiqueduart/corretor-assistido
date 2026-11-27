@@ -63,7 +63,7 @@ export const ROTULO_ACAO: Readonly<Record<string, string>> = {
     remover_exemplos: 'Removeu textos de exemplo',
     corrigir: 'Pediu a correção',
     decidir_todos: 'Decidiu toda a correção',
-    enviar_devolutiva: 'Enviou devolutiva',
+    enviar_devolutiva: 'Registrou devolutiva',
     criar_proposta: 'Criou proposta',
     alterar_proposta: 'Alterou proposta',
     excluir_proposta: 'Excluiu proposta',

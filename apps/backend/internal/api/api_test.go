@@ -170,9 +170,8 @@ func TestFluxoCompleto(t *testing.T) {
 	exigir(t, c.chamar("POST", "/api/usuarios", admin, map[string]string{"nome": "Prof", "email": "prof@escola.test", "senha": "curta", "perfil": "professor"}), 422, "senha fraca")
 	exigir(t, c.chamar("POST", "/api/usuarios", admin, map[string]string{"nome": "Prof", "email": "prof@escola.test", "senha": "senha-da-professora", "perfil": "professor"}), 201, "criar professora")
 	exigir(t, c.chamar("POST", "/api/usuarios", admin, map[string]string{"nome": "Outra", "email": "PROF@escola.test", "senha": "senha-da-professora", "perfil": "professor"}), 409, "e-mail repetido")
-	exigir(t, c.chamar("POST", "/api/usuarios", admin, map[string]string{"nome": "Coord", "email": "coord@escola.test", "senha": "senha-da-coordenacao", "perfil": "leitura"}), 201, "criar leitura")
+	exigir(t, c.chamar("POST", "/api/usuarios", admin, map[string]string{"nome": "Coord", "email": "coord@escola.test", "senha": "senha-da-coordenacao", "perfil": "leitura"}), 422, "perfil leitura não existe")
 	prof := c.login("prof@escola.test", "senha-da-professora")
-	leitura := c.login("coord@escola.test", "senha-da-coordenacao")
 	exigir(t, c.chamar("GET", "/api/usuarios", prof, nil), 403, "professora listando usuários")
 
 	// Criação com validações.
@@ -182,7 +181,7 @@ func TestFluxoCompleto(t *testing.T) {
 	ruim := map[string]any{"aluno_codigo": "8A-07", "conteudo": "Texto.", "consentimento": true, "grupo": "Inventado"}
 	exigir(t, c.chamar("POST", "/api/textos", prof, ruim), 422, "grupo inválido")
 	exigir(t, c.chamar("POST", "/api/textos", prof, map[string]any{"campo_estranho": 1}), 400, "campo desconhecido")
-	exigir(t, c.chamar("POST", "/api/textos", leitura, base), 403, "leitura criando texto")
+	exigir(t, c.chamar("POST", "/api/textos", admin, base), 403, "admin criando texto")
 	r = c.chamar("POST", "/api/textos", prof, base)
 	exigir(t, r, 201, "criar texto")
 	id := r.corpo["id"].(string)
@@ -233,7 +232,7 @@ func TestFluxoCompleto(t *testing.T) {
 
 	ap := func(i int) string { return aps[i].(map[string]any)["id"].(string) }
 	rota := func(i int) string { return "/api/textos/" + id + "/apontamentos/" + ap(i) }
-	exigir(t, c.chamar("PATCH", rota(0), leitura, map[string]any{"decisao": "aceita"}), 403, "leitura decidindo")
+	exigir(t, c.chamar("PATCH", rota(0), admin, map[string]any{"decisao": "aceita"}), 403, "admin decidindo")
 	exigir(t, c.chamar("PATCH", rota(0), prof, map[string]any{}), 400, "sem decisão")
 	exigir(t, c.chamar("PATCH", rota(0), prof, map[string]any{"decisao": "editada"}), 422, "editada sem texto")
 	r = c.chamar("PATCH", rota(0), prof, map[string]any{"decisao": "editada", "sugestao_final": "já"})
@@ -256,7 +255,7 @@ func TestFluxoCompleto(t *testing.T) {
 	exigir(t, c.chamar("PATCH", rota(1), prof, map[string]any{"decisao": "aceita"}), 409, "decidir depois do envio")
 	exigir(t, c.chamar("POST", "/api/textos/"+id+"/corrigir", prof, nil), 409, "corrigir depois do envio")
 
-	r = c.chamar("GET", "/api/textos/"+id+"/devolutiva", leitura, nil)
+	r = c.chamar("GET", "/api/textos/"+id+"/devolutiva", admin, nil)
 	exigir(t, r, 200, "devolutiva")
 	if r.corpo["texto_corrigido"] != "Eu já fui pra escola. Nós vai de ônibus escolar." {
 		t.Fatalf("texto corrigido: %v", r.corpo["texto_corrigido"])
@@ -297,12 +296,12 @@ func TestFluxoCompleto(t *testing.T) {
 	exigir(t, c.chamar("POST", "/api/textos/"+v2+"/decisoes", prof, map[string]string{"decisao": "aceita"}), 200, "aceitar toda a correção")
 	exigir(t, c.chamar("POST", "/api/textos/"+v2+"/enviar", prof, map[string]string{"comentario": "Evoluiu!"}), 200, "enviar v2")
 
-	r = c.chamar("GET", "/api/metricas", leitura, nil)
+	r = c.chamar("GET", "/api/metricas", admin, nil)
 	exigir(t, r, 200, "métricas")
 	if r.corpo["discordancia_geral"].(float64) != 50 || len(lista(r.corpo["versoes"])) != 1 {
 		t.Fatalf("métricas: %s", r.bruto)
 	}
-	r = c.chamar("GET", "/api/metricas/decisoes.csv", leitura, nil)
+	r = c.chamar("GET", "/api/metricas/decisoes.csv", admin, nil)
 	exigir(t, r, 200, "csv")
 	if linhas := strings.Split(strings.TrimSpace(string(r.bruto)), "\n"); len(linhas) != 5 || !strings.HasPrefix(linhas[0], "texto_id,versao") || strings.Contains(string(r.bruto), "8A-07") {
 		t.Fatalf("csv inesperado:\n%s", r.bruto)
@@ -369,7 +368,7 @@ func TestUsuarioDesativadoPerdeAcesso(t *testing.T) {
 	pid := r.corpo["id"].(string)
 	prof := c.login("p@escola.test", "senha-da-professora")
 	adminID := c.chamar("GET", "/api/me", admin, nil).corpo["id"].(string)
-	exigir(t, c.chamar("PATCH", "/api/usuarios/"+adminID, admin, map[string]any{"perfil": "leitura"}), 409, "admin rebaixando a si")
+	exigir(t, c.chamar("PATCH", "/api/usuarios/"+adminID, admin, map[string]any{"perfil": "professor"}), 409, "admin rebaixando a si")
 	exigir(t, c.chamar("PATCH", "/api/usuarios/"+pid, admin, map[string]any{"ativo": false}), 200, "desativar")
 	exigir(t, c.chamar("GET", "/api/me", prof, nil), 401, "sessão encerrada")
 	exigir(t, c.chamar("POST", "/api/auth/login", "", map[string]string{"email": "p@escola.test", "senha": "senha-da-professora"}), 401, "login desativado")
@@ -393,13 +392,21 @@ func TestServeInterfaceEstatica(t *testing.T) {
 	exigir(t, c.chamar("GET", "/api/nada", "", nil), 404, "rota da API inexistente")
 }
 
+// novoProfessor cadastra uma professora e devolve o token dela. Só o professor corrige.
+func novoProfessor(c cliente, admin string) string {
+	c.t.Helper()
+	exigir(c.t, c.chamar("POST", "/api/usuarios", admin, map[string]string{"nome": "Prof", "email": "prof@escola.test", "senha": "senha-da-professora", "perfil": "professor"}), 201, "criar professora")
+	return c.login("prof@escola.test", "senha-da-professora")
+}
+
 func TestIANaoConfigurada(t *testing.T) {
 	c, _ := novoAmbiente(t, nil)
 	admin := c.login("admin@escola.test", "senha-do-admin")
-	r := c.chamar("POST", "/api/textos", admin, map[string]any{"aluno_codigo": "X1", "conteudo": "Eu ja fui.", "consentimento": true})
+	prof := novoProfessor(c, admin)
+	r := c.chamar("POST", "/api/textos", prof, map[string]any{"aluno_codigo": "X1", "conteudo": "Eu ja fui.", "consentimento": true})
 	id := r.corpo["id"].(string)
-	exigir(t, c.chamar("POST", "/api/textos/"+id+"/corrigir", admin, map[string]string{"motor": "ia"}), 422, "IA ausente")
-	r = c.chamar("POST", "/api/textos/"+id+"/corrigir?aguardar=1", admin, nil)
+	exigir(t, c.chamar("POST", "/api/textos/"+id+"/corrigir", prof, map[string]string{"motor": "ia"}), 422, "IA ausente")
+	r = c.chamar("POST", "/api/textos/"+id+"/corrigir?aguardar=1", prof, nil)
 	exigir(t, r, 200, "sem IA, usa o simulado")
 	if r.corpo["motor"] != "simulado" {
 		t.Fatalf("motor: %s", r.bruto)
@@ -420,9 +427,10 @@ func (f iaComErro) Corrigir(context.Context, string, []string) (corretor.Respost
 func TestFalhaNaCorrecaoVoltaParaPendente(t *testing.T) {
 	c, _ := novoAmbiente(t, iaComErro{corretor.ErrLimite})
 	admin := c.login("admin@escola.test", "senha-do-admin")
-	r := c.chamar("POST", "/api/textos", admin, map[string]any{"aluno_codigo": "X1", "conteudo": "Eu ja fui.", "consentimento": true})
+	prof := novoProfessor(c, admin)
+	r := c.chamar("POST", "/api/textos", prof, map[string]any{"aluno_codigo": "X1", "conteudo": "Eu ja fui.", "consentimento": true})
 	id := r.corpo["id"].(string)
-	r = c.chamar("POST", "/api/textos/"+id+"/corrigir?aguardar=true", admin, nil)
+	r = c.chamar("POST", "/api/textos/"+id+"/corrigir?aguardar=true", prof, nil)
 	exigir(t, r, 200, "corrigir")
 	if r.corpo["status"] != "pendente" || !strings.Contains(r.corpo["erro_correcao"].(string), "Aguarde um minuto") {
 		t.Fatalf("falha: %s", r.bruto)
@@ -443,9 +451,10 @@ func (iaDupla) Corrigir(context.Context, string, []string) (corretor.Resposta, e
 func TestListarCompletoEDecidirSoPendentes(t *testing.T) {
 	c, _ := novoAmbiente(t, iaDupla{})
 	admin := c.login("admin@escola.test", "senha-do-admin")
-	r := c.chamar("POST", "/api/textos", admin, map[string]any{"aluno_codigo": "X1", "conteudo": "Eu ja fui e nos vamos.", "consentimento": true})
+	prof := novoProfessor(c, admin)
+	r := c.chamar("POST", "/api/textos", prof, map[string]any{"aluno_codigo": "X1", "conteudo": "Eu ja fui e nos vamos.", "consentimento": true})
 	id := r.corpo["id"].(string)
-	r = c.chamar("POST", "/api/textos/"+id+"/corrigir?aguardar=true", admin, nil)
+	r = c.chamar("POST", "/api/textos/"+id+"/corrigir?aguardar=true", prof, nil)
 	exigir(t, r, 200, "corrigir")
 	aps := lista(r.corpo["apontamentos"])
 	if len(aps) != 2 {
@@ -463,9 +472,9 @@ func TestListarCompletoEDecidirSoPendentes(t *testing.T) {
 
 	// O professor ajusta o primeiro; "aceitar pendentes" não pode apagar esse ajuste.
 	primeiro := aps[0].(map[string]any)["id"].(string)
-	exigir(t, c.chamar("PATCH", "/api/textos/"+id+"/apontamentos/"+primeiro, admin,
+	exigir(t, c.chamar("PATCH", "/api/textos/"+id+"/apontamentos/"+primeiro, prof,
 		map[string]any{"decisao": "editada", "sugestao_final": "já agora"}), 200, "editar")
-	r = c.chamar("POST", "/api/textos/"+id+"/decisoes", admin, map[string]any{"decisao": "aceita", "apenas_pendentes": true})
+	r = c.chamar("POST", "/api/textos/"+id+"/decisoes", prof, map[string]any{"decisao": "aceita", "apenas_pendentes": true})
 	exigir(t, r, 200, "aceitar pendentes")
 	for _, a := range lista(r.corpo["apontamentos"]) {
 		ap := a.(map[string]any)
@@ -482,7 +491,7 @@ func TestListarCompletoEDecidirSoPendentes(t *testing.T) {
 	}
 
 	// Sem a opção, o comportamento antigo continua: decide tudo.
-	r = c.chamar("POST", "/api/textos/"+id+"/decisoes", admin, map[string]any{"decisao": "recusada"})
+	r = c.chamar("POST", "/api/textos/"+id+"/decisoes", prof, map[string]any{"decisao": "recusada"})
 	exigir(t, r, 200, "recusar tudo")
 	for _, a := range lista(r.corpo["apontamentos"]) {
 		if a.(map[string]any)["decisao"] != "recusada" {
@@ -494,17 +503,16 @@ func TestListarCompletoEDecidirSoPendentes(t *testing.T) {
 func TestPropostas(t *testing.T) {
 	c, _ := novoAmbiente(t, nil)
 	admin := c.login("admin@escola.test", "senha-do-admin")
-	exigir(t, c.chamar("POST", "/api/usuarios", admin, map[string]any{"nome": "Lia", "email": "lia@escola.test", "senha": "senha-leitura-1", "perfil": "leitura"}), 201, "criar leitura")
-	leitura := c.login("lia@escola.test", "senha-leitura-1")
+	prof := novoProfessor(c, admin)
 
 	base := map[string]any{"tema": "A vida no campo", "genero": "Narrativo", "turmas": []string{"8º A"}, "prazo": "2026-12-10"}
-	exigir(t, c.chamar("POST", "/api/propostas", leitura, base), 403, "leitura criando proposta")
-	exigir(t, c.chamar("POST", "/api/propostas", admin, map[string]any{"tema": "Ok", "genero": "Narrativo", "turmas": []string{"8º A"}}), 422, "tema curto")
-	exigir(t, c.chamar("POST", "/api/propostas", admin, map[string]any{"tema": "Tema bom", "genero": "Poema", "turmas": []string{"8º A"}}), 422, "gênero inválido")
-	exigir(t, c.chamar("POST", "/api/propostas", admin, map[string]any{"tema": "Tema bom", "genero": "Narrativo", "turmas": []string{" "}}), 422, "sem turma")
-	exigir(t, c.chamar("POST", "/api/propostas", admin, map[string]any{"tema": "Tema bom", "genero": "Narrativo", "turmas": []string{"8º A"}, "prazo": "10/12/2026"}), 422, "prazo inválido")
+	exigir(t, c.chamar("POST", "/api/propostas", admin, base), 403, "admin criando proposta")
+	exigir(t, c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "Ok", "genero": "Narrativo", "turmas": []string{"8º A"}}), 422, "tema curto")
+	exigir(t, c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "Tema bom", "genero": "Poema", "turmas": []string{"8º A"}}), 422, "gênero inválido")
+	exigir(t, c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "Tema bom", "genero": "Narrativo", "turmas": []string{" "}}), 422, "sem turma")
+	exigir(t, c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "Tema bom", "genero": "Narrativo", "turmas": []string{"8º A"}, "prazo": "10/12/2026"}), 422, "prazo inválido")
 
-	r := c.chamar("POST", "/api/propostas", admin, base)
+	r := c.chamar("POST", "/api/propostas", prof, base)
 	exigir(t, r, 201, "criar proposta")
 	id := r.corpo["id"].(string)
 	if r.corpo["prazo"] != "2026-12-10" || r.corpo["encerrada"] != false {
@@ -512,30 +520,30 @@ func TestPropostas(t *testing.T) {
 	}
 
 	// Importar dentro da proposta: turma e título vêm dela.
-	r = c.chamar("POST", "/api/textos", admin, map[string]any{"aluno_codigo": "Ipê Lilás", "conteudo": "Eu ja fui na roça.", "consentimento": true, "proposta_id": id})
+	r = c.chamar("POST", "/api/textos", prof, map[string]any{"aluno_codigo": "Ipê Lilás", "conteudo": "Eu ja fui na roça.", "consentimento": true, "proposta_id": id})
 	exigir(t, r, 201, "texto na proposta")
 	if r.corpo["turma"] != "8º A" || r.corpo["titulo"] != "A vida no campo" || r.corpo["proposta_id"] != id {
 		t.Fatalf("herança da proposta: %s", r.bruto)
 	}
 	textoID := r.corpo["id"].(string)
-	exigir(t, c.chamar("POST", "/api/textos", admin, map[string]any{"aluno_codigo": "Onça Jade", "turma": "9º B", "conteudo": "Texto.", "consentimento": true, "proposta_id": id}), 422, "turma fora da proposta")
-	exigir(t, c.chamar("POST", "/api/textos", admin, map[string]any{"aluno_codigo": "Onça Jade", "conteudo": "Texto.", "consentimento": true, "proposta_id": "nao-existe"}), 422, "proposta inexistente")
-	exigir(t, c.chamar("POST", "/api/textos", admin, map[string]any{"aluno_codigo": "Avulso", "conteudo": "Texto avulso.", "consentimento": true}), 201, "texto avulso")
+	exigir(t, c.chamar("POST", "/api/textos", prof, map[string]any{"aluno_codigo": "Onça Jade", "turma": "9º B", "conteudo": "Texto.", "consentimento": true, "proposta_id": id}), 422, "turma fora da proposta")
+	exigir(t, c.chamar("POST", "/api/textos", prof, map[string]any{"aluno_codigo": "Onça Jade", "conteudo": "Texto.", "consentimento": true, "proposta_id": "nao-existe"}), 422, "proposta inexistente")
+	exigir(t, c.chamar("POST", "/api/textos", prof, map[string]any{"aluno_codigo": "Avulso", "conteudo": "Texto avulso.", "consentimento": true}), 201, "texto avulso")
 
 	// Filtro e contagem.
-	if n := len(lista(c.chamar("GET", "/api/textos?proposta="+id, leitura, nil).corpo["textos"])); n != 1 {
+	if n := len(lista(c.chamar("GET", "/api/textos?proposta="+id, admin, nil).corpo["textos"])); n != 1 {
 		t.Fatalf("filtro por proposta: %d textos", n)
 	}
-	r = c.chamar("GET", "/api/propostas/"+id, leitura, nil)
+	r = c.chamar("GET", "/api/propostas/"+id, admin, nil)
 	exigir(t, r, 200, "obter proposta")
 	if cont := r.corpo["contagem"].(map[string]any); cont["total"] != float64(1) || cont["aguardando_ia"] != float64(1) {
 		t.Fatalf("contagem: %s", r.bruto)
 	}
 
 	// CSV ganha a coluna proposta_id e aceita o filtro.
-	exigir(t, c.chamar("POST", "/api/textos/"+textoID+"/corrigir?aguardar=true", admin, nil), 200, "corrigir")
-	exigir(t, c.chamar("POST", "/api/textos/"+textoID+"/decisoes", admin, map[string]any{"decisao": "aceita"}), 200, "decidir")
-	r = c.chamar("GET", "/api/metricas/decisoes.csv?proposta="+id, leitura, nil)
+	exigir(t, c.chamar("POST", "/api/textos/"+textoID+"/corrigir?aguardar=true", prof, nil), 200, "corrigir")
+	exigir(t, c.chamar("POST", "/api/textos/"+textoID+"/decisoes", prof, map[string]any{"decisao": "aceita"}), 200, "decidir")
+	r = c.chamar("GET", "/api/metricas/decisoes.csv?proposta="+id, admin, nil)
 	exigir(t, r, 200, "csv")
 	linhas := strings.Split(strings.TrimSpace(string(r.bruto)), "\n")
 	if !strings.HasSuffix(linhas[0], ",proposta_id") || len(linhas) < 2 || !strings.HasSuffix(linhas[1], ","+id) {
@@ -543,12 +551,12 @@ func TestPropostas(t *testing.T) {
 	}
 
 	// Encerrar: não aceita novas redações; reabrir volta a aceitar.
-	r = c.chamar("PATCH", "/api/propostas/"+id, admin, map[string]any{"encerrada": true, "prazo": nil})
+	r = c.chamar("PATCH", "/api/propostas/"+id, prof, map[string]any{"encerrada": true, "prazo": nil})
 	exigir(t, r, 200, "encerrar")
 	if r.corpo["encerrada"] != true || r.corpo["prazo"] != nil {
 		t.Fatalf("encerrar: %s", r.bruto)
 	}
-	r = c.chamar("POST", "/api/textos", admin, map[string]any{"aluno_codigo": "Onça Jade", "conteudo": "Texto.", "consentimento": true, "proposta_id": id})
+	r = c.chamar("POST", "/api/textos", prof, map[string]any{"aluno_codigo": "Onça Jade", "conteudo": "Texto.", "consentimento": true, "proposta_id": id})
 	if r.status != 422 || r.erro() != "proposta_encerrada" {
 		t.Fatalf("importar em proposta encerrada: %d %s", r.status, r.bruto)
 	}
@@ -557,9 +565,9 @@ func TestPropostas(t *testing.T) {
 	}
 
 	// Excluir: só sem redações.
-	exigir(t, c.chamar("DELETE", "/api/propostas/"+id, admin, nil), 409, "excluir com redações")
-	r = c.chamar("POST", "/api/propostas", admin, map[string]any{"tema": "Rascunho de tema", "genero": "Outro", "turmas": []string{"8º A"}})
-	exigir(t, c.chamar("DELETE", "/api/propostas/"+r.corpo["id"].(string), admin, nil), 204, "excluir vazia")
+	exigir(t, c.chamar("DELETE", "/api/propostas/"+id, prof, nil), 409, "excluir com redações")
+	r = c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "Rascunho de tema", "genero": "Outro", "turmas": []string{"8º A"}})
+	exigir(t, c.chamar("DELETE", "/api/propostas/"+r.corpo["id"].(string), prof, nil), 204, "excluir vazia")
 	r = c.chamar("GET", "/api/propostas/nao-existe", admin, nil)
 	if r.status != 404 || !strings.Contains(string(r.bruto), "Proposta não encontrada") {
 		t.Fatalf("404: %d %s", r.status, r.bruto)
@@ -569,17 +577,18 @@ func TestPropostas(t *testing.T) {
 func TestEnvioPeloAluno(t *testing.T) {
 	c, _ := novoAmbiente(t, nil)
 	admin := c.login("admin@escola.test", "senha-do-admin")
+	prof := novoProfessor(c, admin)
 	cfg := c.chamar("GET", "/api/config", admin, nil).corpo["configuracao"].(map[string]any)
 	grupo := lista(cfg["grupos"])[1].(string)
 
-	p := c.chamar("POST", "/api/propostas", admin, map[string]any{"tema": "A vida no campo", "genero": "Narrativo", "turmas": []string{"8º A"}})
+	p := c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "A vida no campo", "genero": "Narrativo", "turmas": []string{"8º A"}})
 	propostaID := p.corpo["id"].(string)
-	outra := c.chamar("POST", "/api/propostas", admin, map[string]any{"tema": "Outra turma", "genero": "Relato", "turmas": []string{"9º B"}}).corpo["id"].(string)
-	segunda := c.chamar("POST", "/api/propostas", admin, map[string]any{"tema": "Minha escola", "genero": "Relato", "turmas": []string{"8º A"}}).corpo["id"].(string)
+	outra := c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "Outra turma", "genero": "Relato", "turmas": []string{"9º B"}}).corpo["id"].(string)
+	segunda := c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "Minha escola", "genero": "Relato", "turmas": []string{"8º A"}}).corpo["id"].(string)
 
 	alunos := []map[string]any{{"aluno_codigo": "Ipê Lilás", "turma": "8º A", "grupo": grupo}, {"aluno_codigo": "Onça Jade", "turma": "8º A"}}
-	exigir(t, c.chamar("POST", "/api/codigos", admin, map[string]any{"alunos": alunos}), 422, "sem consentimento")
-	r := c.chamar("POST", "/api/codigos", admin, map[string]any{"alunos": alunos, "consentimento": true})
+	exigir(t, c.chamar("POST", "/api/codigos", prof, map[string]any{"alunos": alunos}), 422, "sem consentimento")
+	r := c.chamar("POST", "/api/codigos", prof, map[string]any{"alunos": alunos, "consentimento": true})
 	exigir(t, r, 201, "gerar códigos")
 	codigos := lista(r.corpo["codigos"])
 	codigo := codigos[0].(map[string]any)["codigo"].(string)
@@ -587,7 +596,7 @@ func TestEnvioPeloAluno(t *testing.T) {
 	if len(codigo) != 9 || codigo[4] != '-' {
 		t.Fatalf("formato do código: %q", codigo)
 	}
-	if n := len(lista(c.chamar("GET", "/api/codigos?turma="+url.QueryEscape("8º A"), admin, nil).corpo["codigos"])); n != 2 {
+	if n := len(lista(c.chamar("GET", "/api/codigos?turma="+url.QueryEscape("8º A"), prof, nil).corpo["codigos"])); n != 2 {
 		t.Fatalf("códigos ativos: %d", n)
 	}
 
@@ -604,7 +613,7 @@ func TestEnvioPeloAluno(t *testing.T) {
 	r = c.chamar("POST", "/api/aluno/entregas", "", map[string]string{"codigo": codigo, "proposta_id": propostaID, "conteudo": "Eu ja fui na roça."})
 	exigir(t, r, 201, "entrega")
 	textoID := r.corpo["texto_id"].(string)
-	texto := c.chamar("GET", "/api/textos/"+textoID, admin, nil).corpo
+	texto := c.chamar("GET", "/api/textos/"+textoID, prof, nil).corpo
 	if texto["origem"] != "aluno" || texto["grupo"] != grupo || texto["proposta_id"] != propostaID || texto["titulo"] != "A vida no campo" {
 		t.Fatalf("texto do aluno: %v", texto)
 	}
@@ -612,7 +621,7 @@ func TestEnvioPeloAluno(t *testing.T) {
 	// Reenvio troca o texto enquanto a correção não começou.
 	r = c.chamar("POST", "/api/aluno/entregas", "", map[string]string{"codigo": codigo, "proposta_id": propostaID, "conteudo": "Eu já fui na roça, e voltei."})
 	exigir(t, r, 200, "reenvio")
-	if c.chamar("GET", "/api/textos/"+textoID, admin, nil).corpo["conteudo"] != "Eu já fui na roça, e voltei." {
+	if c.chamar("GET", "/api/textos/"+textoID, prof, nil).corpo["conteudo"] != "Eu já fui na roça, e voltei." {
 		t.Fatal("o reenvio não trocou o texto")
 	}
 
@@ -631,10 +640,10 @@ func TestEnvioPeloAluno(t *testing.T) {
 	// Devolutiva: só depois do envio pelo professor, e só do próprio aluno.
 	exigir(t, c.chamar("POST", "/api/aluno/devolutiva", "", map[string]string{"codigo": codigo, "texto_id": textoID}), 409, "antes do envio")
 	exigir(t, c.chamar("POST", "/api/aluno/devolutiva", "", map[string]string{"codigo": codigoOnca, "texto_id": textoID}), 404, "devolutiva de outro aluno")
-	exigir(t, c.chamar("POST", "/api/textos/"+textoID+"/corrigir?aguardar=true", admin, nil), 200, "corrigir")
+	exigir(t, c.chamar("POST", "/api/textos/"+textoID+"/corrigir?aguardar=true", prof, nil), 200, "corrigir")
 	exigir(t, c.chamar("POST", "/api/aluno/entregas", "", map[string]string{"codigo": codigo, "proposta_id": propostaID, "conteudo": "Outro."}), 409, "reenvio depois da correção")
-	exigir(t, c.chamar("POST", "/api/textos/"+textoID+"/decisoes", admin, map[string]any{"decisao": "aceita"}), 200, "decidir")
-	exigir(t, c.chamar("POST", "/api/textos/"+textoID+"/enviar", admin, map[string]string{"comentario": "Muito bem!"}), 200, "enviar")
+	exigir(t, c.chamar("POST", "/api/textos/"+textoID+"/decisoes", prof, map[string]any{"decisao": "aceita"}), 200, "decidir")
+	exigir(t, c.chamar("POST", "/api/textos/"+textoID+"/enviar", prof, map[string]string{"comentario": "Muito bem!"}), 200, "enviar")
 	r = c.chamar("POST", "/api/aluno/devolutiva", "", map[string]string{"codigo": codigo, "texto_id": textoID})
 	exigir(t, r, 200, "devolutiva")
 	if r.corpo["comentario"] != "Muito bem!" {
@@ -645,10 +654,10 @@ func TestEnvioPeloAluno(t *testing.T) {
 	}
 
 	// Regenerar revoga o código anterior; revogar tira o acesso.
-	novo := lista(c.chamar("POST", "/api/codigos", admin, map[string]any{"alunos": alunos[:1], "consentimento": true}).corpo["codigos"])[0].(map[string]any)["codigo"].(string)
+	novo := lista(c.chamar("POST", "/api/codigos", prof, map[string]any{"alunos": alunos[:1], "consentimento": true}).corpo["codigos"])[0].(map[string]any)["codigo"].(string)
 	exigir(t, c.chamar("POST", "/api/aluno/acesso", "", map[string]string{"codigo": codigo}), 401, "código antigo")
 	exigir(t, c.chamar("POST", "/api/aluno/acesso", "", map[string]string{"codigo": novo}), 200, "código novo")
-	exigir(t, c.chamar("DELETE", "/api/codigos/"+url.PathEscape("Ipê Lilás"), admin, nil), 204, "revogar")
+	exigir(t, c.chamar("DELETE", "/api/codigos/"+url.PathEscape("Ipê Lilás"), prof, nil), 204, "revogar")
 	exigir(t, c.chamar("POST", "/api/aluno/acesso", "", map[string]string{"codigo": novo}), 401, "revogado")
 
 	// Limite de tentativas erradas por IP.

@@ -2,22 +2,22 @@ import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, signa
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
-import { AlunosService } from '../../core/redacoes/alunos.service';
 import { StatusRedacao } from '../../core/redacoes/redacao.model';
 import { RedacoesService } from '../../core/redacoes/redacoes.service';
 import { Icone } from '../../shared/icone/icone';
 import { GrupoBusca, ItemBusca, buscar } from './busca';
 import { ChamadaService } from '../../core/alunos/chamada.service';
 import { PropostasService, descreverPrazo } from '../../core/propostas/propostas.service';
+import { AlunosService } from '../../core/redacoes/alunos.service';
 
 const STATUS: Readonly<Record<StatusRedacao, string>> = {
     'aguardando-ia': 'Aguardando IA',
     corrigindo: 'Corrigindo',
     'em-revisao': 'Para revisar',
-    devolvida: 'Devolvida',
+    devolvida: 'Devolutiva registrada',
 };
 
-/** Busca global (Ctrl+K): páginas, redações e alunos. Atlas: ds-palette. */
+/** Busca global (Ctrl+K): páginas e, para o professor, redações. Atlas: ds-palette. */
 @Component({
     selector: 'app-busca-rapida',
     imports: [Icone],
@@ -27,12 +27,12 @@ const STATUS: Readonly<Record<StatusRedacao, string>> = {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BuscaRapida {
-    protected readonly chamada = inject(ChamadaService);
     private readonly router = inject(Router);
     private readonly auth = inject(AuthService);
     private readonly redacoes = inject(RedacoesService);
-    private readonly alunos = inject(AlunosService);
     private readonly propostas = inject(PropostasService);
+    private readonly alunos = inject(AlunosService);
+    private readonly chamada = inject(ChamadaService);
 
     private readonly dialogo = viewChild.required<ElementRef<HTMLDialogElement>>('dialogo');
     private readonly campo = viewChild.required<ElementRef<HTMLInputElement>>('campo');
@@ -41,7 +41,6 @@ export class BuscaRapida {
     protected readonly ativo = signal(0);
 
     private readonly itens = computed<ItemBusca[]>(() => {
-        const escritor = this.auth.temPerfil('admin', 'professor');
         const admin = this.auth.temPerfil('admin');
         const pagina = (id: string, titulo: string, link: string, icone: ItemBusca['icone']): ItemBusca => ({
             id: `p-${id}`,
@@ -54,10 +53,6 @@ export class BuscaRapida {
 
         const paginas = [
             pagina('inicio', 'Início', '/inicio', 'inicio'),
-            pagina('propostas', 'Propostas de redação', '/propostas', 'proposta'),
-            pagina('redacoes', 'Redações', '/redacoes', 'redacoes'),
-            ...(escritor ? [pagina('importar', 'Importar redação', '/redacoes/nova', 'importar')] : []),
-            pagina('alunos', 'Alunos', '/alunos', 'alunos'),
             ...(admin
                 ? [
                       pagina('usuarios', 'Usuários', '/admin/usuarios', 'escudo'),
@@ -65,8 +60,17 @@ export class BuscaRapida {
                       pagina('auditoria', 'Auditoria', '/admin/auditoria', 'escudo'),
                       pagina('metricas', 'Métricas da POC', '/admin/metricas', 'metricas'),
                   ]
-                : []),
+                : [
+                      pagina('propostas', 'Propostas de redação', '/propostas', 'proposta'),
+                      pagina('redacoes', 'Redações', '/redacoes', 'redacoes'),
+                      pagina('importar', 'Importar redação', '/redacoes/nova', 'importar'),
+                      pagina('alunos', 'Alunos', '/alunos', 'alunos'),
+                  ]),
         ];
+
+        if (admin) {
+            return paginas;
+        }
 
         // Redações para revisar primeiro: são as que o professor mais procura.
         const ordem: StatusRedacao[] = ['em-revisao', 'aguardando-ia', 'corrigindo', 'devolvida'];
@@ -81,15 +85,6 @@ export class BuscaRapida {
                 link: `/redacoes/${redacao.id}`,
             }));
 
-        const alunos = this.alunos.alunos().map<ItemBusca>((aluno) => ({
-            id: `a-${aluno.codigo}`,
-            grupo: 'Alunos',
-            titulo: this.chamada.rotulo(aluno.codigo),
-            detalhe: `${aluno.turma} · ${aluno.versoes.length} ${aluno.versoes.length === 1 ? 'redação' : 'redações'}`,
-            icone: 'alunos',
-            link: `/alunos/${aluno.codigo}`,
-        }));
-
         const propostas = [...this.propostas.propostas()]
             .sort((a, b) => Number(a.encerrada) - Number(b.encerrada))
             .map<ItemBusca>((proposta) => ({
@@ -100,6 +95,15 @@ export class BuscaRapida {
                 icone: 'proposta',
                 link: `/propostas/${proposta.id}`,
             }));
+
+        const alunos = this.alunos.alunos().map<ItemBusca>((aluno) => ({
+            id: `a-${aluno.codigo}`,
+            grupo: 'Alunos',
+            titulo: this.chamada.rotulo(aluno.codigo),
+            detalhe: `${aluno.turma} · ${aluno.versoes.length} ${aluno.versoes.length === 1 ? 'redação' : 'redações'}`,
+            icone: 'alunos',
+            link: `/alunos/${aluno.codigo}`,
+        }));
 
         return [...paginas, ...propostas, ...redacoes, ...alunos];
     });

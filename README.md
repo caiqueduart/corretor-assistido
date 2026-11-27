@@ -33,36 +33,39 @@ E, em outro terminal, `npm start` na raiz. O comando mostra as contas (admin, pr
 
 ## Como rodar
 
-O front-end exige login, então o back-end precisa estar no ar. Em um terminal:
+Com o Docker Desktop instalado, um comando na raiz sobe tudo:
+
+```bash
+npm install                       # só na primeira vez
+npm run dev
+```
+
+O `npm run dev` (`scripts/dev.mjs`) cria `apps/backend/.env` a partir do exemplo se ele não existir (defina `ADMIN_SENHA` com 10+ caracteres), abre o Docker Desktop se estiver fechado, constrói e sobe o back-end no contêiner `corretor-assistido` (`docker-compose.yml`) e, quando ele responde, inicia o front-end. O banco fica no volume `corretor-dados` e continua entre execuções; o contêiner reinicia sozinho com o Docker.
+
+Sem Docker, dá para rodar o back-end com Go:
 
 ```bash
 cd apps/backend
-cp .env.example .env              # defina ADMIN_EMAIL e ADMIN_SENHA
+cp .env.example .env
 set -a; source .env; set +a
 SEED_EXEMPLOS=true go run ./cmd/server
 ```
 
-Ou com Docker: `docker build -t corretor-textual apps/backend` e `docker run -p 8080:8080 -v corretor-dados:/dados --env-file apps/backend/.env corretor-textual`.
-
-Em outro terminal, na raiz:
-
-```bash
-npm install
-npm start
-```
-
-O front-end sobe em http://localhost:4200 e encaminha `/api` para `http://localhost:8080` (`apps/frontend/proxy.conf.json`), sem precisar de CORS. Entre com o e-mail e a senha do administrador definidos no `.env`. Sem `ADMIN_SENHA`, a senha gerada aparece uma única vez no log do back-end.
+O front-end sobe em http://localhost:4200 e encaminha `/api` para `http://localhost:8080` (`apps/frontend/proxy.conf.json`), sem precisar de CORS. Entre com o e-mail e a senha do administrador definidos no `.env` e cadastre um professor em Administração › Usuários: é com ele que se corrige. Sem `ADMIN_SENHA`, a senha gerada aparece uma única vez no log do back-end.
 
 > **Windows com espaço no nome do usuário:** o gcc do MinGW falha ao linkar (`cannot find C:/Users/Nome`). Instale o toolchain num caminho sem espaços, ou use o Docker.
 
 ## Scripts da raiz
 
-| Script           | O que faz                                   |
-| ---------------- | ------------------------------------------- |
-| `npm start`      | Sobe o front-end em modo de desenvolvimento |
-| `npm run build`  | Gera o build de todos os apps               |
-| `npm test`       | Roda os testes de todos os apps             |
-| `npm run format` | Formata o código com Prettier               |
+| Script               | O que faz                                     |
+| -------------------- | --------------------------------------------- |
+| `npm run dev`        | Sobe back-end (Docker) e front-end            |
+| `npm start`          | Sobe o front-end em modo de desenvolvimento   |
+| `npm run back:parar` | Para o contêiner do back-end (os dados ficam) |
+| `npm run back:logs`  | Mostra o log do back-end                      |
+| `npm run build`      | Gera o build de todos os apps                 |
+| `npm test`           | Roda os testes de todos os apps               |
+| `npm run format`     | Formata o código com Prettier                 |
 
 Testes do back-end: `cd apps/backend && go test ./...`.
 
@@ -70,21 +73,21 @@ Testes do back-end: `cd apps/backend && go test ./...`.
 
 Todas as telas usam o back-end:
 
-| Área                                                 | Rotas                                                      |
-| ---------------------------------------------------- | ---------------------------------------------------------- |
-| Login e sessão                                       | `/api/auth`, `/api/me`                                     |
-| Propostas de redação (tema, gênero, turmas, prazo)   | `/api/propostas`                                           |
-| Alunos › Acesso dos alunos (códigos de acesso)       | `/api/codigos`                                             |
-| Área do aluno (`/aluno`, sem login, só com o código) | `/api/aluno/*`                                             |
-| Redações: importar, corrigir, revisar, enviar        | `/api/textos` (`RedacoesHttpApi`)                          |
-| Alunos                                               | `/api/textos?completo=true`, calculadas na tela            |
-| Administração: usuários, configuração, auditoria     | `/api/usuarios`, `/api/config`, `/api/auditoria`           |
-| Administração › Métricas (só admin)                  | `/api/textos?completo=true` e `/api/metricas/decisoes.csv` |
+| Área                                                                | Perfil    | Rotas                                            |
+| ------------------------------------------------------------------- | --------- | ------------------------------------------------ |
+| Login e sessão                                                      | todos     | `/api/auth`, `/api/me`                           |
+| Propostas de redação (tema, gênero, turmas, prazo)                  | professor | `/api/propostas`                                 |
+| Redações: importar, corrigir, validar, registrar, PDF da devolutiva | professor | `/api/textos` (`RedacoesHttpApi`)                |
+| Administração: usuários, configuração, auditoria                    | admin     | `/api/usuarios`, `/api/config`, `/api/auditoria` |
+| Alunos: preparar turma e códigos de acesso | professor | `/api/codigos` |
+| Administração › Métricas | admin | `/api/textos?completo=true`, `/api/metricas/decisoes.csv` |
+| Área do aluno (`/aluno`, sem login, só com o código) | aluno | `/api/aluno/*` |
+
+Perfis (os mesmos da POC): o **administrador** cadastra professores e outros usuários e cuida da configuração e da auditoria, sem corrigir redações. O **professor** importa, corrige, valida e registra a devolutiva. Depois do registro, o botão "Gerar PDF para o aluno" abre a impressão do navegador só com a devolutiva; escolha "Salvar como PDF". O estudante não tem login. As telas de evolução do aluno e de métricas da POC ainda não fazem parte desta versão (as rotas `/api/metricas` do back-end continuam disponíveis).
 
 - O token de acesso fica no `localStorage` até expirar (`SESSAO_DURACAO`, 12h por padrão). Uma resposta 401 encerra a sessão e volta ao login.
-- A configuração do admin (critérios, perfis sociolinguísticos e limiar de viés) vale na importação e nas métricas.
+- A configuração do admin (critérios, perfis sociolinguísticos e limiar de viés) vale na importação.
 - A correção espera o resultado (`?aguardar=true`). Sem `ANTHROPIC_API_KEY`, o back-end usa o motor simulado.
-- O perfil `leitura` vê tudo, mas não importa, corrige, decide nem envia.
 - Com o banco vazio, a tela de Redações oferece "Carregar textos de exemplo".
 - Propostas organizam as redações por atividade: a importação pode escolher a proposta (turma e título vêm dela), e a fila, as métricas e o CSV filtram por proposta. Proposta encerrada não recebe redações novas.
 - Alunos são identificados por apelidos de fauna e flora ("Ipê Lilás"). O nome real é opcional e fica só no navegador do professor (lista de chamada local), nunca no servidor.

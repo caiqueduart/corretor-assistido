@@ -1,6 +1,6 @@
 <app-cabecalho-pagina
     titulo="Redações"
-    descricao="A IA corrige a lápis; você decide o que vale. Nada chega ao aluno sem o seu envio."
+    descricao="Importe as redações, valide a correção da IA e registre a devolutiva de cada aluno."
 />
 
 @if (redacoes.erroCarga(); as mensagem) {
@@ -12,28 +12,21 @@
     <div class="cartao"><app-esqueleto [quantidade]="6" rotulo="Carregando redações…" /></div>
 } @else if (!redacoes.redacoes().length) {
     <div class="cartao">
-        @if (podeEditar()) {
-            <app-estado-vazio
-                icone="importar"
-                titulo="Nenhuma redação ainda"
-                texto="Importe a primeira redação (PDF, TXT ou DOCX) ou carregue os textos fictícios do roteiro de demonstração."
-            >
-                <div class="fila__acoes-vazio">
-                    <a class="botao botao--primario" routerLink="/redacoes/nova">
-                        <app-icone nome="importar" />
-                        Importar redação
-                    </a>
-                    <button class="botao" type="button" [disabled]="carregandoExemplos()" (click)="carregarExemplos()">
-                        {{ carregandoExemplos() ? 'Carregando…' : 'Carregar textos de exemplo' }}
-                    </button>
-                </div>
-            </app-estado-vazio>
-        } @else {
-            <app-estado-vazio
-                titulo="Nenhuma redação ainda"
-                texto="Quando os professores importarem redações, elas aparecem aqui."
-            />
-        }
+        <app-estado-vazio
+            icone="importar"
+            titulo="Nenhuma redação ainda"
+            texto="Importe a primeira redação (PDF, TXT ou DOCX) ou carregue os textos fictícios do roteiro de demonstração."
+        >
+            <div class="fila__acoes-vazio">
+                <a class="botao botao--primario" routerLink="/redacoes/nova">
+                    <app-icone nome="importar" />
+                    Importar redação
+                </a>
+                <button class="botao" type="button" [disabled]="carregandoExemplos()" (click)="carregarExemplos()">
+                    {{ carregandoExemplos() ? 'Carregando…' : 'Carregar textos de exemplo' }}
+                </button>
+            </div>
+        </app-estado-vazio>
     </div>
 } @else {
     <section class="cartao fila">
@@ -132,7 +125,7 @@
                                     </span>
                                 } @else if (redacao.status === 'devolvida') {
                                     <span class="lista__detalhe">
-                                        Enviada em {{ redacao.enviadaEm | date: "dd/MM 'às' HH:mm" }}
+                                        Registrada em {{ redacao.enviadaEm | date: "dd/MM 'às' HH:mm" }}
                                     </span>
                                 } @else {
                                     <span class="lista__detalhe">{{ item.palavras }} palavras</span>
@@ -152,8 +145,8 @@
                                         class="botao botao--primario botao--pequeno"
                                         [routerLink]="['/redacoes', redacao.id]"
                                     >
-                                        {{ !podeEditar() ? 'Ver' : item.feitas ? 'Continuar' : 'Revisar' }}
-                                        <span class="visualmente-oculto">{{ chamada.rotulo(redacao.aluno) }}</span>
+                                        {{ item.feitas ? 'Continuar' : 'Revisar' }}
+                                        <span class="visualmente-oculto">{{ redacao.aluno }}</span>
                                     </a>
                                 }
                                 @case ('corrigindo') {
@@ -163,13 +156,11 @@
                                     </span>
                                 }
                                 @case ('aguardando-ia') {
-                                    @if (podeEditar()) {
-                                        <button class="botao botao--pequeno" type="button" (click)="corrigir(redacao)">
-                                            <app-icone nome="lapis" />
-                                            {{ redacao.erroCorrecao ? 'Tentar de novo' : 'Corrigir com IA' }}
-                                            <span class="visualmente-oculto">{{ chamada.rotulo(redacao.aluno) }}</span>
-                                        </button>
-                                    }
+                                    <button class="botao botao--pequeno" type="button" (click)="corrigir(redacao)">
+                                        <app-icone nome="lapis" />
+                                        {{ redacao.erroCorrecao ? 'Tentar de novo' : 'Corrigir com IA' }}
+                                        <span class="visualmente-oculto">{{ redacao.aluno }}</span>
+                                    </button>
                                 }
                                 @default {
                                     <a
@@ -177,7 +168,7 @@
                                         [routerLink]="['/redacoes', redacao.id]"
                                     >
                                         Ver devolutiva
-                                        <span class="visualmente-oculto">{{ chamada.rotulo(redacao.aluno) }}</span>
+                                        <span class="visualmente-oculto">{{ redacao.aluno }}</span>
                                     </a>
                                 }
                             }
@@ -198,7 +189,7 @@
                     [titulo]="abaAtual().vazio.titulo"
                     [texto]="abaAtual().vazio.texto"
                 >
-                    @if (aba() === 'aguardando' && podeEditar()) {
+                    @if (aba() === 'aguardando') {
                         <a class="botao botao--primario botao--pequeno" routerLink="/redacoes/nova">Importar redação</a>
                     }
                 </app-estado-vazio>

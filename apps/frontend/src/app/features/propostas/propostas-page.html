@@ -2,12 +2,10 @@
     titulo="Propostas de redação"
     descricao="Cada proposta reúne o tema, as orientações e as redações de uma atividade."
 >
-    @if (podeEditar()) {
-        <button class="botao botao--primario" type="button" (click)="criando.set(true)">
-            <app-icone nome="mais" />
-            Nova proposta
-        </button>
-    }
+    <button class="botao botao--primario" type="button" (click)="criando.set(true)">
+        <app-icone nome="mais" />
+        Nova proposta
+    </button>
 </app-cabecalho-pagina>
 
 @if (propostas.erroCarga(); as mensagem) {
@@ -24,11 +22,9 @@
             titulo="Nenhuma proposta ainda"
             texto="Crie a primeira proposta com o tema e as turmas. Depois, importe as redações dentro dela."
         >
-            @if (podeEditar()) {
-                <button class="botao botao--primario botao--pequeno" type="button" (click)="criando.set(true)">
-                    Nova proposta
-                </button>
-            }
+            <button class="botao botao--primario botao--pequeno" type="button" (click)="criando.set(true)">
+                Nova proposta
+            </button>
         </app-estado-vazio>
     </div>
 } @else {

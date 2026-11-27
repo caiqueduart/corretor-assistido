@@ -4,14 +4,14 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 
 import { ConfigService, GRUPO_NAO_INFORMADO } from '../../../core/admin/config.service';
-import { gerarApelido } from '../../../core/alunos/apelidos';
-import { ChamadaService } from '../../../core/alunos/chamada.service';
 import { AlunosService } from '../../../core/redacoes/alunos.service';
 import { PropostasService, descreverPrazo } from '../../../core/propostas/propostas.service';
 import { RedacoesService } from '../../../core/redacoes/redacoes.service';
 import { CabecalhoPagina } from '../../../shared/cabecalho-pagina/cabecalho-pagina';
 import { Icone } from '../../../shared/icone/icone';
 import { AvisosService } from '../../../core/ui/avisos.service';
+import { gerarApelido } from '../../../core/alunos/apelidos';
+import { ChamadaService } from '../../../core/alunos/chamada.service';
 
 const EXTENSOES_ACEITAS = ['pdf', 'txt', 'docx'];
 
@@ -27,8 +27,8 @@ export class ImportarPage implements OnInit {
     private readonly router = inject(Router);
     private readonly avisos = inject(AvisosService);
     private readonly alunos = inject(AlunosService);
-    protected readonly chamada = inject(ChamadaService);
     private readonly propostas = inject(PropostasService);
+    protected readonly chamada = inject(ChamadaService);
 
     /** Query params (?proposta=&aluno=) vindos da página da proposta. */
     readonly proposta = input<string>();
@@ -41,8 +41,8 @@ export class ImportarPage implements OnInit {
     protected readonly perfis = inject(ConfigService).grupos;
 
     protected readonly formulario = inject(NonNullableFormBuilder).group({
-        /** Identificador enviado ao servidor: apelido (aluno novo) ou o já existente. Nunca o nome. */
-        aluno: ['', Validators.required],
+        /** Código do aluno (novo) ou o de um aluno já acompanhado. Nunca o nome. */
+        aluno: ['', [Validators.required, Validators.maxLength(40)]],
         /** Proposta de redação; vazio = redação avulsa. */
         propostaId: [''],
         /** Nome real do aluno novo: fica só neste computador (lista de chamada local). */
@@ -99,7 +99,7 @@ export class ImportarPage implements OnInit {
         }
     }
 
-    /** Aluno novo (apelido sorteado) ou já acompanhado (escolhido na lista). */
+    /** Aluno novo (código digitado) ou já acompanhado (escolhido na lista). */
     protected readonly modo = signal<'novo' | 'existente'>('novo');
 
     protected readonly existentes = computed(() =>
@@ -109,24 +109,16 @@ export class ImportarPage implements OnInit {
             .sort((a, b) => a.rotulo.localeCompare(b.rotulo, 'pt-BR')),
     );
 
-    constructor() {
-        this.sortear();
-    }
-
     protected mudarModo(modo: 'novo' | 'existente'): void {
         this.modo.set(modo);
+        this.formulario.controls.aluno.reset('');
         this.formulario.controls.nomeLocal.reset('');
-
-        if (modo === 'novo') {
-            this.sortear();
-        } else {
-            this.formulario.controls.aluno.reset('');
-        }
     }
 
-    /** Sorteia um apelido que nenhum aluno usa ainda. */
+    /** Preenche o código com um apelido de fauna e flora que ninguém usa ainda. */
     protected sortear(): void {
         this.formulario.controls.aluno.setValue(gerarApelido(this.alunos.alunos().map((aluno) => aluno.codigo)));
+        this.formulario.controls.aluno.markAsTouched();
     }
 
     /** Ao escolher um aluno já acompanhado, repete a turma e o perfil dele. */
@@ -170,13 +162,14 @@ export class ImportarPage implements OnInit {
             return;
         }
 
-        const { nomeLocal, propostaId, ...valores } = this.formulario.getRawValue();
+        const { propostaId, nomeLocal, ...valores } = this.formulario.getRawValue();
         this.enviando.set(true);
         this.erroEnvio.set(null);
 
         try {
             const redacao = await this.redacoes.importar({
                 ...valores,
+                aluno: valores.aluno.trim(),
                 origemId: null,
                 propostaId: propostaId || null,
                 arquivo: this.arquivo(),

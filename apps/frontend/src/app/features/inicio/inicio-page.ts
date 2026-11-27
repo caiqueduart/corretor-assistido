@@ -3,16 +3,13 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
-import { AlunosService } from '../../core/redacoes/alunos.service';
 import { contarDecisoes } from '../../core/redacoes/analise';
-import { StatusRedacao } from '../../core/redacoes/redacao.model';
 import { RedacoesService } from '../../core/redacoes/redacoes.service';
 import { Esqueleto } from '../../shared/esqueleto/esqueleto';
 import { EstadoVazio } from '../../shared/estado-vazio/estado-vazio';
 import { Icone, NomeIcone } from '../../shared/icone/icone';
 import { saudacao, tempoRelativo } from '../../shared/tempo';
 import { InicioAdmin } from './inicio-admin';
-import { ChamadaService } from '../../core/alunos/chamada.service';
 import { progressoDe, progressoPorProposta } from '../../core/propostas/progresso';
 import { PropostasService, descreverPrazo } from '../../core/propostas/propostas.service';
 import { tomPrazo } from '../propostas/propostas-page';
@@ -28,13 +25,6 @@ interface Indicador {
 
 const SEMANA = 7 * 24 * 3_600_000;
 
-const ROTULO_STATUS: Readonly<Record<StatusRedacao, string>> = {
-    'em-revisao': 'Para revisar',
-    'aguardando-ia': 'Aguardando IA',
-    corrigindo: 'Corrigindo',
-    devolvida: 'Devolvidas',
-};
-
 /** Tela inicial: o que importa para cada perfil, logo depois do login. */
 @Component({
     selector: 'app-inicio-page',
@@ -44,12 +34,9 @@ const ROTULO_STATUS: Readonly<Record<StatusRedacao, string>> = {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InicioPage {
-    protected readonly chamada = inject(ChamadaService);
     private readonly auth = inject(AuthService);
-    private readonly alunos = inject(AlunosService);
     protected readonly redacoes = inject(RedacoesService);
 
-    protected readonly escritor = computed(() => this.auth.temPerfil('admin', 'professor'));
     protected readonly admin = computed(() => this.auth.temPerfil('admin'));
     protected readonly tempo = tempoRelativo;
     protected readonly propostas = inject(PropostasService);
@@ -73,14 +60,9 @@ export class InicioPage {
     protected readonly titulo = computed(() => `${saudacao()}, ${(this.auth.usuario()?.nome ?? '').split(/\s+/)[0]}`);
 
     protected readonly subtitulo = computed(() => {
-        switch (this.auth.perfil()) {
-            case 'admin':
-                return 'Visão geral do corretor, da equipe e dos resultados da POC.';
-            case 'professor':
-                return 'Veja o que espera a sua revisão. Nada chega ao aluno sem o seu envio.';
-            default:
-                return 'Acompanhe o andamento das correções e das devolutivas.';
-        }
+        return this.admin()
+            ? 'Visão geral do corretor, da equipe e da atividade recente.'
+            : 'Veja as redações que esperam a sua revisão.';
     });
 
     protected readonly indicadores = computed<Indicador[]>(() => {
@@ -106,18 +88,11 @@ export class InicioPage {
                 atencao: falhas > 0,
             },
             {
-                rotulo: 'Devolvidas na semana',
+                rotulo: 'Devolutivas na semana',
                 valor: naSemana,
-                detalhe: `${grupos.devolvidas.length} no total`,
-                icone: 'enviar',
+                detalhe: `${grupos.devolvidas.length} registradas no total`,
+                icone: 'selo',
                 link: '/redacoes',
-            },
-            {
-                rotulo: 'Alunos',
-                valor: this.alunos.alunos().length,
-                detalhe: 'acompanhados na POC',
-                icone: 'alunos',
-                link: '/alunos',
             },
         ];
     });
@@ -156,19 +131,4 @@ export class InicioPage {
             .sort((a, b) => (b.enviadaEm ?? '').localeCompare(a.enviadaEm ?? ''))
             .slice(0, 5),
     );
-
-    /** Distribuição por situação, para o perfil leitura. */
-    protected readonly distribuicao = computed(() => {
-        const todas = this.redacoes.redacoes();
-        const total = todas.length || 1;
-        const ordem: StatusRedacao[] = ['devolvida', 'em-revisao', 'aguardando-ia', 'corrigindo'];
-
-        return ordem
-            .map((status) => {
-                const quantidade = todas.filter((r) => r.status === status).length;
-
-                return { status, rotulo: ROTULO_STATUS[status], quantidade, porcentagem: (100 * quantidade) / total };
-            })
-            .filter((linha) => linha.quantidade > 0);
-    });
 }

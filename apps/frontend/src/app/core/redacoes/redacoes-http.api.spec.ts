@@ -87,7 +87,7 @@ describe('RedacoesHttpApi', () => {
         expect((await promessa)[0].apontamentos).toHaveLength(1);
     });
 
-    it('importa texto colado em JSON, com o apelido como identificador', async () => {
+    it('importa texto colado em JSON, com o código do aluno como identificador', async () => {
         const promessa = api.importar(NOVA);
         const req = http.expectOne('/api/textos');
         expect(req.request.body).toMatchObject({ aluno_codigo: 'Ipê Lilás', grupo: 'Rural', consentimento: true });

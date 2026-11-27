@@ -19,7 +19,6 @@ describe('LoginPage: acesso rápido', () => {
         expect(botoes.map((b) => b.querySelector('.demo__perfil')?.textContent?.trim())).toEqual([
             'Administrador',
             'Professor',
-            'Leitura',
         ]);
         expect(el.querySelector('.demo')?.textContent).not.toContain('@');
 

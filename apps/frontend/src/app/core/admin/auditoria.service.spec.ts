@@ -48,7 +48,7 @@ describe('descrição dos registros', () => {
     });
 
     it('traduz as ações conhecidas e mantém as desconhecidas legíveis', () => {
-        expect(rotuloAcao('enviar_devolutiva')).toBe('Enviou devolutiva');
+        expect(rotuloAcao('enviar_devolutiva')).toBe('Registrou devolutiva');
         expect(rotuloAcao('acao_nova')).toBe('Acao nova');
     });
 
@@ -64,7 +64,7 @@ describe('descrição dos registros', () => {
             'criterios=Ortografia,Pontuação limiar=15',
             'critérios: Ortografia, Pontuação · limiar 15 p.p.',
         ],
-        ['criar_usuario', 'perfil=leitura', 'perfil Leitura'],
+        ['criar_usuario', 'perfil=professor', 'perfil Professor'],
         [
             'alterar_usuario',
             'nome perfil=admin ativo=false senha',

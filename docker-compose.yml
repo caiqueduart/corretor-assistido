@@ -1,0 +1,19 @@
+# Back-end do Corretor Assistido. Uso normal: `npm run dev` na raiz.
+name: corretor-assistido
+
+services:
+    backend:
+        build: apps/backend
+        image: corretor-assistido
+        container_name: corretor-assistido
+        ports:
+            - '8080:8080'
+        env_file: apps/backend/.env
+        volumes:
+            - corretor-dados:/dados
+        restart: unless-stopped
+
+volumes:
+    # O banco SQLite. Criado pelo `npm run dev` e mantido entre execuções.
+    corretor-dados:
+        external: true

@@ -5,9 +5,7 @@ import { AuditoriaService, autorDe, descreverAlvo, rotuloAcao } from '../../core
 import { ConfigService } from '../../core/admin/config.service';
 import { UsuariosService } from '../../core/admin/usuarios.service';
 import { PERFIS, ROTULO_PERFIL, Usuario } from '../../core/auth/auth.model';
-import { MetricasService } from '../../core/redacoes/metricas.service';
 import { Esqueleto } from '../../shared/esqueleto/esqueleto';
-import { Icone } from '../../shared/icone/icone';
 import { tempoRelativo } from '../../shared/tempo';
 
 interface Atividade {
@@ -18,10 +16,10 @@ interface Atividade {
     readonly quando: string;
 }
 
-/** Parte da tela inicial só do admin: equidade, sistema e atividade recente. */
+/** Tela inicial do admin: sistema e atividade recente. */
 @Component({
     selector: 'app-inicio-admin',
-    imports: [RouterLink, Icone, Esqueleto],
+    imports: [RouterLink, Esqueleto],
     templateUrl: './inicio-admin.html',
     styleUrl: './inicio-admin.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,15 +27,12 @@ interface Atividade {
 export class InicioAdmin implements OnInit {
     private readonly usuariosApi = inject(UsuariosService);
     private readonly auditoria = inject(AuditoriaService);
-    protected readonly metricas = inject(MetricasService);
     protected readonly config = inject(ConfigService);
 
     protected readonly tempo = tempoRelativo;
     private readonly usuarios = signal<Usuario[] | null>(null);
     protected readonly atividades = signal<Atividade[] | null>(null);
     protected readonly erro = signal(false);
-
-    protected readonly alertas = computed(() => this.metricas.porPerfil().filter((linha) => linha.alerta));
 
     protected readonly equipe = computed(() => {
         const ativos = (this.usuarios() ?? []).filter((u) => u.ativo);

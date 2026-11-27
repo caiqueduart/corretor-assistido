@@ -16,20 +16,14 @@ export interface ContaDemo {
 export const CONTAS_DEMO: readonly ContaDemo[] = [
     {
         perfil: 'admin',
-        descricao: 'Usuários, configuração, auditoria e métricas.',
+        descricao: 'Usuários, configuração e auditoria.',
         email: 'admin@escola.exemplo',
         senha: 'senha-de-teste-123',
     },
     {
         perfil: 'professor',
-        descricao: 'Importa, corrige, revisa e envia devolutivas.',
+        descricao: 'Importa, corrige, valida e registra devolutivas.',
         email: 'professor@escola.exemplo',
         senha: 'senha-professor-1',
-    },
-    {
-        perfil: 'leitura',
-        descricao: 'Só consulta redações e alunos.',
-        email: 'lia@escola.exemplo',
-        senha: 'senha-leitura-1',
     },
 ];

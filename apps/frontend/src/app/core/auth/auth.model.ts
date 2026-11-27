@@ -1,17 +1,16 @@
-export type Perfil = 'admin' | 'professor' | 'leitura';
+/** Os perfis previstos na POC. */
+export type Perfil = 'admin' | 'professor';
 
-export const PERFIS: readonly Perfil[] = ['admin', 'professor', 'leitura'];
+export const PERFIS: readonly Perfil[] = ['admin', 'professor'];
 
 export const ROTULO_PERFIL: Readonly<Record<Perfil, string>> = {
     admin: 'Administrador',
     professor: 'Professor',
-    leitura: 'Leitura',
 };
 
 export const DESCRICAO_PERFIL: Readonly<Record<Perfil, string>> = {
-    admin: 'Tudo, mais usuários, configuração da correção e auditoria.',
-    professor: 'Importa, corrige, revisa e envia devolutivas.',
-    leitura: 'Só consulta textos, devolutivas e métricas.',
+    admin: 'Cadastra usuários, define a configuração da correção e acompanha a auditoria.',
+    professor: 'Importa, corrige, valida e registra devolutivas.',
 };
 
 export interface Usuario {

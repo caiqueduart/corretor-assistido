@@ -4,7 +4,7 @@ import { Perfil, ROTULO_PERFIL } from '../../core/auth/auth.model';
 import { Icone, NomeIcone } from '../../shared/icone/icone';
 import { CONTAS_DEMO, ContaDemo } from './contas-demo';
 
-const ICONE_PERFIL: Readonly<Record<Perfil, NomeIcone>> = { admin: 'escudo', professor: 'lapis', leitura: 'olho' };
+const ICONE_PERFIL: Readonly<Record<Perfil, NomeIcone>> = { admin: 'escudo', professor: 'lapis' };
 
 /**
  * Atalho do login para as contas de teste: ao escolher um perfil, o login

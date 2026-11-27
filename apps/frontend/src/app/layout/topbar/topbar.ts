@@ -28,7 +28,7 @@ export class Topbar {
     /** Abre o menu lateral no celular. */
     readonly abrirMenu = output<void>();
 
-    protected readonly escritor = computed(() => this.auth.temPerfil('admin', 'professor'));
+    protected readonly professor = computed(() => this.auth.temPerfil('professor'));
     protected readonly admin = computed(() => this.auth.temPerfil('admin'));
     protected readonly ia = this.config.iaConfigurada;
 }

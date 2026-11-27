@@ -406,3 +406,25 @@ app-root {
         padding: var(--space-6) var(--space-4) var(--space-12);
     }
 }
+
+// Ao imprimir (PDF da devolutiva), só o conteúdo da página.
+@media print {
+    .sidebar,
+    .sidebar-scrim,
+    .pular {
+        display: none;
+    }
+
+    .app {
+        display: block;
+    }
+
+    .content::before {
+        display: none;
+    }
+
+    .page {
+        max-width: none;
+        padding: 0;
+    }
+}

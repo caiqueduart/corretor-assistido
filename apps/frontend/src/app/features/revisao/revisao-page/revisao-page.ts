@@ -10,9 +10,9 @@ import {
     untracked,
     viewChildren,
 } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 
-import { AuthService } from '../../../core/auth/auth.service';
 import { apontamentosDaDevolutiva, contarDecisoes } from '../../../core/redacoes/analise';
 import { RedacoesService } from '../../../core/redacoes/redacoes.service';
 import { AvisosService } from '../../../core/ui/avisos.service';
@@ -22,7 +22,6 @@ import { ApontamentoItem, EventoDecisao } from '../apontamento-item/apontamento-
 import { Devolutiva } from '../devolutiva/devolutiva';
 import { TextoMarcado } from '../texto-marcado/texto-marcado';
 import { Esqueleto } from '../../../shared/esqueleto/esqueleto';
-import { ChamadaService } from '../../../core/alunos/chamada.service';
 
 type Visao = 'revisao' | 'aluno';
 
@@ -35,14 +34,10 @@ type Visao = 'revisao' | 'aluno';
     host: { '(document:keydown)': 'atalho($event)' },
 })
 export class RevisaoPage {
-    protected readonly chamada = inject(ChamadaService);
     protected readonly redacoes = inject(RedacoesService);
-    private readonly auth = inject(AuthService);
+    private readonly titulo = inject(Title);
     private readonly avisos = inject(AvisosService);
     private readonly confirmacao = inject(ConfirmacaoService);
-
-    /** O perfil leitura vê tudo, mas não decide nem envia. */
-    protected readonly podeEditar = computed(() => this.auth.temPerfil('admin', 'professor'));
 
     /** Vem do parâmetro `:id` da rota. */
     readonly id = input.required<string>();
@@ -75,12 +70,24 @@ export class RevisaoPage {
                 }
             });
         });
+    }
 
-        effect(() => {
-            if (this.redacao()?.status === 'devolvida') {
-                untracked(() => this.visao.set('aluno'));
-            }
-        });
+    /**
+     * Abre a impressão do navegador só com a devolutiva (bloco `revisao__pdf`), para salvar em PDF e
+     * entregar ao aluno. O título da página vira o nome sugerido do arquivo.
+     */
+    protected gerarPdf(): void {
+        const redacao = this.redacao();
+
+        if (!redacao) {
+            return;
+        }
+
+        const anterior = this.titulo.getTitle();
+
+        this.titulo.setTitle(`Devolutiva ${redacao.aluno} - ${redacao.titulo || 'redação'}`);
+        window.print();
+        this.titulo.setTitle(anterior);
     }
 
     protected selecionar(apontamentoId: string, rolar = false): void {
@@ -115,7 +122,7 @@ export class RevisaoPage {
             decisao === 'recusada' &&
             !(await this.confirmacao.confirmar({
                 titulo: `Recusar ${pendentes === 1 ? 'o apontamento restante' : `os ${pendentes} apontamentos restantes`}?`,
-                texto: 'Eles não vão aparecer na devolutiva. Você ainda pode mudar cada decisão antes de enviar.',
+                texto: 'Eles não vão aparecer na devolutiva. Você ainda pode mudar cada decisão antes de registrar.',
                 confirmar: 'Recusar',
                 perigo: true,
             }))
@@ -145,8 +152,8 @@ export class RevisaoPage {
 
     protected async enviar(): Promise<void> {
         if (await this.tentar(() => this.redacoes.enviarDevolutiva(this.id()))) {
-            this.avisos.mostrar('Devolutiva enviada', {
-                texto: `${this.chamada.rotulo(this.redacao()?.aluno ?? 'O aluno')} já pode ver as correções.`,
+            this.avisos.mostrar('Devolutiva registrada', {
+                texto: 'Agora você pode gerar o PDF para entregar ao aluno.',
             });
         }
         this.confirmandoEnvio.set(false);
@@ -157,7 +164,6 @@ export class RevisaoPage {
 
         if (
             this.redacao()?.status !== 'em-revisao' ||
-            !this.podeEditar() ||
             this.visao() !== 'revisao' ||
             evento.ctrlKey ||
             evento.metaKey ||

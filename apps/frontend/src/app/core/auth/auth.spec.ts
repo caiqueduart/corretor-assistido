@@ -38,7 +38,7 @@ function configurar(): { http: HttpTestingController; auth: AuthService; sessao:
     };
 }
 
-async function rodarGuard(guard: typeof autenticadoGuard, url = '/metricas'): Promise<unknown> {
+async function rodarGuard(guard: typeof autenticadoGuard, url = '/redacoes'): Promise<unknown> {
     return TestBed.runInInjectionContext(() =>
         guard({} as ActivatedRouteSnapshot, { url } as RouterStateSnapshot),
     ) as Promise<unknown>;
@@ -170,10 +170,10 @@ describe('guards', () => {
     it('autenticadoGuard manda ao login guardando o destino', async () => {
         configurar();
 
-        const resultado = await rodarGuard(autenticadoGuard, '/metricas');
+        const resultado = await rodarGuard(autenticadoGuard, '/redacoes');
 
         expect(resultado).toBeInstanceOf(UrlTree);
-        expect(TestBed.inject(Router).serializeUrl(resultado as UrlTree)).toBe('/login?voltar=%2Fmetricas');
+        expect(TestBed.inject(Router).serializeUrl(resultado as UrlTree)).toBe('/login?voltar=%2Fredacoes');
     });
 
     it('perfilGuard libera o perfil certo e barra os outros', async () => {
@@ -189,6 +189,18 @@ describe('guards', () => {
         expect(await rodarGuard(perfilGuard('professor', 'admin'))).toBe(true);
         expect(await rodarGuard(perfilGuard('admin'))).toBeInstanceOf(UrlTree);
         expect(await rodarGuard(visitanteGuard)).toBeInstanceOf(UrlTree);
+    });
+
+    it('o admin não entra nas telas de correção e volta para o início', async () => {
+        const { http, auth } = configurar();
+        const promessa = auth.login('ana@escola.exemplo', 'x');
+        http.expectOne('/api/auth/login').flush({ token: 'tok', expira_em: DAQUI_A_UMA_HORA(), usuario: ADMIN });
+        await promessa;
+
+        const router = TestBed.inject(Router);
+        const barrado = await rodarGuard(perfilGuard('professor'));
+
+        expect(router.serializeUrl(barrado as UrlTree)).toBe('/inicio');
     });
 
     it('destinoSeguro só aceita caminhos internos', () => {

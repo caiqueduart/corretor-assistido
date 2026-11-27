@@ -313,7 +313,7 @@
       "post": {
         "tags": ["Textos"],
         "summary": "Criar texto colado",
-        "description": "Perfis `admin` e `professor`. Com `origem_id`, cria a reescrita (2ª versão) e herda estudante, perfil, turma e título da 1ª versão.",
+        "description": "Só `professor`. Com `origem_id`, cria a reescrita (2ª versão) e herda estudante, perfil, turma e título da 1ª versão.",
         "operationId": "criarTexto",
         "requestBody": {
           "required": true,
@@ -332,7 +332,7 @@
       "post": {
         "tags": ["Textos"],
         "summary": "Importar arquivos",
-        "description": "Perfis `admin` e `professor`. Até 20 arquivos (PDF, TXT ou DOCX) por envio, cada um até `MAX_UPLOAD_MB`. Sem `aluno_codigo`, o nome do arquivo (sem extensão) vira o código do estudante. Arquivos com problema entram em `erros` e não impedem os demais.",
+        "description": "Só `professor`. Até 20 arquivos (PDF, TXT ou DOCX) por envio, cada um até `MAX_UPLOAD_MB`. Sem `aluno_codigo`, o nome do arquivo (sem extensão) vira o código do estudante. Arquivos com problema entram em `erros` e não impedem os demais.",
         "operationId": "importarTextos",
         "requestBody": {
           "required": true,
@@ -377,7 +377,7 @@
       "post": {
         "tags": ["Textos"],
         "summary": "Carregar textos de exemplo",
-        "description": "Perfis `admin` e `professor`. Carrega os 8 textos do roteiro de demonstração.",
+        "description": "Só `professor`. Carrega os 8 textos do roteiro de demonstração.",
         "operationId": "carregarExemplos",
         "responses": {
           "200": {
@@ -391,7 +391,7 @@
       "delete": {
         "tags": ["Textos"],
         "summary": "Remover textos de exemplo",
-        "description": "Perfis `admin` e `professor`.",
+        "description": "Só `professor`.",
         "operationId": "removerExemplos",
         "responses": {
           "200": {
@@ -419,7 +419,7 @@
       "delete": {
         "tags": ["Textos"],
         "summary": "Excluir texto",
-        "description": "Perfis `admin` e `professor`.",
+        "description": "Só `professor`.",
         "operationId": "excluirTexto",
         "responses": {
           "204": { "description": "Texto excluído." },
@@ -434,7 +434,7 @@
       "post": {
         "tags": ["Correção e revisão"],
         "summary": "Corrigir texto",
-        "description": "Perfis `admin` e `professor`. A correção roda em segundo plano: responde `202` e o status passa de `corrigindo` para `revisao` quando termina. Com `aguardar=true`, espera e responde `200` com o texto e os apontamentos. Se a correção falha, o texto volta ao status anterior e `erro_correcao` explica o motivo. Corrigir de novo um texto em `revisao` descarta as decisões anteriores.",
+        "description": "Só `professor`. A correção roda em segundo plano: responde `202` e o status passa de `corrigindo` para `revisao` quando termina. Com `aguardar=true`, espera e responde `200` com o texto e os apontamentos. Se a correção falha, o texto volta ao status anterior e `erro_correcao` explica o motivo. Corrigir de novo um texto em `revisao` descarta as decisões anteriores.",
         "operationId": "corrigir",
         "parameters": [
           { "name": "aguardar", "in": "query", "schema": { "type": "boolean", "default": false }, "description": "Aceita também `1`, `on`, `sim`, `s`." }
@@ -473,7 +473,7 @@
       "patch": {
         "tags": ["Correção e revisão"],
         "summary": "Decidir apontamento",
-        "description": "Perfis `admin` e `professor`. Só com o texto em `revisao`. `decisao: null` desfaz a decisão. Editar para o mesmo texto da sugestão conta como `aceita`.",
+        "description": "Só `professor`. Só com o texto em `revisao`. `decisao: null` desfaz a decisão. Editar para o mesmo texto da sugestão conta como `aceita`.",
         "operationId": "decidir",
         "requestBody": {
           "required": true,
@@ -526,7 +526,7 @@
       "post": {
         "tags": ["Correção e revisão"],
         "summary": "Decidir toda a correção",
-        "description": "Perfis `admin` e `professor`. Aplica a mesma decisão a todos os apontamentos do texto em `revisao`. Com `apenas_pendentes: true`, mantém as decisões já tomadas e decide só os apontamentos sem decisão.",
+        "description": "Só `professor`. Aplica a mesma decisão a todos os apontamentos do texto em `revisao`. Com `apenas_pendentes: true`, mantém as decisões já tomadas e decide só os apontamentos sem decisão.",
         "operationId": "decidirTodos",
         "requestBody": {
           "required": true,
@@ -559,7 +559,7 @@
       "put": {
         "tags": ["Correção e revisão"],
         "summary": "Salvar comentário do professor",
-        "description": "Perfis `admin` e `professor`. Só com o texto em `revisao`.",
+        "description": "Só `professor`. Só com o texto em `revisao`.",
         "operationId": "comentar",
         "requestBody": {
           "required": true,
@@ -590,7 +590,7 @@
       "post": {
         "tags": ["Correção e revisão"],
         "summary": "Enviar devolutiva",
-        "description": "Perfis `admin` e `professor`. Conclui a revisão: só é aceito quando todos os apontamentos têm decisão. O status passa a `concluido`.",
+        "description": "Só `professor`. Conclui a revisão: só é aceito quando todos os apontamentos têm decisão. O status passa a `concluido`.",
         "operationId": "enviar",
         "requestBody": {
           "required": false,
@@ -660,7 +660,7 @@
       "post": {
         "tags": ["Propostas"],
         "summary": "Criar proposta",
-        "description": "Perfis `admin` e `professor`. Tema, gênero e turmas são obrigatórios.",
+        "description": "Só `professor`. Tema, gênero e turmas são obrigatórios.",
         "operationId": "criarProposta",
         "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EntradaProposta" } } } },
         "responses": {
@@ -687,7 +687,7 @@
       "patch": {
         "tags": ["Propostas"],
         "summary": "Alterar, encerrar ou reabrir proposta",
-        "description": "Perfis `admin` e `professor`. Só os campos enviados mudam; `prazo: null` remove o prazo; `encerrada: true` impede novas importações.",
+        "description": "Só `professor`. Só os campos enviados mudam; `prazo: null` remove o prazo; `encerrada: true` impede novas importações.",
         "operationId": "alterarProposta",
         "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EntradaProposta" } } } },
         "responses": {
@@ -701,7 +701,7 @@
       "delete": {
         "tags": ["Propostas"],
         "summary": "Excluir proposta",
-        "description": "Perfis `admin` e `professor`. Só propostas sem redações; com redações, encerre a proposta.",
+        "description": "Só `professor`. Só propostas sem redações; com redações, encerre a proposta.",
         "operationId": "excluirProposta",
         "responses": {
           "204": { "description": "Excluída." },
@@ -942,7 +942,7 @@
           }
         }
       },
-      "Perfil": { "type": "string", "enum": ["admin", "professor", "leitura"] },
+      "Perfil": { "type": "string", "enum": ["admin", "professor"] },
       "Status": { "type": "string", "enum": ["pendente", "corrigindo", "revisao", "concluido"] },
       "Decisao": { "type": "string", "enum": ["aceita", "recusada", "editada"] },
       "CriterioID": { "type": "string", "enum": ["Ortografia", "Pontuação", "Concordância", "Maiúsculas"] },

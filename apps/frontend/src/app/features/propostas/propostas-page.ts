@@ -10,7 +10,6 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
-import { AuthService } from '../../core/auth/auth.service';
 import { progressoDe, progressoPorProposta } from '../../core/propostas/progresso';
 import { Proposta, PropostasService, descreverPrazo, diasAtePrazo } from '../../core/propostas/propostas.service';
 import { RedacoesService } from '../../core/redacoes/redacoes.service';
@@ -41,13 +40,11 @@ export function tomPrazo(prazo: string | null): 'ok' | 'perto' | 'vencido' | nul
 export class PropostasPage {
     protected readonly propostas = inject(PropostasService);
     private readonly redacoes = inject(RedacoesService);
-    private readonly auth = inject(AuthService);
     private readonly avisos = inject(AvisosService);
     private readonly router = inject(Router);
 
     protected readonly descreverPrazo = descreverPrazo;
     protected readonly tomPrazo = tomPrazo;
-    protected readonly podeEditar = computed(() => this.auth.temPerfil('admin', 'professor'));
 
     protected readonly aba = signal<Aba>('abertas');
     protected readonly busca = signal('');

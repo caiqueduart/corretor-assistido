@@ -14,11 +14,10 @@ describe('busca rápida', () => {
         item('inicio', 'Páginas', 'Início'),
         item('r1', 'Redações', '8A-07 · Minha cidade', '8º A · Para revisar'),
         item('r2', 'Redações', '8B-03 · Férias na roça', '8º B · Devolvida'),
-        item('a1', 'Alunos', '8A-07', '8º A · 2 redações'),
     ];
 
     it('sem termo, mostra tudo', () => {
-        expect(buscar('', itens)).toHaveLength(4);
+        expect(buscar('', itens)).toHaveLength(3);
     });
 
     it('ignora acentos e maiúsculas e exige todas as palavras', () => {

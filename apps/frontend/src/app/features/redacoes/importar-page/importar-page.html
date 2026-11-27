@@ -12,7 +12,7 @@
 
 <app-cabecalho-pagina
     titulo="Importar redação"
-    descricao="Depois de importar, a IA corrige e você revisa. O aluno é identificado só por um apelido."
+    descricao="Depois de importar, a IA corrige e você revisa. O aluno é identificado só por código."
 />
 
 <form class="importar" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
@@ -106,18 +106,31 @@
                 </div>
 
                 @if (modo() === 'novo') {
-                    <div class="importar__apelido" aria-live="polite">
-                        <span class="campo__dica">No sistema, o aluno será identificado como</span>
-                        <strong class="importar__apelido-nome">{{ formulario.controls.aluno.value }}</strong>
-                        <button class="botao botao--discreto botao--pequeno" type="button" (click)="sortear()">
-                            Sortear outro
-                        </button>
+                    <div class="campo">
+                        <label for="campo-aluno">Código do aluno</label>
+                        <input
+                            id="campo-aluno"
+                            formControlName="aluno"
+                            autocomplete="off"
+                            placeholder="Ex.: 8A-07"
+                            aria-describedby="dica-aluno"
+                        />
+                        <div class="importar__sortear">
+                            <button class="botao botao--discreto botao--pequeno" type="button" (click)="sortear()">
+                                Sortear apelido
+                            </button>
+                            <span class="campo__dica">ou use um apelido de fauna e flora, como "Ipê Lilás"</span>
+                        </div>
+                        <p class="campo__dica" id="dica-aluno">
+                            Use o código da turma ou um apelido. Nunca o nome do aluno.
+                        </p>
+                        @if (formulario.controls.aluno.touched && formulario.controls.aluno.invalid) {
+                            <p class="campo__erro">Informe o código do aluno.</p>
+                        }
                     </div>
 
                     <div class="campo">
-                        <label for="campo-nome">
-                            Nome do aluno <span class="importar__opcional">(opcional)</span>
-                        </label>
+                        <label for="campo-nome">Nome do aluno <span class="importar__opcional">(opcional)</span></label>
                         <input
                             id="campo-nome"
                             formControlName="nomeLocal"

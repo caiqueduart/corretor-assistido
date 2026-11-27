@@ -52,24 +52,17 @@ describe('InicioPage', () => {
         const el = await montar('professor');
 
         expect(el.querySelector('h1')?.textContent).toContain('Ana');
-        expect(el.querySelectorAll('.kpi')).toHaveLength(4);
+        expect(el.querySelectorAll('.kpi')).toHaveLength(3);
         expect(el.textContent).toContain('Continue de onde parou');
         expect(el.querySelector('app-inicio-admin')).toBeNull();
     });
 
-    it('leitura vê a situação das redações, sem ações de revisão', async () => {
-        const el = await montar('leitura');
-
-        expect(el.textContent).toContain('Situação das redações');
-        expect(el.textContent).not.toContain('Continue de onde parou');
-        expect(el.querySelector('app-inicio-admin')).toBeNull();
-    });
-
-    it('admin vê também equidade, sistema e atividade recente', async () => {
+    it('admin vê só sistema e atividade recente, sem as redações', async () => {
         const el = await montar('admin');
 
         expect(el.querySelector('app-inicio-admin')).not.toBeNull();
-        expect(el.textContent).toContain('Equidade da correção');
+        expect(el.querySelectorAll('.kpi')).toHaveLength(0);
+        expect(el.textContent).not.toContain('Continue de onde parou');
         expect(el.textContent).toContain('Atividade recente');
         expect(el.textContent).toContain('Simulada');
     });

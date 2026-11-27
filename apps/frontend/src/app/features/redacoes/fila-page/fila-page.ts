@@ -2,7 +2,6 @@ import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { AuthService } from '../../../core/auth/auth.service';
 import { contarDecisoes } from '../../../core/redacoes/analise';
 import { Redacao, StatusRedacao, contarPalavras } from '../../../core/redacoes/redacao.model';
 import { RedacoesService } from '../../../core/redacoes/redacoes.service';
@@ -12,8 +11,8 @@ import { Esqueleto } from '../../../shared/esqueleto/esqueleto';
 import { EstadoVazio } from '../../../shared/estado-vazio/estado-vazio';
 import { Icone, NomeIcone } from '../../../shared/icone/icone';
 import { normalizar } from '../../../layout/busca-rapida/busca';
-import { ChamadaService } from '../../../core/alunos/chamada.service';
 import { PropostasService } from '../../../core/propostas/propostas.service';
+import { ChamadaService } from '../../../core/alunos/chamada.service';
 
 type Aba = 'revisar' | 'aguardando' | 'devolvidas' | 'todas';
 
@@ -47,12 +46,12 @@ const ABAS: readonly DefinicaoAba[] = [
     },
     {
         id: 'devolvidas',
-        rotulo: 'Devolvidas',
+        rotulo: 'Registradas',
         status: ['devolvida'],
         vazio: {
-            titulo: 'Nenhuma devolutiva enviada ainda',
-            texto: 'Depois de revisar, envie a devolutiva: ela aparece aqui.',
-            icone: 'enviar',
+            titulo: 'Nenhuma devolutiva registrada ainda',
+            texto: 'Depois de revisar, registre a devolutiva: ela aparece aqui.',
+            icone: 'selo',
         },
     },
     {
@@ -67,7 +66,7 @@ const ROTULO_STATUS: Readonly<Record<StatusRedacao, string>> = {
     'em-revisao': 'Para revisar',
     'aguardando-ia': 'Aguardando IA',
     corrigindo: 'Corrigindo',
-    devolvida: 'Devolvida',
+    devolvida: 'Registrada',
 };
 
 @Component({
@@ -80,7 +79,6 @@ const ROTULO_STATUS: Readonly<Record<StatusRedacao, string>> = {
 export class FilaPage {
     protected readonly chamada = inject(ChamadaService);
     protected readonly redacoes = inject(RedacoesService);
-    private readonly auth = inject(AuthService);
     private readonly avisos = inject(AvisosService);
 
     protected readonly abas = ABAS;
@@ -94,9 +92,6 @@ export class FilaPage {
     /** '' = todas, 'avulsas' = sem proposta, ou o id da proposta. */
     protected readonly proposta = signal('');
     protected readonly propostas = inject(PropostasService);
-
-    /** O perfil leitura só consulta. */
-    protected readonly podeEditar = computed(() => this.auth.temPerfil('admin', 'professor'));
 
     protected readonly turmas = computed(() =>
         [
@@ -121,7 +116,7 @@ export class FilaPage {
 
                 return !proposta || (proposta === 'avulsas' ? !r.propostaId : r.propostaId === proposta);
             })
-            .filter((r) => !termo || normalizar(`${this.chamada.rotulo(r.aluno)} ${r.titulo}`).includes(termo))
+            .filter((r) => !termo || normalizar(`${r.aluno} ${r.titulo}`).includes(termo))
             .sort((a, b) => b.criadaEm.localeCompare(a.criadaEm));
     });
 
@@ -185,7 +180,7 @@ export class FilaPage {
             await this.redacoes.corrigirComIa(redacao.id);
             const corrigida = this.redacoes.redacoes().find((r) => r.id === redacao.id);
             const n = corrigida?.apontamentos.length ?? 0;
-            this.avisos.mostrar(`Correção pronta: ${this.chamada.rotulo(redacao.aluno)}`, {
+            this.avisos.mostrar(`Correção pronta: ${redacao.aluno}`, {
                 texto: n
                     ? `${n} ${n === 1 ? 'apontamento' : 'apontamentos'} para você revisar.`
                     : 'A IA não encontrou desvios.',

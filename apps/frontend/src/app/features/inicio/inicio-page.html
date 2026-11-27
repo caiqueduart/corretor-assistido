@@ -3,14 +3,16 @@
     <p class="inicio__subtitulo">{{ subtitulo() }}</p>
 </header>
 
-@if (redacoes.erroCarga(); as mensagem) {
+@if (admin()) {
+    <app-inicio-admin />
+} @else if (redacoes.erroCarga(); as mensagem) {
     <div class="aviso aviso--erro inicio__erro" role="alert">
         <p>{{ mensagem }}</p>
         <button class="botao botao--pequeno" type="button" (click)="redacoes.carregar()">Tentar de novo</button>
     </div>
 } @else if (!redacoes.carregado()) {
     <div class="inicio__grade inicio__grade--kpi">
-        @for (_ of [1, 2, 3, 4]; track $index) {
+        @for (_ of [1, 2, 3]; track $index) {
             <div class="cartao"><app-esqueleto [quantidade]="2" /></div>
         }
     </div>
@@ -32,16 +34,14 @@
         </ul>
     </section>
 
-    @if (falhas().length && escritor()) {
+    @if (falhas().length) {
         <div class="aviso aviso--atencao inicio__falhas" role="status">
             <app-icone nome="alerta" />
             <p>
                 {{ falhas().length === 1 ? 'Uma correção falhou' : falhas().length + ' correções falharam' }}. Abra para
                 tentar de novo:
                 @for (redacao of falhas(); track redacao.id; let ultima = $last) {
-                    <a [routerLink]="['/redacoes', redacao.id]">{{ chamada.rotulo(redacao.aluno) }}</a>{{
-                        ultima ? '.' : ','
-                    }}
+                    <a [routerLink]="['/redacoes', redacao.id]">{{ redacao.aluno }}</a>{{ ultima ? '.' : ',' }}
                 }
             </p>
         </div>
@@ -83,7 +83,7 @@
                 titulo="Nenhuma proposta aberta"
                 texto="Organize as redações por proposta: tema, turmas e prazo."
             >
-                @if (escritor()) {
+                @if (!admin()) {
                     <a class="botao botao--pequeno" routerLink="/propostas">Criar proposta</a>
                 }
             </app-estado-vazio>
@@ -91,74 +91,42 @@
     </section>
 
     <div class="inicio__grade inicio__grade--principal">
-        @if (escritor()) {
-            <section class="cartao" aria-labelledby="titulo-continuar">
-                <header class="cartao__cabecalho">
-                    <h2 class="cartao__titulo" id="titulo-continuar">Continue de onde parou</h2>
-                    <a class="cartao__link" routerLink="/redacoes">Ver todas</a>
-                </header>
+        <section class="cartao" aria-labelledby="titulo-continuar">
+            <header class="cartao__cabecalho">
+                <h2 class="cartao__titulo" id="titulo-continuar">Continue de onde parou</h2>
+                <a class="cartao__link" routerLink="/redacoes">Ver todas</a>
+            </header>
 
-                @if (continuar().length) {
-                    <ul class="lista" role="list">
-                        @for (item of continuar(); track item.redacao.id) {
-                            <li class="lista__item">
-                                <span class="lista__textos">
-                                    <span class="lista__titulo"
-                                        >{{ chamada.rotulo(item.redacao.aluno) }} · {{ item.redacao.titulo }}</span
-                                    >
-                                    <span class="lista__detalhe">
-                                        {{ item.redacao.turma }} · {{ item.feitas }} de {{ item.total }} decididos
-                                    </span>
-                                    <span class="progresso" aria-hidden="true">
-                                        <span class="progresso__barra" [style.width.%]="item.progresso"></span>
-                                    </span>
-                                </span>
-                                <a class="botao botao--pequeno" [routerLink]="['/redacoes', item.redacao.id]">
-                                    {{ item.feitas ? 'Continuar' : 'Revisar' }}
-                                    <span class="visualmente-oculto">{{ chamada.rotulo(item.redacao.aluno) }}</span>
-                                </a>
-                            </li>
-                        }
-                    </ul>
-                } @else {
-                    <app-estado-vazio
-                        icone="aceitar"
-                        titulo="Nada esperando revisão"
-                        texto="Quando a IA terminar uma correção, ela aparece aqui para você decidir."
-                    >
-                        <a class="botao botao--primario botao--pequeno" routerLink="/redacoes/nova">Importar redação</a>
-                    </app-estado-vazio>
-                }
-            </section>
-        } @else {
-            <section class="cartao" aria-labelledby="titulo-situacao">
-                <header class="cartao__cabecalho">
-                    <h2 class="cartao__titulo" id="titulo-situacao">Situação das redações</h2>
-                    <a class="cartao__link" routerLink="/redacoes">Ver todas</a>
-                </header>
-
-                @if (distribuicao().length) {
-                    <ul class="lista" role="list">
-                        @for (linha of distribuicao(); track linha.status) {
-                            <li class="lista__item lista__item--coluna">
-                                <span class="lista__linha">
-                                    <span>{{ linha.rotulo }}</span>
-                                    <span class="lista__numero">{{ linha.quantidade }}</span>
+            @if (continuar().length) {
+                <ul class="lista" role="list">
+                    @for (item of continuar(); track item.redacao.id) {
+                        <li class="lista__item">
+                            <span class="lista__textos">
+                                <span class="lista__titulo">{{ item.redacao.aluno }} · {{ item.redacao.titulo }}</span>
+                                <span class="lista__detalhe">
+                                    {{ item.redacao.turma }} · {{ item.feitas }} de {{ item.total }} decididos
                                 </span>
                                 <span class="progresso" aria-hidden="true">
-                                    <span class="progresso__barra" [style.width.%]="linha.porcentagem"></span>
+                                    <span class="progresso__barra" [style.width.%]="item.progresso"></span>
                                 </span>
-                            </li>
-                        }
-                    </ul>
-                } @else {
-                    <app-estado-vazio
-                        titulo="Nenhuma redação ainda"
-                        texto="As redações importadas pelos professores aparecem aqui."
-                    />
-                }
-            </section>
-        }
+                            </span>
+                            <a class="botao botao--pequeno" [routerLink]="['/redacoes', item.redacao.id]">
+                                {{ item.feitas ? 'Continuar' : 'Revisar' }}
+                                <span class="visualmente-oculto">{{ item.redacao.aluno }}</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            } @else {
+                <app-estado-vazio
+                    icone="aceitar"
+                    titulo="Nada esperando revisão"
+                    texto="Quando a IA terminar uma correção, ela aparece aqui para você decidir."
+                >
+                    <a class="botao botao--primario botao--pequeno" routerLink="/redacoes/nova">Importar redação</a>
+                </app-estado-vazio>
+            }
+        </section>
 
         <section class="cartao" aria-labelledby="titulo-devolvidas">
             <header class="cartao__cabecalho">
@@ -171,7 +139,7 @@
                         <li class="lista__item">
                             <span class="lista__textos">
                                 <a class="lista__titulo" [routerLink]="['/redacoes', redacao.id]">
-                                    {{ chamada.rotulo(redacao.aluno) }} · {{ redacao.titulo }}
+                                    {{ redacao.aluno }} · {{ redacao.titulo }}
                                 </a>
                                 <span class="lista__detalhe">
                                     {{ redacao.turma }} ·
@@ -188,15 +156,11 @@
                 </ul>
             } @else {
                 <app-estado-vazio
-                    icone="enviar"
-                    titulo="Nenhuma devolutiva enviada"
-                    texto="Depois que o professor valida e envia, a devolutiva aparece aqui."
+                    icone="selo"
+                    titulo="Nenhuma devolutiva registrada"
+                    texto="Depois que você valida e registra, a devolutiva aparece aqui."
                 />
             }
         </section>
     </div>
-
-    @if (admin()) {
-        <app-inicio-admin />
-    }
 }

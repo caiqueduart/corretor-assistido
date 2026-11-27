@@ -11,8 +11,6 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
-import { ChamadaService } from '../../core/alunos/chamada.service';
-import { AuthService } from '../../core/auth/auth.service';
 import { progressoDe, progressoPorProposta } from '../../core/propostas/progresso';
 import { Proposta, PropostasService, descreverPrazo, formatarPrazo } from '../../core/propostas/propostas.service';
 import { contarDecisoes } from '../../core/redacoes/analise';
@@ -26,6 +24,7 @@ import { EstadoVazio } from '../../shared/estado-vazio/estado-vazio';
 import { Icone } from '../../shared/icone/icone';
 import { PropostaFormulario } from './proposta-formulario';
 import { tomPrazo } from './propostas-page';
+import { ChamadaService } from '../../core/alunos/chamada.service';
 import { CodigosService } from '../../core/alunos/codigos.service';
 
 const ROTULO_STATUS: Readonly<Record<StatusRedacao, string>> = {
@@ -45,10 +44,9 @@ const ROTULO_STATUS: Readonly<Record<StatusRedacao, string>> = {
 export class PropostaPage {
     protected readonly propostas = inject(PropostasService);
     protected readonly redacoes = inject(RedacoesService);
-    protected readonly chamada = inject(ChamadaService);
     private readonly alunos = inject(AlunosService);
     private readonly codigos = inject(CodigosService);
-    private readonly auth = inject(AuthService);
+    protected readonly chamada = inject(ChamadaService);
     private readonly avisos = inject(AvisosService);
     private readonly confirmacao = inject(ConfirmacaoService);
     private readonly router = inject(Router);
@@ -60,7 +58,6 @@ export class PropostaPage {
     protected readonly descreverPrazo = descreverPrazo;
     protected readonly formatarPrazo = formatarPrazo;
     protected readonly tomPrazo = tomPrazo;
-    protected readonly podeEditar = computed(() => this.auth.temPerfil('admin', 'professor'));
     protected readonly editando = signal(false);
     protected readonly ocupado = signal(false);
     private readonly dialogo = viewChild<ElementRef<HTMLDialogElement>>('dialogo');
@@ -114,8 +111,8 @@ export class PropostaPage {
     });
 
     constructor() {
-        // Os códigos só podem ser listados por professor e admin.
-        if (this.podeEditar() && !this.codigos.carregado()) {
+        // Mostra quem já tem código de acesso entre os que ainda não entregaram.
+        if (!this.codigos.carregado()) {
             void this.codigos.carregar().catch(() => undefined);
         }
 

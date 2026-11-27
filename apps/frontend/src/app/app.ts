@@ -24,15 +24,20 @@ interface SecaoNavegacao {
     readonly itens: readonly ItemNavegacao[];
 }
 
-const PRINCIPAL: SecaoNavegacao = {
+const INICIO: ItemNavegacao = { rota: '/inicio', rotulo: 'Início', icone: 'inicio' };
+
+/** O professor corrige; o admin só administra. */
+const PROFESSOR: SecaoNavegacao = {
     titulo: 'Principal',
     itens: [
-        { rota: '/inicio', rotulo: 'Início', icone: 'inicio' },
+        INICIO,
         { rota: '/propostas', rotulo: 'Propostas', icone: 'proposta' },
         { rota: '/redacoes', rotulo: 'Redações', icone: 'redacoes' },
         { rota: '/alunos', rotulo: 'Alunos', icone: 'alunos' },
     ],
 };
+
+const ADMIN: SecaoNavegacao = { titulo: 'Principal', itens: [INICIO] };
 
 const SISTEMA: SecaoNavegacao = {
     titulo: 'Sistema',
@@ -78,7 +83,7 @@ export class App {
     /** No desktop, menu recolhido mostra só os ícones. A preferência fica salva no navegador. */
     protected readonly recolhido = signal(lerPreferenciaMenu());
 
-    protected readonly secoes = computed(() => (this.auth.temPerfil('admin') ? [PRINCIPAL, SISTEMA] : [PRINCIPAL]));
+    protected readonly secoes = computed(() => (this.auth.temPerfil('admin') ? [ADMIN, SISTEMA] : [PROFESSOR]));
 
     /** Só a troca de usuário importa (não, por exemplo, a mudança do nome). */
     private readonly idUsuario = computed(() => this.auth.usuario()?.id ?? null);

@@ -24,28 +24,26 @@
             <p class="detalhe__turmas">{{ atual.turmas.join(' · ') }}</p>
         </div>
 
-        @if (podeEditar()) {
-            <div class="detalhe__acoes">
-                @if (!atual.encerrada) {
-                    <a class="botao botao--primario" routerLink="/redacoes/nova" [queryParams]="{ proposta: atual.id }">
-                        <app-icone nome="importar" />
-                        Importar redação
-                    </a>
-                }
-                <button class="botao" type="button" (click)="editando.set(true)">
-                    <app-icone nome="ajustar" />
-                    Editar
+        <div class="detalhe__acoes">
+            @if (!atual.encerrada) {
+                <a class="botao botao--primario" routerLink="/redacoes/nova" [queryParams]="{ proposta: atual.id }">
+                    <app-icone nome="importar" />
+                    Importar redação
+                </a>
+            }
+            <button class="botao" type="button" (click)="editando.set(true)">
+                <app-icone nome="ajustar" />
+                Editar
+            </button>
+            <button class="botao" type="button" [disabled]="ocupado()" (click)="alternarEncerrada(atual)">
+                {{ atual.encerrada ? 'Reabrir' : 'Encerrar' }}
+            </button>
+            @if (!progresso().total) {
+                <button class="botao botao--perigo" type="button" [disabled]="ocupado()" (click)="excluir(atual)">
+                    Excluir
                 </button>
-                <button class="botao" type="button" [disabled]="ocupado()" (click)="alternarEncerrada(atual)">
-                    {{ atual.encerrada ? 'Reabrir' : 'Encerrar' }}
-                </button>
-                @if (!progresso().total) {
-                    <button class="botao botao--perigo" type="button" [disabled]="ocupado()" (click)="excluir(atual)">
-                        Excluir
-                    </button>
-                }
-            </div>
-        }
+            }
+        </div>
     </header>
 
     @if (atual.enunciado) {
@@ -100,12 +98,12 @@
                             </span>
                             <a
                                 class="botao botao--pequeno"
-                                [class.botao--primario]="redacao.status === 'em-revisao' && podeEditar()"
+                                [class.botao--primario]="redacao.status === 'em-revisao'"
                                 [routerLink]="['/redacoes', redacao.id]"
                             >
                                 @switch (redacao.status) {
                                     @case ('em-revisao') {
-                                        {{ podeEditar() ? (item.feitas ? 'Continuar' : 'Revisar') : 'Ver' }}
+                                        {{ item.feitas ? 'Continuar' : 'Revisar' }}
                                     }
                                     @case ('devolvida') {
                                         Ver devolutiva
@@ -114,7 +112,7 @@
                                         Abrir
                                     }
                                 }
-                                <span class="visualmente-oculto">{{ chamada.rotulo(redacao.aluno) }}</span>
+                                <span class="visualmente-oculto">{{ redacao.aluno }}</span>
                             </a>
                         </li>
                     }
@@ -129,7 +127,7 @@
                             : 'Importe as redações dos alunos para começar a correção.'
                     "
                 >
-                    @if (podeEditar() && !atual.encerrada) {
+                    @if (!atual.encerrada) {
                         <a
                             class="botao botao--primario botao--pequeno"
                             routerLink="/redacoes/nova"
@@ -158,7 +156,7 @@
                                     {{ aluno.turma }}{{ aluno.temCodigo ? ' · tem código de acesso' : '' }}
                                 </span>
                             </span>
-                            @if (podeEditar() && !atual.encerrada) {
+                            @if (!atual.encerrada) {
                                 <a
                                     class="botao botao--discreto botao--pequeno"
                                     routerLink="/redacoes/nova"

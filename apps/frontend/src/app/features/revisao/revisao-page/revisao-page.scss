@@ -69,6 +69,23 @@
         color: var(--caneta-forte);
     }
 
+    &__registrada {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    &__pdf {
+        display: none;
+    }
+
+    &__impressao {
+        margin-bottom: 1rem;
+        color: var(--texto-2);
+    }
+
     &__abas {
         display: inline-flex;
         justify-self: start;
@@ -103,10 +120,10 @@
     }
 }
 
-/* Três etapas da correção: deixam claro onde a redação está e que o aluno vem por último. */
+/* O que cabe ao professor: revisar e depois registrar a devolutiva. */
 .etapas {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
     margin: 0;
     padding: 0;
@@ -224,5 +241,19 @@
     &__acoes {
         display: flex;
         gap: 0.5rem;
+    }
+}
+
+// PDF da devolutiva: só o cabeçalho da redação e a devolutiva do aluno.
+@media print {
+    .revisao__voltar,
+    .revisao__registrada,
+    .revisao__resumo,
+    .etapas {
+        display: none;
+    }
+
+    .revisao__pdf {
+        display: block;
     }
 }

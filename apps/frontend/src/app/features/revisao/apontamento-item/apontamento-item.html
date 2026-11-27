@@ -28,7 +28,7 @@
         </p>
 
         @if (bloqueado()) {
-            <p class="item__bloqueado">Devolutiva enviada. A decisão ficou registrada.</p>
+            <p class="item__bloqueado">Devolutiva registrada. A decisão não pode mais ser alterada.</p>
         } @else if (ajustando()) {
             <form class="item__ajuste" (submit)="$event.preventDefault(); salvarAjuste(campoAjuste.value)">
                 <label class="visualmente-oculto" for="ajuste-{{ item.id }}"
