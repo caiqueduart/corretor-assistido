@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -7,6 +7,7 @@ import { ConfigService, GRUPO_NAO_INFORMADO } from '../../../core/admin/config.s
 import { gerarApelido } from '../../../core/alunos/apelidos';
 import { ChamadaService } from '../../../core/alunos/chamada.service';
 import { AlunosService } from '../../../core/redacoes/alunos.service';
+import { PropostasService, descreverPrazo } from '../../../core/propostas/propostas.service';
 import { RedacoesService } from '../../../core/redacoes/redacoes.service';
 import { CabecalhoPagina } from '../../../shared/cabecalho-pagina/cabecalho-pagina';
 import { Icone } from '../../../shared/icone/icone';
@@ -21,12 +22,20 @@ const EXTENSOES_ACEITAS = ['pdf', 'txt', 'docx'];
     styleUrl: './importar-page.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ImportarPage {
+export class ImportarPage implements OnInit {
     private readonly redacoes = inject(RedacoesService);
     private readonly router = inject(Router);
     private readonly avisos = inject(AvisosService);
     private readonly alunos = inject(AlunosService);
     protected readonly chamada = inject(ChamadaService);
+    private readonly propostas = inject(PropostasService);
+
+    /** Query params (?proposta=&aluno=) vindos da página da proposta. */
+    readonly proposta = input<string>();
+    readonly aluno = input<string>();
+
+    protected readonly abertas = this.propostas.abertas;
+    protected readonly descreverPrazo = descreverPrazo;
 
     /** Perfis definidos pelo admin em Administração › Configuração. */
     protected readonly perfis = inject(ConfigService).grupos;
@@ -34,6 +43,8 @@ export class ImportarPage {
     protected readonly formulario = inject(NonNullableFormBuilder).group({
         /** Identificador enviado ao servidor: apelido (aluno novo) ou o já existente. Nunca o nome. */
         aluno: ['', Validators.required],
+        /** Proposta de redação; vazio = redação avulsa. */
+        propostaId: [''],
         /** Nome real do aluno novo: fica só neste computador (lista de chamada local). */
         nomeLocal: ['', Validators.maxLength(80)],
         turma: ['', Validators.required],
@@ -51,6 +62,42 @@ export class ImportarPage {
     private readonly valores = toSignal(this.formulario.valueChanges, { initialValue: this.formulario.getRawValue() });
 
     protected readonly temTexto = computed(() => !!this.arquivo() || !!this.valores().textoColado?.trim());
+
+    protected readonly escolhida = computed(() => this.propostas.proposta(this.valores().propostaId));
+
+    /** Com proposta de mais de uma turma, a turma vira uma lista; com uma só, vem preenchida. */
+    protected readonly turmasDaProposta = computed(() => this.escolhida()?.turmas ?? []);
+
+    async ngOnInit(): Promise<void> {
+        await this.propostas.carregar();
+        const proposta = this.propostas.proposta(this.proposta());
+
+        if (proposta && !proposta.encerrada) {
+            this.escolherProposta(proposta.id);
+        }
+
+        const aluno = this.aluno();
+
+        if (aluno && this.alunos.aluno(aluno)) {
+            this.modo.set('existente');
+            this.escolherExistente(aluno);
+
+            if (proposta && !proposta.encerrada && proposta.turmas.length === 1) {
+                this.formulario.patchValue({ turma: proposta.turmas[0] });
+            }
+        }
+    }
+
+    protected escolherProposta(id: string): void {
+        const proposta = this.propostas.proposta(id);
+        this.formulario.patchValue({ propostaId: proposta?.id ?? '' });
+
+        if (proposta?.turmas.length === 1) {
+            this.formulario.patchValue({ turma: proposta.turmas[0] });
+        } else if (proposta && !proposta.turmas.includes(this.formulario.controls.turma.value)) {
+            this.formulario.patchValue({ turma: '' });
+        }
+    }
 
     /** Aluno novo (apelido sorteado) ou já acompanhado (escolhido na lista). */
     protected readonly modo = signal<'novo' | 'existente'>('novo');
@@ -123,7 +170,7 @@ export class ImportarPage {
             return;
         }
 
-        const { nomeLocal, ...valores } = this.formulario.getRawValue();
+        const { nomeLocal, propostaId, ...valores } = this.formulario.getRawValue();
         this.enviando.set(true);
         this.erroEnvio.set(null);
 
@@ -131,6 +178,7 @@ export class ImportarPage {
             const redacao = await this.redacoes.importar({
                 ...valores,
                 origemId: null,
+                propostaId: propostaId || null,
                 arquivo: this.arquivo(),
             });
 

@@ -44,6 +44,24 @@ describe('DecisoesCsvService', () => {
     });
 });
 
+describe('DecisoesCsvService com proposta', () => {
+    it('envia o filtro de proposta junto com a turma', async () => {
+        TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+        const http = TestBed.inject(HttpTestingController);
+        URL.createObjectURL = vi.fn(() => 'blob:teste');
+        URL.revokeObjectURL = vi.fn();
+        vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
+
+        const promessa = TestBed.inject(DecisoesCsvService).baixar('', 'p1');
+        const req = http.expectOne((r) => r.url === '/api/metricas/decisoes.csv');
+        expect(req.request.params.get('proposta')).toBe('p1');
+        expect(req.request.params.has('turma')).toBe(false);
+        req.flush(new Blob(['']));
+        await promessa;
+        http.verify();
+    });
+});
+
 describe('nomeArquivoDecisoes', () => {
     it('inclui a turma normalizada e a data', () => {
         const dia = new Date(2026, 10, 7);

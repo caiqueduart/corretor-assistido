@@ -106,6 +106,7 @@ Todas as rotas `/api` (exceto o login) exigem `Authorization: Bearer <token>`. O
 | `GET /api/textos?status=&turma=&grupo=&aluno=` | todos | Lista textos com contagem de apontamentos e pendências |
 | `POST /api/textos` | professor | Cria a partir de texto colado `{aluno_codigo, turma, grupo, titulo, conteudo, origem_id, consentimento}` |
 | `POST /api/textos/importar` | professor | `multipart/form-data` com até 20 `arquivos` (PDF, TXT, DOCX) e os mesmos campos |
+| | | `proposta_id` (opcional, em ambas as formas): turma e título vêm da proposta; proposta encerrada recusa |
 | `POST/DELETE /api/textos/exemplos` | professor | Carrega ou remove os textos de demonstração |
 | `GET /api/textos/{id}` | todos | Texto com apontamentos |
 | `DELETE /api/textos/{id}` | professor | Exclui o texto |
@@ -115,8 +116,12 @@ Todas as rotas `/api` (exceto o login) exigem `Authorization: Bearer <token>`. O
 | `PUT /api/textos/{id}/comentario` | professor | Comentário do professor para o estudante |
 | `POST /api/textos/{id}/enviar` | professor | Conclui e envia a devolutiva |
 | `GET /api/textos/{id}/devolutiva` | todos | Texto corrigido, segmentos para exibir e lista para a reescrita |
-| `GET /api/metricas?turma=` | todos | Discordância geral e por critério, equidade por perfil, ganho entre versões |
-| `GET /api/metricas/decisoes.csv` | todos | Uma linha por decisão, sem conteúdo nem código do estudante |
+| `GET /api/propostas?situacao=` | todos | Propostas de redação (abertas primeiro) com a contagem por situação, e os gêneros aceitos |
+| `POST /api/propostas` | professor | `{tema, genero, enunciado, turmas, prazo}` |
+| `GET/PATCH /api/propostas/{id}` | todos / professor | Consultar; alterar, encerrar (`encerrada: true`) ou reabrir |
+| `DELETE /api/propostas/{id}` | professor | Só propostas sem redações |
+| `GET /api/metricas?turma=&proposta=` | todos | Discordância geral e por critério, equidade por perfil, ganho entre versões |
+| `GET /api/metricas/decisoes.csv?turma=&proposta=` | todos | Uma linha por decisão, sem conteúdo nem código do estudante (com `proposta_id`) |
 
 `inicio` e `fim` dos apontamentos são posições em **unidades UTF-16** no `conteudo`, as mesmas de `String.prototype.slice` no navegador.
 

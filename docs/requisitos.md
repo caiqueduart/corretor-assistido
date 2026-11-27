@@ -4,15 +4,16 @@ Prioridades: **Alta** (indispensável para o lançamento), **Média** (important
 
 ## Requisitos funcionais
 
-| ID   | Descrição                                                                        | Prioridade |
-| ---- | -------------------------------------------------------------------------------- | ---------- |
-| RF01 | O usuário deve se autenticar para acessar o sistema.                             | Alta       |
-| RF02 | O sistema deve permitir o cadastro de usuários.                                  | Alta       |
-| RF03 | O sistema deve ter os perfis de professor e de administrador.                    | Alta       |
-| RF04 | O professor deve enviar a produção textual do aluno em arquivo PDF, TXT ou DOCX. | Alta       |
-| RF05 | A IA deve avaliar o texto e gerar uma correção segundo os critérios de correção. | Alta       |
-| RF06 | O professor deve aceitar ou negar a correção da IA como um todo.                 | Alta       |
-| RF07 | O professor deve poder ajustar o resultado da IA antes de validá-lo.             | Alta       |
+| ID   | Descrição                                                                          | Prioridade |
+| ---- | ---------------------------------------------------------------------------------- | ---------- |
+| RF01 | O usuário deve se autenticar para acessar o sistema.                               | Alta       |
+| RF02 | O sistema deve permitir o cadastro de usuários.                                    | Alta       |
+| RF03 | O sistema deve ter os perfis de professor e de administrador.                      | Alta       |
+| RF04 | O professor deve enviar a produção textual do aluno em arquivo PDF, TXT ou DOCX.   | Alta       |
+| RF05 | A IA deve avaliar o texto e gerar uma correção segundo os critérios de correção.   | Alta       |
+| RF06 | O professor deve aceitar ou negar a correção da IA como um todo.                   | Alta       |
+| RF07 | O professor deve poder ajustar o resultado da IA antes de validá-lo.               | Alta       |
+| RF08 | O professor deve organizar as redações em propostas (tema, gênero, turmas, prazo). | Média      |
 
 ## Critérios de correção
 

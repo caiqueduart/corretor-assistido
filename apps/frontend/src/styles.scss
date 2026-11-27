@@ -629,6 +629,10 @@ svg {
         animation: atlas-subir var(--duration-base) var(--ease);
     }
 
+    &--largo {
+        width: min(100% - 2rem, 40rem);
+    }
+
     &::backdrop {
         background: var(--overlay);
         backdrop-filter: blur(2px);

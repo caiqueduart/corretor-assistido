@@ -14,12 +14,13 @@ import (
 const colsTexto = `t.id, t.aluno_codigo, t.turma, t.grupo, t.titulo, t.versao, t.origem_id, t.conteudo, t.status,
 	t.consentimento, t.exemplo, t.motor, t.criterios_usados, t.comentario_ia, t.comentario_professor,
 	t.descartados, t.erro_correcao, t.criado_por, t.criado_em, t.atualizado_em, t.avaliado_em, t.enviado_em, t.enviado_por,
+	t.proposta_id,
 	(SELECT COUNT(*) FROM apontamentos a WHERE a.texto_id = t.id),
 	(SELECT COUNT(*) FROM apontamentos a WHERE a.texto_id = t.id AND a.decisao IS NULL)`
 
 func scanTexto(r interface{ Scan(...any) error }) (dominio.Texto, error) {
 	var t dominio.Texto
-	var origem, criadoPor, enviadoPor sql.NullString
+	var origem, criadoPor, enviadoPor, proposta sql.NullString
 	var status, crit string
 	var consent, exemplo int
 	var criado, atualizado int64
@@ -27,7 +28,7 @@ func scanTexto(r interface{ Scan(...any) error }) (dominio.Texto, error) {
 	err := r.Scan(&t.ID, &t.AlunoCodigo, &t.Turma, &t.Grupo, &t.Titulo, &t.Versao, &origem, &t.Conteudo, &status,
 		&consent, &exemplo, &t.Motor, &crit, &t.ComentarioIA, &t.ComentarioProfessor,
 		&t.Descartados, &t.ErroCorrecao, &criadoPor, &criado, &atualizado, &avaliado, &enviado, &enviadoPor,
-		&t.TotalApontamento, &t.Pendentes)
+		&proposta, &t.TotalApontamento, &t.Pendentes)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return t, ErrNaoEncontrado
@@ -35,6 +36,7 @@ func scanTexto(r interface{ Scan(...any) error }) (dominio.Texto, error) {
 		return t, err
 	}
 	t.OrigemID = strNula(origem)
+	t.PropostaID = strNula(proposta)
 	t.Status = dominio.Status(status)
 	t.Consentimento = consent == 1
 	t.Exemplo = exemplo == 1
@@ -131,11 +133,11 @@ func (s *Store) CriarTexto(ctx context.Context, t dominio.Texto) (dominio.Texto,
 	defer tx.Rollback()
 	_, err = tx.ExecContext(ctx, `INSERT INTO textos (id, aluno_codigo, turma, grupo, titulo, versao, origem_id, conteudo, status,
 		consentimento, exemplo, motor, criterios_usados, comentario_ia, comentario_professor, descartados, erro_correcao,
-		criado_por, criado_em, atualizado_em, avaliado_em, enviado_em, enviado_por)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		criado_por, criado_em, atualizado_em, avaliado_em, enviado_em, enviado_por, proposta_id)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		t.ID, t.AlunoCodigo, t.Turma, t.Grupo, t.Titulo, t.Versao, nulo(t.OrigemID), t.Conteudo, string(t.Status),
 		b2i(t.Consentimento), b2i(t.Exemplo), t.Motor, string(crit), t.ComentarioIA, t.ComentarioProfessor, t.Descartados, t.ErroCorrecao,
-		nulo(t.CriadoPor), ms(t.CriadoEm), ms(t.AtualizadoEm), avaliado, enviado, nulo(t.EnviadoPor))
+		nulo(t.CriadoPor), ms(t.CriadoEm), ms(t.AtualizadoEm), avaliado, enviado, nulo(t.EnviadoPor), nulo(t.PropostaID))
 	if err != nil {
 		return t, err
 	}
@@ -183,6 +185,7 @@ type FiltroTextos struct {
 	Turma       string
 	Grupo       string
 	AlunoCodigo string
+	PropostaID  string
 }
 
 func (f FiltroTextos) where() (string, []any) {
@@ -198,6 +201,7 @@ func (f FiltroTextos) where() (string, []any) {
 	add("t.turma = ?", f.Turma)
 	add("t.grupo = ?", f.Grupo)
 	add("t.aluno_codigo = ?", f.AlunoCodigo)
+	add("t.proposta_id = ?", f.PropostaID)
 	if len(cond) == 0 {
 		return "", nil
 	}

@@ -8,6 +8,7 @@ import { RedacoesService } from '../../core/redacoes/redacoes.service';
 import { Icone } from '../../shared/icone/icone';
 import { GrupoBusca, ItemBusca, buscar } from './busca';
 import { ChamadaService } from '../../core/alunos/chamada.service';
+import { PropostasService, descreverPrazo } from '../../core/propostas/propostas.service';
 
 const STATUS: Readonly<Record<StatusRedacao, string>> = {
     'aguardando-ia': 'Aguardando IA',
@@ -31,6 +32,7 @@ export class BuscaRapida {
     private readonly auth = inject(AuthService);
     private readonly redacoes = inject(RedacoesService);
     private readonly alunos = inject(AlunosService);
+    private readonly propostas = inject(PropostasService);
 
     private readonly dialogo = viewChild.required<ElementRef<HTMLDialogElement>>('dialogo');
     private readonly campo = viewChild.required<ElementRef<HTMLInputElement>>('campo');
@@ -52,6 +54,7 @@ export class BuscaRapida {
 
         const paginas = [
             pagina('inicio', 'Início', '/inicio', 'inicio'),
+            pagina('propostas', 'Propostas de redação', '/propostas', 'proposta'),
             pagina('redacoes', 'Redações', '/redacoes', 'redacoes'),
             ...(escritor ? [pagina('importar', 'Importar redação', '/redacoes/nova', 'importar')] : []),
             pagina('alunos', 'Alunos', '/alunos', 'alunos'),
@@ -87,7 +90,18 @@ export class BuscaRapida {
             link: `/alunos/${aluno.codigo}`,
         }));
 
-        return [...paginas, ...redacoes, ...alunos];
+        const propostas = [...this.propostas.propostas()]
+            .sort((a, b) => Number(a.encerrada) - Number(b.encerrada))
+            .map<ItemBusca>((proposta) => ({
+                id: `pr-${proposta.id}`,
+                grupo: 'Propostas',
+                titulo: proposta.tema,
+                detalhe: `${proposta.turmas.join(', ')} · ${proposta.encerrada ? 'encerrada' : descreverPrazo(proposta.prazo)}`,
+                icone: 'proposta',
+                link: `/propostas/${proposta.id}`,
+            }));
+
+        return [...paginas, ...propostas, ...redacoes, ...alunos];
     });
 
     protected readonly resultados = computed(() => buscar(this.termo(), this.itens()));

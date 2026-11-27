@@ -46,6 +46,7 @@ export class RedacoesMockApi extends RedacoesApi {
             titulo: nova.titulo.trim() || origem?.titulo || 'Sem título',
             versao: origem ? origem.versao + 1 : 1,
             origemId: origem?.id ?? null,
+            propostaId: nova.propostaId ?? null,
             conteudo,
             status: 'aguardando-ia',
             apontamentos: [],

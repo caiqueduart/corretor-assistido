@@ -1,4 +1,4 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 
 import { AlunosService } from './alunos.service';
 import { ConfigService } from '../admin/config.service';
@@ -44,6 +44,17 @@ export class MetricasService {
     private readonly alunos = inject(AlunosService);
     private readonly config = inject(ConfigService);
 
+    /** Proposta em análise ('' = todas as redações). Vale para a tela e para o CSV. */
+    readonly proposta = signal('');
+
+    /** Redações consideradas, conforme o filtro de proposta. */
+    private readonly base = computed(() => {
+        const proposta = this.proposta();
+        const todas = this.redacoes.redacoes();
+
+        return proposta ? todas.filter((redacao) => redacao.propostaId === proposta) : todas;
+    });
+
     /** Diferença, em pontos percentuais, acima da média geral que dispara o alerta (definida pelo admin). */
     readonly limiar = computed(() => this.config.limiarVies());
 
@@ -55,7 +66,7 @@ export class MetricasService {
     });
 
     private readonly corrigidas = computed(() =>
-        this.redacoes.redacoes().filter((redacao) => redacao.status === 'em-revisao' || redacao.status === 'devolvida'),
+        this.base().filter((redacao) => redacao.status === 'em-revisao' || redacao.status === 'devolvida'),
     );
 
     private readonly todosApontamentos = computed(() => this.corrigidas().flatMap((redacao) => redacao.apontamentos));
@@ -65,8 +76,8 @@ export class MetricasService {
     readonly decisoesRegistradas = computed(() => this.todosApontamentos().filter((a) => a.decisao).length);
 
     readonly devolutivas = computed(() => ({
-        enviadas: this.redacoes.redacoes().filter((redacao) => redacao.status === 'devolvida').length,
-        total: this.redacoes.redacoes().length,
+        enviadas: this.base().filter((redacao) => redacao.status === 'devolvida').length,
+        total: this.base().length,
     }));
 
     readonly ganhoMedio = computed(() => {

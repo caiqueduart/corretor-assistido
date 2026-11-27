@@ -32,6 +32,18 @@ describe('MetricasService com a configuração do admin', () => {
         expect(frouxo).toBe(0);
     });
 
+    it('o filtro de proposta restringe as redações consideradas', async () => {
+        const metricas = await montar(['Ortografia', 'Pontuação'], 15);
+        const total = metricas.devolutivas().total;
+
+        metricas.proposta.set('proposta-inexistente');
+        expect(metricas.devolutivas().total).toBe(0);
+        expect(metricas.decisoesRegistradas()).toBe(0);
+
+        metricas.proposta.set('');
+        expect(metricas.devolutivas().total).toBe(total);
+    });
+
     it('lista os critérios ativos e mantém os que já aparecem nas correções', async () => {
         const metricas = await montar(['Concordância'], 15);
         const criterios = metricas.porCriterio().map((l) => l.criterio);
