@@ -22,6 +22,14 @@ const ICONES = {
     metricas: ['M3 3v18h18', 'M7 15l4-4 3 3 5-6'],
     selo: ['M12 2 15 5h4v4l3 3-3 3v4h-4l-3 3-3-3H5v-4l-3-3 3-3V5h4Z', 'M8.5 12l2.5 2.5 4.5-5'],
     desfazer: ['M3 7v6h6', 'M21 17a9 9 0 0 0-15-6.7L3 13'],
+    sair: ['M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4', 'M16 17l5-5-5-5', 'M21 12H9'],
+    mais: ['M12 5v14', 'M5 12h14'],
+    copiar: [
+        'M10 8h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2Z',
+        'M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2',
+    ],
+    baixar: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M7 10l5 5 5-5', 'M12 15V3'],
+    escudo: ['M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z'],
 } as const;
 
 export type NomeIcone = keyof typeof ICONES;

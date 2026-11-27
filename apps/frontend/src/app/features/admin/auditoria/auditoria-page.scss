@@ -1,0 +1,70 @@
+@use 'variables' as *;
+
+:host {
+    display: grid;
+    gap: 1rem;
+}
+
+app-cabecalho-pagina {
+    margin-bottom: 0.5rem;
+}
+
+.auditoria {
+    &__filtros {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+
+        @media (width >= $breakpoint-md) {
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+        }
+    }
+
+    &__erro {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    &__resumo {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        min-height: 2rem;
+        color: var(--texto-2);
+        font-size: 0.875rem;
+    }
+
+    &__quando {
+        white-space: nowrap;
+
+        span {
+            margin-left: 0.25rem;
+            color: var(--texto-2);
+        }
+    }
+
+    &__autor {
+        white-space: nowrap;
+    }
+
+    &__acao {
+        font-weight: 600;
+    }
+
+    &__alvo {
+        display: block;
+        color: var(--texto-2);
+        font-size: 0.8125rem;
+        font-weight: 400;
+    }
+
+    &__detalhe {
+        color: var(--texto-2);
+        font-size: 0.875rem;
+    }
+}

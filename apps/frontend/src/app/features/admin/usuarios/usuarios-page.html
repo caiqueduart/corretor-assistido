@@ -1,0 +1,145 @@
+<app-cabecalho-pagina
+    titulo="Usuários"
+    descricao="Quem acessa o corretor e com qual perfil. Usuários não são excluídos: desative o acesso para manter o histórico."
+>
+    <button class="botao botao--primario" type="button" (click)="abrir(null)">
+        <app-icone nome="mais" />
+        Novo usuário
+    </button>
+</app-cabecalho-pagina>
+
+@if (confirmacao(); as confirmado) {
+    <div class="aviso aviso--sucesso usuarios__confirmacao" role="status">
+        <p>{{ confirmado.mensagem }}</p>
+
+        @if (confirmado.senha; as senha) {
+            <p class="usuarios__senha">
+                Senha: <code>{{ senha }}</code>
+                <button class="botao botao--pequeno" type="button" (click)="copiarSenha(senha)">
+                    <app-icone nome="copiar" />
+                    {{ senhaCopiada() ? 'Copiada' : 'Copiar' }}
+                </button>
+            </p>
+            <p class="usuarios__senha-dica">Ela não será mostrada de novo.</p>
+        }
+
+        <button
+            class="botao botao--discreto botao--pequeno usuarios__fechar"
+            type="button"
+            aria-label="Fechar aviso"
+            (click)="confirmacao.set(null)"
+        >
+            <app-icone nome="recusar" />
+        </button>
+    </div>
+}
+
+<div class="usuarios__filtros">
+    <div class="campo">
+        <label for="busca-usuario">Buscar</label>
+        <input
+            id="busca-usuario"
+            type="search"
+            placeholder="Nome ou e-mail"
+            [value]="busca()"
+            (input)="buscar($event)"
+        />
+    </div>
+
+    <div class="campo">
+        <label for="filtro-perfil">Perfil</label>
+        <select id="filtro-perfil" [value]="filtroPerfil()" (change)="filtrarPerfil($event)">
+            <option value="">Todos</option>
+            @for (perfil of perfis; track perfil) {
+                <option [value]="perfil">{{ rotuloPerfil[perfil] }}</option>
+            }
+        </select>
+    </div>
+
+    @if (!carregando() && !erro()) {
+        <p class="usuarios__resumo">{{ resumo().total }} usuários · {{ resumo().ativos }} ativos</p>
+    }
+</div>
+
+@if (erro(); as mensagem) {
+    <div class="aviso aviso--erro usuarios__erro" role="alert">
+        <p>{{ mensagem }}</p>
+        <button class="botao botao--pequeno" type="button" (click)="carregar()">Tentar de novo</button>
+    </div>
+} @else {
+    <div class="tabela-folha">
+        <table>
+            <caption class="visualmente-oculto">
+                Usuários cadastrados
+            </caption>
+            <thead>
+                <tr>
+                    <th scope="col">Nome</th>
+                    <th scope="col">E-mail</th>
+                    <th scope="col">Perfil</th>
+                    <th scope="col">Situação</th>
+                    <th scope="col">Desde</th>
+                    <th scope="col"><span class="visualmente-oculto">Ações</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (carregando()) {
+                    <tr>
+                        <td class="tabela-folha__vazio" colspan="6" role="status">Carregando usuários…</td>
+                    </tr>
+                } @else {
+                    @for (usuario of filtrados(); track usuario.id) {
+                        <tr [class.usuarios__inativo]="!usuario.ativo">
+                            <th scope="row" class="usuarios__nome">
+                                {{ usuario.nome }}
+                                @if (usuario.id === idAtual()) {
+                                    <span class="etiqueta">você</span>
+                                }
+                            </th>
+                            <td class="usuarios__email">{{ usuario.email }}</td>
+                            <td>
+                                <span class="etiqueta" [class.etiqueta--caneta]="usuario.perfil === 'admin'">
+                                    {{ rotuloPerfil[usuario.perfil] }}
+                                </span>
+                            </td>
+                            <td>
+                                @if (usuario.ativo) {
+                                    <span class="etiqueta etiqueta--sucesso">Ativo</span>
+                                } @else {
+                                    <span class="etiqueta">Inativo</span>
+                                }
+                            </td>
+                            <td class="usuarios__data">{{ usuario.criadoEm | date: 'dd/MM/yyyy' }}</td>
+                            <td class="usuarios__acoes">
+                                <button class="botao botao--pequeno" type="button" (click)="abrir(usuario)">
+                                    Editar <span class="visualmente-oculto">{{ usuario.nome }}</span>
+                                </button>
+                            </td>
+                        </tr>
+                    } @empty {
+                        <tr>
+                            <td class="tabela-folha__vazio" colspan="6">
+                                {{
+                                    usuarios().length
+                                        ? 'Nenhum usuário com esses filtros.'
+                                        : 'Nenhum usuário cadastrado.'
+                                }}
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<dialog #dialogo class="dialogo" aria-labelledby="titulo-usuario" (close)="fechar()">
+    @if (edicao(); as atual) {
+        <app-usuario-formulario
+            [usuario]="atual.usuario"
+            [ehVoce]="atual.usuario?.id === idAtual()"
+            (salvo)="aoSalvar($event)"
+            (cancelado)="fechar()"
+        />
+    }
+</dialog>
