@@ -108,37 +108,7 @@
         color: var(--primary-hover);
     }
 
-    &__headline {
-        margin: 0 0 var(--space-4);
-        color: #fff;
-        font-size: 1.5rem;
-        font-weight: var(--weight-semibold);
-        letter-spacing: -0.025em;
-        line-height: 1.2;
-    }
 
-    &__points {
-        display: grid;
-        gap: var(--space-3);
-        margin: 0;
-        padding: 0;
-        color: var(--sidebar-text);
-        list-style: none;
-
-        li {
-            display: flex;
-            align-items: center;
-            gap: var(--space-3);
-        }
-
-        app-icone {
-            box-sizing: content-box;
-            padding: 0.2rem;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.16);
-            color: #fff;
-        }
-    }
 
     &__poc {
         color: var(--sidebar-text);
