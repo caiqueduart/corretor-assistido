@@ -1,5 +1,4 @@
 @use 'variables' as *;
-@use 'functions' as *;
 @use 'mixins' as *;
 
 :host {
@@ -19,13 +18,13 @@
     }
 
     &__titulo {
-        font-size: pxToRem(16px);
-        font-weight: 700;
+        font-size: var(--text-md);
+        font-weight: var(--weight-semibold);
     }
 
     &__total {
         color: var(--texto-2);
-        font-size: pxToRem(14px);
+        font-size: var(--text-base);
     }
 
     &__lista {
@@ -62,13 +61,13 @@
     }
 
     &__aluno {
-        font-weight: 700;
+        font-weight: var(--weight-semibold);
     }
 
     &__titulo-redacao {
         margin-left: 0.375rem;
         color: var(--texto-2);
-        font-weight: 400;
+        font-weight: var(--weight-regular);
     }
 
     &__meta {
@@ -77,7 +76,7 @@
         align-items: center;
         gap: 0.5rem;
         color: var(--texto-2);
-        font-size: pxToRem(14px);
+        font-size: var(--text-base);
     }
 
     &__progresso {
@@ -95,7 +94,7 @@
     &__barra {
         display: block;
         height: 6px;
-        border-radius: 999px;
+        border-radius: var(--radius-full);
         background: var(--grafite-suave);
         overflow: hidden;
     }
@@ -108,7 +107,7 @@
 
     &__progresso-texto {
         color: var(--texto-2);
-        font-size: pxToRem(13px);
+        font-size: var(--text-sm);
     }
 
     &__corrigindo {
@@ -116,7 +115,7 @@
         align-items: center;
         gap: 0.5rem;
         color: var(--grafite);
-        font-size: pxToRem(14px);
+        font-size: var(--text-base);
     }
 
     &__giro {
@@ -130,7 +129,7 @@
 
     &__erro {
         color: var(--correcao);
-        font-size: pxToRem(14px);
+        font-size: var(--text-base);
     }
 
     &__vazio,

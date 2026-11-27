@@ -29,7 +29,7 @@
         margin-bottom: 0.75rem;
         font-family: var(--fonte-texto);
         font-size: pxToRem(22px);
-        font-weight: 600;
+        font-weight: var(--weight-semibold);
     }
 
     &__lateral {
@@ -63,7 +63,7 @@
     &__troca {
         color: var(--caneta);
         font-family: var(--fonte-texto);
-        font-weight: 600;
+        font-weight: var(--weight-semibold);
     }
 
     &__explicacao {
