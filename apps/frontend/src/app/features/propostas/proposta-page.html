@@ -88,6 +88,9 @@
                                 <span class="lista__titulo">{{ chamada.rotulo(redacao.aluno) }}</span>
                                 <span class="lista__detalhe">
                                     {{ redacao.turma }} · {{ rotuloStatus[redacao.status] }}
+                                    @if (redacao.origem === 'aluno') {
+                                        · enviada pelo aluno
+                                    }
                                     @if (redacao.status === 'em-revisao') {
                                         · {{ item.feitas }} de {{ item.total }} decididos
                                     }
@@ -149,7 +152,9 @@
                         <li class="lista__item">
                             <span class="lista__textos">
                                 <span class="lista__titulo">{{ aluno.rotulo }}</span>
-                                <span class="lista__detalhe">{{ aluno.turma }}</span>
+                                <span class="lista__detalhe">
+                                    {{ aluno.turma }}{{ aluno.temCodigo ? ' · tem código de acesso' : '' }}
+                                </span>
                             </span>
                             @if (podeEditar() && !atual.encerrada) {
                                 <a

@@ -26,6 +26,7 @@ import { EstadoVazio } from '../../shared/estado-vazio/estado-vazio';
 import { Icone } from '../../shared/icone/icone';
 import { PropostaFormulario } from './proposta-formulario';
 import { tomPrazo } from './propostas-page';
+import { CodigosService } from '../../core/alunos/codigos.service';
 
 const ROTULO_STATUS: Readonly<Record<StatusRedacao, string>> = {
     'aguardando-ia': 'Aguardando IA',
@@ -46,6 +47,7 @@ export class PropostaPage {
     protected readonly redacoes = inject(RedacoesService);
     protected readonly chamada = inject(ChamadaService);
     private readonly alunos = inject(AlunosService);
+    private readonly codigos = inject(CodigosService);
     private readonly auth = inject(AuthService);
     private readonly avisos = inject(AvisosService);
     private readonly confirmacao = inject(ConfirmacaoService);
@@ -89,15 +91,34 @@ export class PropostaPage {
         }
 
         const entregaram = new Set(this.itens().map((item) => item.redacao.aluno));
+        const comCodigo = new Set(this.codigos.ativos().map((c) => c.aluno));
+        const turmaDe = new Map<string, string>();
 
-        return this.alunos
-            .alunos()
-            .filter((aluno) => proposta.turmas.includes(aluno.turma) && !entregaram.has(aluno.codigo))
-            .map((aluno) => ({ codigo: aluno.codigo, turma: aluno.turma, rotulo: this.chamada.rotulo(aluno.codigo) }))
+        // Alunos já acompanhados (por redações) e os que só têm código de acesso.
+        for (const aluno of this.alunos.alunos()) {
+            turmaDe.set(aluno.codigo, aluno.turma);
+        }
+        for (const c of this.codigos.ativos()) {
+            turmaDe.set(c.aluno, c.turma);
+        }
+
+        return [...turmaDe]
+            .filter(([codigo, turma]) => proposta.turmas.includes(turma) && !entregaram.has(codigo))
+            .map(([codigo, turma]) => ({
+                codigo,
+                turma,
+                temCodigo: comCodigo.has(codigo),
+                rotulo: this.chamada.rotulo(codigo),
+            }))
             .sort((a, b) => a.rotulo.localeCompare(b.rotulo, 'pt-BR'));
     });
 
     constructor() {
+        // Os códigos só podem ser listados por professor e admin.
+        if (this.podeEditar() && !this.codigos.carregado()) {
+            void this.codigos.carregar().catch(() => undefined);
+        }
+
         effect(() => {
             const dialogo = this.dialogo()?.nativeElement;
 

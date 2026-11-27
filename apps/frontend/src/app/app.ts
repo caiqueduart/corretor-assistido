@@ -11,6 +11,7 @@ import { Avisos } from './layout/avisos/avisos';
 import { Confirmacao } from './layout/confirmacao/confirmacao';
 import { Topbar } from './layout/topbar/topbar';
 import { Icone, NomeIcone } from './shared/icone/icone';
+import { CodigosService } from './core/alunos/codigos.service';
 
 interface ItemNavegacao {
     readonly rota: string;
@@ -61,6 +62,7 @@ export class App {
     protected readonly redacoes = inject(RedacoesService);
     private readonly config = inject(ConfigService);
     private readonly propostas = inject(PropostasService);
+    private readonly codigos = inject(CodigosService);
 
     /** Menu lateral aberto no celular (no desktop ele fica sempre visível). */
     protected readonly menuAberto = signal(false);
@@ -85,6 +87,7 @@ export class App {
                 this.redacoes.limpar();
                 this.config.limpar();
                 this.propostas.limpar();
+                this.codigos.limpar();
 
                 if (id) {
                     void this.redacoes.carregar();

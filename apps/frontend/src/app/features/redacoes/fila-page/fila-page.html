@@ -113,6 +113,9 @@
                                     @if (redacao.exemplo) {
                                         <span class="etiqueta">Exemplo</span>
                                     }
+                                    @if (redacao.origem === 'aluno') {
+                                        <span class="etiqueta etiqueta--caneta">Enviada pelo aluno</span>
+                                    }
                                 </span>
 
                                 @if (redacao.status === 'em-revisao') {

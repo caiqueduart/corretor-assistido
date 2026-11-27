@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { ChamadaService } from '../../../core/alunos/chamada.service';
@@ -10,10 +10,12 @@ import { CabecalhoPagina } from '../../../shared/cabecalho-pagina/cabecalho-pagi
 import { Esqueleto } from '../../../shared/esqueleto/esqueleto';
 import { Icone } from '../../../shared/icone/icone';
 import { SituacaoVersao } from '../situacao-versao/situacao-versao';
+import { AuthService } from '../../../core/auth/auth.service';
+import { AcessoAlunos } from '../acesso-alunos/acesso-alunos';
 
 @Component({
     selector: 'app-alunos-page',
-    imports: [RouterLink, CabecalhoPagina, SituacaoVersao, Esqueleto, Icone],
+    imports: [RouterLink, CabecalhoPagina, SituacaoVersao, Esqueleto, Icone, AcessoAlunos],
     templateUrl: './alunos-page.html',
     styleUrl: './alunos-page.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,6 +26,10 @@ export class AlunosPage {
     protected readonly chamada = inject(ChamadaService);
     private readonly avisos = inject(AvisosService);
     private readonly confirmacao = inject(ConfirmacaoService);
+    private readonly auth = inject(AuthService);
+
+    /** Códigos de acesso: só professor e admin. */
+    protected readonly podeEditar = computed(() => this.auth.temPerfil('admin', 'professor'));
 
     /** Aluno com o nome em edição na tabela. */
     protected readonly editando = signal<string | null>(null);

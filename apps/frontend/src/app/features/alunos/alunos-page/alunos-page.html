@@ -3,6 +3,10 @@
     descricao="Cada reescrita volta ao ciclo de correção. A evolução compara os desvios que você validou em cada versão."
 />
 
+@if (podeEditar()) {
+    <app-acesso-alunos />
+}
+
 @if (!redacoes.carregado()) {
     @if (redacoes.erroCarga(); as erro) {
         <p class="aviso aviso--erro" role="alert">{{ erro }}</p>

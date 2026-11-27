@@ -1,0 +1,77 @@
+.preparar {
+    display: grid;
+
+    &__cabecalho {
+        padding: var(--space-5) var(--space-6) 0;
+    }
+
+    &__titulo {
+        font-size: var(--text-lg);
+        font-weight: var(--weight-semibold);
+    }
+
+    &__subtitulo {
+        color: var(--text-muted);
+    }
+
+    &__corpo {
+        display: grid;
+        gap: var(--space-4);
+        max-height: 60dvh;
+        padding: var(--space-5) var(--space-6);
+        overflow-y: auto;
+    }
+
+    &__existentes {
+        display: grid;
+        gap: var(--space-2);
+        margin: 0;
+        padding: 0;
+        border: 0;
+
+        legend {
+            float: left;
+            width: 100%;
+            margin-bottom: var(--space-1);
+        }
+    }
+
+    &__grade {
+        display: grid;
+        gap: var(--space-4);
+
+        @media (width >= 640px) {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    &__opcional {
+        text-transform: none;
+        letter-spacing: 0;
+    }
+
+    &__nome {
+        width: 100%;
+        min-width: 8rem;
+        height: var(--control-sm);
+        padding: 0 var(--space-2);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-md);
+    }
+
+    &__codigo {
+        font-family: var(--font-mono);
+        font-size: var(--text-md);
+        letter-spacing: 0.1em;
+        white-space: nowrap;
+    }
+
+    &__acoes {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--space-2);
+        padding: var(--space-4) var(--space-6);
+        border-top: 1px solid var(--border);
+        background: var(--surface-muted);
+    }
+}
