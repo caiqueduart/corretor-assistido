@@ -88,6 +88,17 @@
         }
     }
 
+    /* O nome abre a redação (e, se ainda não foi corrigida, dá para pedir a correção por lá). */
+    &__abrir {
+        text-decoration: none;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+    }
+
     &__titulo {
         color: var(--text-muted);
         font-weight: var(--weight-regular);

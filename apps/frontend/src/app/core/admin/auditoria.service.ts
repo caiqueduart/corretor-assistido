@@ -64,7 +64,29 @@ export const ROTULO_ACAO: Readonly<Record<string, string>> = {
     corrigir: 'Pediu a correção',
     decidir_todos: 'Decidiu toda a correção',
     enviar_devolutiva: 'Registrou devolutiva',
+    criar_proposta: 'Criou proposta',
+    alterar_proposta: 'Alterou proposta',
+    excluir_proposta: 'Excluiu proposta',
+    gerar_codigos: 'Gerou códigos de acesso',
+    revogar_codigo: 'Revogou código de acesso',
+    entrega_aluno: 'Enviou redação pela Área do aluno',
+    reenvio_aluno: 'Trocou o texto pela Área do aluno',
 };
+
+/** Ações feitas pelo próprio aluno (sem usuário logado). */
+const ACOES_DO_ALUNO = new Set(['entrega_aluno', 'reenvio_aluno']);
+
+/** Quem fez: o nome do usuário, "Aluno" nas ações da Área do aluno ou "Sistema". */
+export function autorDe(
+    registro: Pick<RegistroAuditoria, 'usuarioId' | 'acao'>,
+    nomes: ReadonlyMap<string, string>,
+): string {
+    if (registro.usuarioId) {
+        return nomes.get(registro.usuarioId) ?? 'Usuário removido';
+    }
+
+    return ACOES_DO_ALUNO.has(registro.acao) ? 'Aluno' : 'Sistema';
+}
 
 export function rotuloAcao(acao: string): string {
     const texto = ROTULO_ACAO[acao] ?? acao.replaceAll('_', ' ');
@@ -163,6 +185,10 @@ export function descreverAlvo(
             return entidadeId ? `texto ${entidadeId.slice(0, 8)}` : 'textos de exemplo';
         case 'configuracao':
             return 'configuração da correção';
+        case 'proposta':
+            return 'proposta de redação';
+        case 'codigo':
+            return entidadeId ? `aluno ${entidadeId}` : '';
         default:
             return entidadeId ? `${entidade} ${entidadeId}` : entidade;
     }

@@ -10,6 +10,7 @@ const ABAS: readonly Aba[] = [
     { rota: 'usuarios', rotulo: 'Usuários' },
     { rota: 'configuracao', rotulo: 'Configuração' },
     { rota: 'auditoria', rotulo: 'Auditoria' },
+    { rota: 'metricas', rotulo: 'Métricas' },
 ];
 
 /** Abas da área de administração (só perfil admin). */

@@ -1,0 +1,56 @@
+:host {
+    display: block;
+    margin-bottom: var(--space-4);
+}
+
+.acesso {
+    &__cabecalho {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--space-3);
+    }
+
+    &__novo {
+        display: grid;
+        gap: var(--space-1);
+
+        code {
+            padding: 0.125rem var(--space-2);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: var(--text-md);
+            letter-spacing: 0.1em;
+        }
+    }
+
+    &__dica {
+        font-size: var(--text-xs);
+    }
+
+    &__acoes {
+        display: flex;
+        gap: var(--space-2);
+        margin-top: var(--space-1);
+    }
+
+    /* A tabela já está dentro de um cartão: sem sombra dupla. */
+    &__tabela {
+        box-shadow: none;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+    }
+
+    &__uso {
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    &__botoes {
+        text-align: right;
+        white-space: nowrap;
+    }
+}

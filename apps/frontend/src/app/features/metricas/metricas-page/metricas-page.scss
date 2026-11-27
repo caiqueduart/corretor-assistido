@@ -1,0 +1,143 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+:host {
+    display: grid;
+    gap: var(--space-6);
+}
+
+.metricas {
+    &__bloco {
+        @include folha;
+        display: grid;
+        gap: var(--space-4);
+        padding: var(--space-5) var(--space-6);
+    }
+
+    &__subtitulo {
+        font-size: var(--text-md);
+        font-weight: var(--weight-semibold);
+    }
+
+    &__nota {
+        max-width: 70ch;
+        color: var(--texto-2);
+        font-size: var(--text-base);
+    }
+
+    &__rolagem {
+        overflow-x: auto;
+    }
+
+    &__tabela {
+        width: 100%;
+        border-collapse: collapse;
+
+        th,
+        td {
+            padding: var(--space-3) var(--space-4);
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        /* Atlas: ds-table th. */
+        thead th {
+            @include rotulo;
+            height: 2.5rem;
+            padding-block: 0;
+            background: var(--surface-muted);
+            white-space: nowrap;
+        }
+
+        tbody th {
+            font-weight: var(--weight-medium);
+        }
+
+        tbody tr:last-child > * {
+            border-bottom: 0;
+        }
+
+        .metricas__numero {
+            text-align: right;
+        }
+    }
+
+    &__linha-alerta {
+        background: var(--correcao-suave);
+    }
+
+    &__numero {
+        white-space: nowrap;
+    }
+
+    &__contagem {
+        color: var(--texto-2);
+        font-size: var(--text-sm);
+    }
+}
+
+/* Indicadores no padrão Atlas (ds-kpi). */
+.resumo {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+
+    @media (width >= $breakpoint-md) {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    &__item {
+        @include folha;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        padding: var(--space-6);
+
+        dt {
+            color: var(--text-muted);
+            font-size: var(--text-sm);
+        }
+
+        dd {
+            margin: 0;
+        }
+    }
+
+    &__valor {
+        color: var(--text);
+        font-size: var(--text-3xl);
+        font-weight: var(--weight-semibold);
+        letter-spacing: -0.02em;
+        line-height: var(--leading-tight);
+    }
+
+    &__explicacao {
+        color: var(--text-subtle);
+        font-size: var(--text-xs);
+    }
+}
+
+.empilhada {
+    display: flex;
+    width: 100%;
+    max-width: 16rem;
+    height: 0.625rem;
+    margin-bottom: 0.25rem;
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: var(--grafite-suave);
+
+    &__parte {
+        &--aceita {
+            background: var(--caneta);
+        }
+
+        &--ajustada {
+            background: var(--caneta-clara);
+        }
+
+        &--recusada {
+            background: var(--correcao);
+        }
+    }
+}

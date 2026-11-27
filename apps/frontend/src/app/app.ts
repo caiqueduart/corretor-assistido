@@ -11,6 +11,7 @@ import { Avisos } from './layout/avisos/avisos';
 import { Confirmacao } from './layout/confirmacao/confirmacao';
 import { Topbar } from './layout/topbar/topbar';
 import { Icone, NomeIcone } from './shared/icone/icone';
+import { CodigosService } from './core/alunos/codigos.service';
 
 interface ItemNavegacao {
     readonly rota: string;
@@ -28,7 +29,12 @@ const INICIO: ItemNavegacao = { rota: '/inicio', rotulo: 'Início', icone: 'inic
 /** O professor corrige; o admin só administra. */
 const PROFESSOR: SecaoNavegacao = {
     titulo: 'Principal',
-    itens: [INICIO, { rota: '/redacoes', rotulo: 'Redações', icone: 'redacoes' }],
+    itens: [
+        INICIO,
+        { rota: '/propostas', rotulo: 'Propostas', icone: 'proposta' },
+        { rota: '/redacoes', rotulo: 'Redações', icone: 'redacoes' },
+        { rota: '/alunos', rotulo: 'Alunos', icone: 'alunos' },
+    ],
 };
 
 const ADMIN: SecaoNavegacao = { titulo: 'Principal', itens: [INICIO] };
@@ -39,6 +45,11 @@ const SISTEMA: SecaoNavegacao = {
 };
 
 const CHAVE_MENU = 'corretor.menu-recolhido';
+
+/** "/aluno" (área do aluno), mas não "/alunos" (tela dos professores). */
+export function ehAreaDoAluno(url: string): boolean {
+    return /^\/aluno(?:[/?#]|$)/.test(url);
+}
 
 function lerPreferenciaMenu(): boolean {
     try {
@@ -61,9 +72,13 @@ export class App {
     protected readonly redacoes = inject(RedacoesService);
     private readonly config = inject(ConfigService);
     private readonly propostas = inject(PropostasService);
+    private readonly codigos = inject(CodigosService);
 
     /** Menu lateral aberto no celular (no desktop ele fica sempre visível). */
     protected readonly menuAberto = signal(false);
+
+    /** A área do aluno é uma página à parte: nunca aparece dentro do menu dos professores. */
+    protected readonly areaDoAluno = signal(false);
 
     /** No desktop, menu recolhido mostra só os ícones. A preferência fica salva no navegador. */
     protected readonly recolhido = signal(lerPreferenciaMenu());
@@ -82,6 +97,7 @@ export class App {
                 this.redacoes.limpar();
                 this.config.limpar();
                 this.propostas.limpar();
+                this.codigos.limpar();
 
                 if (id) {
                     void this.redacoes.carregar();
@@ -94,10 +110,11 @@ export class App {
         // No celular, fecha o menu ao navegar.
         inject(Router)
             .events.pipe(
-                filter((evento) => evento instanceof NavigationEnd),
+                filter((evento): evento is NavigationEnd => evento instanceof NavigationEnd),
                 takeUntilDestroyed(),
             )
-            .subscribe(() => {
+            .subscribe((evento) => {
+                this.areaDoAluno.set(ehAreaDoAluno(evento.urlAfterRedirects));
                 this.menuAberto.set(false);
                 this.focarConteudo();
             });

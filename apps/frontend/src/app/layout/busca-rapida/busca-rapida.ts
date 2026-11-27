@@ -6,6 +6,9 @@ import { StatusRedacao } from '../../core/redacoes/redacao.model';
 import { RedacoesService } from '../../core/redacoes/redacoes.service';
 import { Icone } from '../../shared/icone/icone';
 import { GrupoBusca, ItemBusca, buscar } from './busca';
+import { ChamadaService } from '../../core/alunos/chamada.service';
+import { PropostasService, descreverPrazo } from '../../core/propostas/propostas.service';
+import { AlunosService } from '../../core/redacoes/alunos.service';
 
 const STATUS: Readonly<Record<StatusRedacao, string>> = {
     'aguardando-ia': 'Aguardando IA',
@@ -27,6 +30,9 @@ export class BuscaRapida {
     private readonly router = inject(Router);
     private readonly auth = inject(AuthService);
     private readonly redacoes = inject(RedacoesService);
+    private readonly propostas = inject(PropostasService);
+    private readonly alunos = inject(AlunosService);
+    private readonly chamada = inject(ChamadaService);
 
     private readonly dialogo = viewChild.required<ElementRef<HTMLDialogElement>>('dialogo');
     private readonly campo = viewChild.required<ElementRef<HTMLInputElement>>('campo');
@@ -52,10 +58,13 @@ export class BuscaRapida {
                       pagina('usuarios', 'Usuários', '/admin/usuarios', 'escudo'),
                       pagina('configuracao', 'Configuração da correção', '/admin/configuracao', 'escudo'),
                       pagina('auditoria', 'Auditoria', '/admin/auditoria', 'escudo'),
+                      pagina('metricas', 'Métricas da POC', '/admin/metricas', 'metricas'),
                   ]
                 : [
+                      pagina('propostas', 'Propostas de redação', '/propostas', 'proposta'),
                       pagina('redacoes', 'Redações', '/redacoes', 'redacoes'),
                       pagina('importar', 'Importar redação', '/redacoes/nova', 'importar'),
+                      pagina('alunos', 'Alunos', '/alunos', 'alunos'),
                   ]),
         ];
 
@@ -70,13 +79,33 @@ export class BuscaRapida {
             .map<ItemBusca>((redacao) => ({
                 id: `r-${redacao.id}`,
                 grupo: 'Redações',
-                titulo: `${redacao.aluno} · ${redacao.titulo}`,
+                titulo: `${this.chamada.rotulo(redacao.aluno)} · ${redacao.titulo}`,
                 detalhe: `${redacao.turma} · ${STATUS[redacao.status]}`,
                 icone: 'redacoes',
                 link: `/redacoes/${redacao.id}`,
             }));
 
-        return [...paginas, ...redacoes];
+        const propostas = [...this.propostas.propostas()]
+            .sort((a, b) => Number(a.encerrada) - Number(b.encerrada))
+            .map<ItemBusca>((proposta) => ({
+                id: `pr-${proposta.id}`,
+                grupo: 'Propostas',
+                titulo: proposta.tema,
+                detalhe: `${proposta.turmas.join(', ')} · ${proposta.encerrada ? 'encerrada' : descreverPrazo(proposta.prazo)}`,
+                icone: 'proposta',
+                link: `/propostas/${proposta.id}`,
+            }));
+
+        const alunos = this.alunos.alunos().map<ItemBusca>((aluno) => ({
+            id: `a-${aluno.codigo}`,
+            grupo: 'Alunos',
+            titulo: this.chamada.rotulo(aluno.codigo),
+            detalhe: `${aluno.turma} · ${aluno.versoes.length} ${aluno.versoes.length === 1 ? 'redação' : 'redações'}`,
+            icone: 'alunos',
+            link: `/alunos/${aluno.codigo}`,
+        }));
+
+        return [...paginas, ...propostas, ...redacoes, ...alunos];
     });
 
     protected readonly resultados = computed(() => buscar(this.termo(), this.itens()));

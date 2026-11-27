@@ -629,13 +629,18 @@ func (s *Servidor) devolutiva(w http.ResponseWriter, r *http.Request, u dominio.
 		falha(w, http.StatusConflict, "devolutiva_nao_enviada", "A devolutiva só fica disponível depois que o professor revisa e envia.")
 		return
 	}
+	escrever(w, http.StatusOK, montarDevolutiva(t))
+}
+
+// montarDevolutiva é o que o estudante recebe: só os apontamentos validados pelo professor.
+func montarDevolutiva(t dominio.Texto) map[string]any {
 	itens := []itemReescrita{}
 	for _, a := range t.Apontamentos {
 		if a.Validado() {
 			itens = append(itens, itemReescrita{a.Criterio, a.Trecho, a.Correcao(), a.Explicacao})
 		}
 	}
-	escrever(w, http.StatusOK, map[string]any{
+	return map[string]any{
 		"texto_id":        t.ID,
 		"aluno_codigo":    t.AlunoCodigo,
 		"titulo":          t.Titulo,
@@ -645,5 +650,5 @@ func (s *Servidor) devolutiva(w http.ResponseWriter, r *http.Request, u dominio.
 		"texto_corrigido": dominio.TextoFinal(t.Conteudo, t.Apontamentos),
 		"segmentos":       dominio.Segmentar(t.Conteudo, t.Apontamentos),
 		"para_reescrita":  itens,
-	})
+	}
 }

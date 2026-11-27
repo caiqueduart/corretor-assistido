@@ -76,6 +76,7 @@ type Texto struct {
 	Versao              int           `json:"versao"`
 	OrigemID            *string       `json:"origem_id"`
 	PropostaID          *string       `json:"proposta_id"`
+	Origem              string        `json:"origem"` // "professor" (importação) ou "aluno" (código de acesso)
 	Conteudo            string        `json:"conteudo"`
 	Status              Status        `json:"status"`
 	Consentimento       bool          `json:"consentimento"`
@@ -208,4 +209,21 @@ type ContagemProposta struct {
 	AguardandoIA int `json:"aguardando_ia"` // pendente ou corrigindo
 	Revisao      int `json:"revisao"`
 	Concluidos   int `json:"concluidos"`
+}
+
+// Origens possíveis de uma redação.
+const (
+	OrigemProfessor = "professor"
+	OrigemAluno     = "aluno"
+)
+
+// CodigoAcesso dá ao aluno acesso sem conta: enviar redações e ver devolutivas.
+// O código em si nunca é guardado nem devolvido depois de gerado.
+type CodigoAcesso struct {
+	ID          string     `json:"id"`
+	AlunoCodigo string     `json:"aluno_codigo"`
+	Turma       string     `json:"turma"`
+	Grupo       string     `json:"grupo"`
+	CriadoEm    time.Time  `json:"criado_em"`
+	UltimoUso   *time.Time `json:"ultimo_uso"`
 }

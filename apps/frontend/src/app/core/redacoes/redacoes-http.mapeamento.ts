@@ -26,6 +26,7 @@ export interface TextoApi {
     readonly versao: number;
     readonly origem_id: string | null;
     readonly proposta_id?: string | null;
+    readonly origem?: 'professor' | 'aluno';
     readonly conteudo: string;
     readonly status: StatusApi;
     readonly exemplo: boolean;
@@ -79,6 +80,7 @@ export function deTextoApi(t: TextoApi): Redacao {
         versao: t.versao,
         origemId: t.origem_id,
         propostaId: t.proposta_id ?? null,
+        origem: t.origem ?? 'professor',
         conteudo: t.conteudo,
         status: STATUS[t.status] ?? 'aguardando-ia',
         apontamentos: (t.apontamentos ?? []).map(deApontamentoApi),

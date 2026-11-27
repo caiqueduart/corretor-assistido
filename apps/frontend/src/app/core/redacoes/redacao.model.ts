@@ -56,6 +56,8 @@ export interface Redacao {
     readonly erroCorrecao?: string;
     /** Proposta de redação a que pertence; ausente ou null nas avulsas. */
     readonly propostaId?: string | null;
+    /** Quem enviou: o professor (importação) ou o próprio aluno (código de acesso). */
+    readonly origem?: 'professor' | 'aluno';
 }
 
 export interface NovaRedacao {

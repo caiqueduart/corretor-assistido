@@ -363,3 +363,7 @@ func (s *Store) ListarAuditoria(ctx context.Context, limite int) ([]dominio.Regi
 	}
 	return out, rows.Err()
 }
+
+// UsarRelogio troca a hora usada nas gravações. Serve para o comando de
+// demonstração (cmd/demo) criar um histórico com datas espalhadas.
+func (s *Store) UsarRelogio(agora func() time.Time) { s.now = agora }

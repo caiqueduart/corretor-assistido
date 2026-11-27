@@ -34,6 +34,12 @@ export const ADMIN_ROUTES: Routes = [
                 data: { trilha: [{ rotulo: 'Auditoria' }] },
                 loadComponent: () => import('./auditoria/auditoria-page').then((m) => m.AuditoriaPage),
             },
+            {
+                path: 'metricas',
+                title: 'Métricas da POC · Administração · Corretor Assistido',
+                data: { trilha: [{ rotulo: 'Métricas' }] },
+                loadComponent: () => import('../metricas/metricas-page/metricas-page').then((m) => m.MetricasPage),
+            },
         ],
     },
 ];

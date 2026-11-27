@@ -4,6 +4,12 @@ import { autenticadoGuard, perfilGuard, visitanteGuard } from './core/auth/guard
 
 export const routes: Routes = [
     {
+        // Área do aluno: pública, autenticada só pelo código de acesso.
+        path: 'aluno',
+        title: 'Área do aluno · Corretor Assistido',
+        loadComponent: () => import('./features/area-aluno/area-aluno-page').then((m) => m.AreaAlunoPage),
+    },
+    {
         path: 'login',
         title: 'Entrar · Corretor Assistido',
         canActivate: [visitanteGuard],
@@ -36,6 +42,19 @@ export const routes: Routes = [
                         title: 'Proposta · Corretor Assistido',
                         data: { trilha: [{ rotulo: 'Propostas', link: '/propostas' }, { rotulo: ':proposta' }] },
                         loadComponent: () => import('./features/propostas/proposta-page').then((m) => m.PropostaPage),
+                    },
+                    {
+                        path: 'alunos',
+                        title: 'Alunos · Corretor Assistido',
+                        data: { trilha: [{ rotulo: 'Alunos' }] },
+                        loadComponent: () =>
+                            import('./features/alunos/alunos-page/alunos-page').then((m) => m.AlunosPage),
+                    },
+                    {
+                        path: 'alunos/:codigo',
+                        title: 'Evolução do aluno · Corretor Assistido',
+                        data: { trilha: [{ rotulo: 'Alunos', link: '/alunos' }, { rotulo: ':aluno' }] },
+                        loadComponent: () => import('./features/alunos/aluno-page/aluno-page').then((m) => m.AlunoPage),
                     },
                     {
                         path: 'redacoes',
