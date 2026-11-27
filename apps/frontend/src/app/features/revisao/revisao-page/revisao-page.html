@@ -12,7 +12,7 @@
 } @else if (redacao(); as atual) {
     <header class="revisao__topo">
         <h1 class="revisao__titulo">
-            {{ atual.aluno }}
+            {{ chamada.rotulo(atual.aluno) }}
             <span class="revisao__titulo-redacao">{{ atual.titulo }}</span>
         </h1>
 
@@ -222,7 +222,8 @@
                 <div class="envio" [class.envio--confirmando]="confirmandoEnvio()">
                     @if (confirmandoEnvio()) {
                         <p class="envio__texto">
-                            Enviar a devolutiva para <span class="envio__destaque">{{ atual.aluno }}</span>? Ele vai ver
+                            Enviar a devolutiva para
+                            <span class="envio__destaque">{{ chamada.rotulo(atual.aluno) }}</span>? Ele vai ver
                             {{ validados() === 1 ? '1 correção' : validados() + ' correções' }} e o seu recado. Depois
                             de enviada, ela não pode ser alterada.
                         </p>

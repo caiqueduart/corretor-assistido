@@ -29,7 +29,7 @@ export class RedacoesHttpApi extends RedacoesApi {
 
     async importar(nova: NovaRedacao): Promise<Redacao> {
         const campos = {
-            aluno_codigo: nova.aluno.trim().toUpperCase(),
+            aluno_codigo: nova.aluno.trim(),
             turma: nova.turma.trim(),
             grupo: nova.perfil,
             titulo: nova.titulo.trim(),

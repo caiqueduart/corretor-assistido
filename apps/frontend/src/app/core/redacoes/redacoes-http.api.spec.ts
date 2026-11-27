@@ -39,7 +39,7 @@ const TEXTO: TextoApi = {
 };
 
 const NOVA: NovaRedacao = {
-    aluno: ' 8a-07 ',
+    aluno: ' Ipê Lilás ',
     turma: '8º A',
     perfil: 'Rural',
     titulo: '',
@@ -87,10 +87,10 @@ describe('RedacoesHttpApi', () => {
         expect((await promessa)[0].apontamentos).toHaveLength(1);
     });
 
-    it('importa texto colado em JSON, com código em maiúsculas', async () => {
+    it('importa texto colado em JSON, com o apelido como identificador', async () => {
         const promessa = api.importar(NOVA);
         const req = http.expectOne('/api/textos');
-        expect(req.request.body).toMatchObject({ aluno_codigo: '8A-07', grupo: 'Rural', consentimento: true });
+        expect(req.request.body).toMatchObject({ aluno_codigo: 'Ipê Lilás', grupo: 'Rural', consentimento: true });
         req.flush({ ...TEXTO, status: 'pendente', apontamentos: [] });
 
         expect((await promessa).status).toBe('aguardando-ia');

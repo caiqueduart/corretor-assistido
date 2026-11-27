@@ -12,6 +12,7 @@ import { EstadoVazio } from '../../shared/estado-vazio/estado-vazio';
 import { Icone, NomeIcone } from '../../shared/icone/icone';
 import { saudacao, tempoRelativo } from '../../shared/tempo';
 import { InicioAdmin } from './inicio-admin';
+import { ChamadaService } from '../../core/alunos/chamada.service';
 
 interface Indicador {
     readonly rotulo: string;
@@ -40,6 +41,7 @@ const ROTULO_STATUS: Readonly<Record<StatusRedacao, string>> = {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InicioPage {
+    protected readonly chamada = inject(ChamadaService);
     private readonly auth = inject(AuthService);
     private readonly alunos = inject(AlunosService);
     protected readonly redacoes = inject(RedacoesService);

@@ -39,7 +39,9 @@
                 {{ falhas().length === 1 ? 'Uma correção falhou' : falhas().length + ' correções falharam' }}. Abra para
                 tentar de novo:
                 @for (redacao of falhas(); track redacao.id; let ultima = $last) {
-                    <a [routerLink]="['/redacoes', redacao.id]">{{ redacao.aluno }}</a>{{ ultima ? '.' : ',' }}
+                    <a [routerLink]="['/redacoes', redacao.id]">{{ chamada.rotulo(redacao.aluno) }}</a>{{
+                        ultima ? '.' : ','
+                    }}
                 }
             </p>
         </div>
@@ -59,7 +61,7 @@
                             <li class="lista__item">
                                 <span class="lista__textos">
                                     <span class="lista__titulo"
-                                        >{{ item.redacao.aluno }} · {{ item.redacao.titulo }}</span
+                                        >{{ chamada.rotulo(item.redacao.aluno) }} · {{ item.redacao.titulo }}</span
                                     >
                                     <span class="lista__detalhe">
                                         {{ item.redacao.turma }} · {{ item.feitas }} de {{ item.total }} decididos
@@ -70,7 +72,7 @@
                                 </span>
                                 <a class="botao botao--pequeno" [routerLink]="['/redacoes', item.redacao.id]">
                                     {{ item.feitas ? 'Continuar' : 'Revisar' }}
-                                    <span class="visualmente-oculto">{{ item.redacao.aluno }}</span>
+                                    <span class="visualmente-oculto">{{ chamada.rotulo(item.redacao.aluno) }}</span>
                                 </a>
                             </li>
                         }
@@ -126,7 +128,7 @@
                         <li class="lista__item">
                             <span class="lista__textos">
                                 <a class="lista__titulo" [routerLink]="['/redacoes', redacao.id]">
-                                    {{ redacao.aluno }} · {{ redacao.titulo }}
+                                    {{ chamada.rotulo(redacao.aluno) }} · {{ redacao.titulo }}
                                 </a>
                                 <span class="lista__detalhe">
                                     {{ redacao.turma }} ·

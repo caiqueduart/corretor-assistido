@@ -7,6 +7,7 @@ import { StatusRedacao } from '../../core/redacoes/redacao.model';
 import { RedacoesService } from '../../core/redacoes/redacoes.service';
 import { Icone } from '../../shared/icone/icone';
 import { GrupoBusca, ItemBusca, buscar } from './busca';
+import { ChamadaService } from '../../core/alunos/chamada.service';
 
 const STATUS: Readonly<Record<StatusRedacao, string>> = {
     'aguardando-ia': 'Aguardando IA',
@@ -25,6 +26,7 @@ const STATUS: Readonly<Record<StatusRedacao, string>> = {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BuscaRapida {
+    protected readonly chamada = inject(ChamadaService);
     private readonly router = inject(Router);
     private readonly auth = inject(AuthService);
     private readonly redacoes = inject(RedacoesService);
@@ -70,7 +72,7 @@ export class BuscaRapida {
             .map<ItemBusca>((redacao) => ({
                 id: `r-${redacao.id}`,
                 grupo: 'Redações',
-                titulo: `${redacao.aluno} · ${redacao.titulo}`,
+                titulo: `${this.chamada.rotulo(redacao.aluno)} · ${redacao.titulo}`,
                 detalhe: `${redacao.turma} · ${STATUS[redacao.status]}`,
                 icone: 'redacoes',
                 link: `/redacoes/${redacao.id}`,
@@ -79,7 +81,7 @@ export class BuscaRapida {
         const alunos = this.alunos.alunos().map<ItemBusca>((aluno) => ({
             id: `a-${aluno.codigo}`,
             grupo: 'Alunos',
-            titulo: aluno.codigo,
+            titulo: this.chamada.rotulo(aluno.codigo),
             detalhe: `${aluno.turma} · ${aluno.versoes.length} ${aluno.versoes.length === 1 ? 'redação' : 'redações'}`,
             icone: 'alunos',
             link: `/alunos/${aluno.codigo}`,
