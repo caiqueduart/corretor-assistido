@@ -21,6 +21,18 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/inicio/inicio-page').then((m) => m.InicioPage),
             },
             {
+                path: 'propostas',
+                title: 'Propostas · Corretor Assistido',
+                data: { trilha: [{ rotulo: 'Propostas' }] },
+                loadComponent: () => import('./features/propostas/propostas-page').then((m) => m.PropostasPage),
+            },
+            {
+                path: 'propostas/:id',
+                title: 'Proposta · Corretor Assistido',
+                data: { trilha: [{ rotulo: 'Propostas', link: '/propostas' }, { rotulo: ':proposta' }] },
+                loadComponent: () => import('./features/propostas/proposta-page').then((m) => m.PropostaPage),
+            },
+            {
                 path: 'redacoes',
                 title: 'Redações · Corretor Assistido',
                 data: { trilha: [{ rotulo: 'Redações' }] },

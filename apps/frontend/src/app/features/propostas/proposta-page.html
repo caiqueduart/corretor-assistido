@@ -1,0 +1,184 @@
+@if (propostas.erroCarga(); as mensagem) {
+    <p class="aviso aviso--erro" role="alert">{{ mensagem }}</p>
+} @else if (!propostas.carregado()) {
+    <div class="cartao"><app-esqueleto [quantidade]="6" rotulo="Carregando a proposta…" /></div>
+} @else if (proposta(); as atual) {
+    <header class="detalhe__topo">
+        <div class="detalhe__textos">
+            <p class="detalhe__etiquetas">
+                <span class="etiqueta">{{ atual.genero }}</span>
+                @if (atual.encerrada) {
+                    <span class="etiqueta">Encerrada</span>
+                } @else if (tomPrazo(atual.prazo); as tom) {
+                    <span
+                        class="etiqueta"
+                        [class.etiqueta--marca-texto]="tom === 'perto'"
+                        [class.etiqueta--correcao]="tom === 'vencido'"
+                    >
+                        <app-icone nome="calendario" />
+                        {{ descreverPrazo(atual.prazo) }} ({{ formatarPrazo(atual.prazo) }})
+                    </span>
+                }
+            </p>
+            <h1 class="detalhe__titulo">{{ atual.tema }}</h1>
+            <p class="detalhe__turmas">{{ atual.turmas.join(' · ') }}</p>
+        </div>
+
+        @if (podeEditar()) {
+            <div class="detalhe__acoes">
+                @if (!atual.encerrada) {
+                    <a class="botao botao--primario" routerLink="/redacoes/nova" [queryParams]="{ proposta: atual.id }">
+                        <app-icone nome="importar" />
+                        Importar redação
+                    </a>
+                }
+                <button class="botao" type="button" (click)="editando.set(true)">
+                    <app-icone nome="ajustar" />
+                    Editar
+                </button>
+                <button class="botao" type="button" [disabled]="ocupado()" (click)="alternarEncerrada(atual)">
+                    {{ atual.encerrada ? 'Reabrir' : 'Encerrar' }}
+                </button>
+                @if (!progresso().total) {
+                    <button class="botao botao--perigo" type="button" [disabled]="ocupado()" (click)="excluir(atual)">
+                        Excluir
+                    </button>
+                }
+            </div>
+        }
+    </header>
+
+    @if (atual.enunciado) {
+        <section class="cartao" aria-labelledby="titulo-enunciado">
+            <h2 class="cartao__titulo" id="titulo-enunciado">Enunciado</h2>
+            <p class="detalhe__enunciado">{{ atual.enunciado }}</p>
+        </section>
+    }
+
+    <dl class="detalhe__numeros">
+        <div class="cartao">
+            <dt>Redações</dt>
+            <dd>{{ progresso().total }}</dd>
+        </div>
+        <div class="cartao">
+            <dt>Aguardando a IA</dt>
+            <dd>{{ progresso().aguardandoIa }}</dd>
+        </div>
+        <div class="cartao">
+            <dt>Para revisar</dt>
+            <dd>{{ progresso().revisao }}</dd>
+        </div>
+        <div class="cartao">
+            <dt>Devolvidas</dt>
+            <dd>{{ progresso().devolvidas }}</dd>
+        </div>
+    </dl>
+
+    <div class="detalhe__grade">
+        <section class="cartao" aria-labelledby="titulo-redacoes">
+            <h2 class="cartao__titulo" id="titulo-redacoes">Redações</h2>
+
+            @if (itens().length) {
+                <ul class="lista" role="list">
+                    @for (item of itens(); track item.redacao.id) {
+                        @let redacao = item.redacao;
+
+                        <li class="lista__item">
+                            <span class="lista__textos">
+                                <span class="lista__titulo">{{ chamada.rotulo(redacao.aluno) }}</span>
+                                <span class="lista__detalhe">
+                                    {{ redacao.turma }} · {{ rotuloStatus[redacao.status] }}
+                                    @if (redacao.status === 'em-revisao') {
+                                        · {{ item.feitas }} de {{ item.total }} decididos
+                                    }
+                                </span>
+                            </span>
+                            <a
+                                class="botao botao--pequeno"
+                                [class.botao--primario]="redacao.status === 'em-revisao' && podeEditar()"
+                                [routerLink]="['/redacoes', redacao.id]"
+                            >
+                                @switch (redacao.status) {
+                                    @case ('em-revisao') {
+                                        {{ podeEditar() ? (item.feitas ? 'Continuar' : 'Revisar') : 'Ver' }}
+                                    }
+                                    @case ('devolvida') {
+                                        Ver devolutiva
+                                    }
+                                    @default {
+                                        Abrir
+                                    }
+                                }
+                                <span class="visualmente-oculto">{{ chamada.rotulo(redacao.aluno) }}</span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            } @else {
+                <app-estado-vazio
+                    icone="importar"
+                    titulo="Nenhuma redação nesta proposta"
+                    [texto]="
+                        atual.encerrada
+                            ? 'A proposta foi encerrada sem redações.'
+                            : 'Importe as redações dos alunos para começar a correção.'
+                    "
+                >
+                    @if (podeEditar() && !atual.encerrada) {
+                        <a
+                            class="botao botao--primario botao--pequeno"
+                            routerLink="/redacoes/nova"
+                            [queryParams]="{ proposta: atual.id }"
+                        >
+                            Importar redação
+                        </a>
+                    }
+                </app-estado-vazio>
+            }
+        </section>
+
+        <section class="cartao" aria-labelledby="titulo-faltam">
+            <header>
+                <h2 class="cartao__titulo" id="titulo-faltam">Ainda sem redação</h2>
+                <p class="cartao__descricao">Alunos já acompanhados nestas turmas que não entregaram.</p>
+            </header>
+
+            @if (semEntrega().length) {
+                <ul class="lista" role="list">
+                    @for (aluno of semEntrega(); track aluno.codigo) {
+                        <li class="lista__item">
+                            <span class="lista__textos">
+                                <span class="lista__titulo">{{ aluno.rotulo }}</span>
+                                <span class="lista__detalhe">{{ aluno.turma }}</span>
+                            </span>
+                            @if (podeEditar() && !atual.encerrada) {
+                                <a
+                                    class="botao botao--discreto botao--pequeno"
+                                    routerLink="/redacoes/nova"
+                                    [queryParams]="{ proposta: atual.id, aluno: aluno.codigo }"
+                                >
+                                    Importar
+                                    <span class="visualmente-oculto">a redação de {{ aluno.rotulo }}</span>
+                                </a>
+                            }
+                        </li>
+                    }
+                </ul>
+            } @else {
+                <p class="lista__detalhe">Ninguém faltando entre os alunos já acompanhados.</p>
+            }
+        </section>
+    </div>
+
+    <dialog #dialogo class="dialogo dialogo--largo" aria-labelledby="titulo-proposta" (close)="editando.set(false)">
+        @if (editando()) {
+            <app-proposta-formulario [proposta]="atual" (salvo)="aoSalvar()" (cancelado)="editando.set(false)" />
+        }
+    </dialog>
+} @else {
+    <div class="cartao">
+        <app-estado-vazio icone="proposta" titulo="Proposta não encontrada" texto="Ela pode ter sido excluída.">
+            <a class="botao botao--pequeno" routerLink="/propostas">Ver propostas</a>
+        </app-estado-vazio>
+    </div>
+}
