@@ -39,8 +39,16 @@ export class DecisoesCsvService {
      * Baixa o CSV com uma linha por decisão do professor. A rota exige o token no
      * cabeçalho, por isso o arquivo vem pelo HttpClient e não por um link direto.
      */
-    async baixar(turma = ''): Promise<void> {
-        const params = turma.trim() ? new HttpParams().set('turma', turma.trim()) : undefined;
+    async baixar(turma = '', proposta = ''): Promise<void> {
+        let params = new HttpParams();
+
+        if (turma.trim()) {
+            params = params.set('turma', turma.trim());
+        }
+        if (proposta) {
+            params = params.set('proposta', proposta);
+        }
+
         const arquivo = await firstValueFrom(
             this.http.get('/api/metricas/decisoes.csv', { params, responseType: 'blob' }),
         );

@@ -7,6 +7,7 @@ import { CabecalhoPagina } from '../../../shared/cabecalho-pagina/cabecalho-pagi
 import { Icone } from '../../../shared/icone/icone';
 import { ExportarDecisoes } from '../exportar-decisoes/exportar-decisoes';
 import { Esqueleto } from '../../../shared/esqueleto/esqueleto';
+import { PropostasService } from '../../../core/propostas/propostas.service';
 
 @Component({
     selector: 'app-metricas-page',
@@ -18,6 +19,7 @@ import { Esqueleto } from '../../../shared/esqueleto/esqueleto';
 export class MetricasPage {
     protected readonly redacoes = inject(RedacoesService);
     protected readonly metricas = inject(MetricasService);
+    protected readonly propostas = inject(PropostasService);
 
     protected readonly limiar = this.metricas.limiar;
 

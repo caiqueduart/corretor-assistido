@@ -1,7 +1,23 @@
 <app-cabecalho-pagina
     titulo="Métricas da POC"
     descricao="Hipótese: o feedback assistido melhora a reescrita sem criar viés contra variedades linguísticas não padrão."
-/>
+>
+    @if (propostas.propostas().length) {
+        <div class="campo">
+            <label class="visualmente-oculto" for="metricas-proposta">Proposta</label>
+            <select
+                id="metricas-proposta"
+                [value]="metricas.proposta()"
+                (change)="metricas.proposta.set($any($event.target).value)"
+            >
+                <option value="">Todas as propostas</option>
+                @for (proposta of propostas.propostas(); track proposta.id) {
+                    <option [value]="proposta.id">{{ proposta.tema }}</option>
+                }
+            </select>
+        </div>
+    }
+</app-cabecalho-pagina>
 
 @if (!redacoes.carregado()) {
     @if (redacoes.erroCarga(); as erro) {

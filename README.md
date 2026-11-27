@@ -58,17 +58,20 @@ Testes do back-end: `cd apps/backend && go test ./...`.
 
 Todas as telas usam o back-end:
 
-| Área                                             | Rotas                                                      |
-| ------------------------------------------------ | ---------------------------------------------------------- |
-| Login e sessão                                   | `/api/auth`, `/api/me`                                     |
-| Redações: importar, corrigir, revisar, enviar    | `/api/textos` (`RedacoesHttpApi`)                          |
-| Alunos                                           | `/api/textos?completo=true`, calculadas na tela            |
-| Administração: usuários, configuração, auditoria | `/api/usuarios`, `/api/config`, `/api/auditoria`           |
-| Administração › Métricas (só admin)              | `/api/textos?completo=true` e `/api/metricas/decisoes.csv` |
+| Área                                               | Rotas                                                      |
+| -------------------------------------------------- | ---------------------------------------------------------- |
+| Login e sessão                                     | `/api/auth`, `/api/me`                                     |
+| Propostas de redação (tema, gênero, turmas, prazo) | `/api/propostas`                                           |
+| Redações: importar, corrigir, revisar, enviar      | `/api/textos` (`RedacoesHttpApi`)                          |
+| Alunos                                             | `/api/textos?completo=true`, calculadas na tela            |
+| Administração: usuários, configuração, auditoria   | `/api/usuarios`, `/api/config`, `/api/auditoria`           |
+| Administração › Métricas (só admin)                | `/api/textos?completo=true` e `/api/metricas/decisoes.csv` |
 
 - O token de acesso fica no `localStorage` até expirar (`SESSAO_DURACAO`, 12h por padrão). Uma resposta 401 encerra a sessão e volta ao login.
 - A configuração do admin (critérios, perfis sociolinguísticos e limiar de viés) vale na importação e nas métricas.
 - A correção espera o resultado (`?aguardar=true`). Sem `ANTHROPIC_API_KEY`, o back-end usa o motor simulado.
 - O perfil `leitura` vê tudo, mas não importa, corrige, decide nem envia.
 - Com o banco vazio, a tela de Redações oferece "Carregar textos de exemplo".
+- Propostas organizam as redações por atividade: a importação pode escolher a proposta (turma e título vêm dela), e a fila, as métricas e o CSV filtram por proposta. Proposta encerrada não recebe redações novas.
+- Alunos são identificados por apelidos de fauna e flora ("Ipê Lilás"). O nome real é opcional e fica só no navegador do professor (lista de chamada local), nunca no servidor.
 - `RedacoesMockApi` (em `core/redacoes/mock/`) fica só para os testes.

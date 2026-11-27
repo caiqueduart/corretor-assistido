@@ -5,6 +5,7 @@ import { mensagemDeErro } from '../../../core/api/erro-api';
 import { COLUNAS_DECISOES, DecisoesCsvService } from '../../../core/metricas/decisoes-csv.service';
 import { Icone } from '../../../shared/icone/icone';
 import { AvisosService } from '../../../core/ui/avisos.service';
+import { MetricasService } from '../../../core/redacoes/metricas.service';
 
 /** Exporta as decisões do professor (CSV) para a análise da experimentação. */
 @Component({
@@ -17,6 +18,8 @@ import { AvisosService } from '../../../core/ui/avisos.service';
 export class ExportarDecisoes {
     private readonly decisoes = inject(DecisoesCsvService);
     private readonly avisos = inject(AvisosService);
+    /** O CSV segue o filtro de proposta escolhido na tela de métricas. */
+    private readonly metricas = inject(MetricasService);
 
     protected readonly colunas = COLUNAS_DECISOES.join(', ');
     protected readonly turma = signal('');
@@ -34,7 +37,7 @@ export class ExportarDecisoes {
         this.concluido.set(false);
 
         try {
-            await this.decisoes.baixar(this.turma());
+            await this.decisoes.baixar(this.turma(), this.metricas.proposta());
             this.concluido.set(true);
             this.avisos.mostrar('Decisões exportadas', { texto: 'O arquivo CSV foi baixado.' });
         } catch (erro) {

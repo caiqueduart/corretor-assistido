@@ -13,6 +13,9 @@ import { Icone, NomeIcone } from '../../shared/icone/icone';
 import { saudacao, tempoRelativo } from '../../shared/tempo';
 import { InicioAdmin } from './inicio-admin';
 import { ChamadaService } from '../../core/alunos/chamada.service';
+import { progressoDe, progressoPorProposta } from '../../core/propostas/progresso';
+import { PropostasService, descreverPrazo } from '../../core/propostas/propostas.service';
+import { tomPrazo } from '../propostas/propostas-page';
 
 interface Indicador {
     readonly rotulo: string;
@@ -49,6 +52,23 @@ export class InicioPage {
     protected readonly escritor = computed(() => this.auth.temPerfil('admin', 'professor'));
     protected readonly admin = computed(() => this.auth.temPerfil('admin'));
     protected readonly tempo = tempoRelativo;
+    protected readonly propostas = inject(PropostasService);
+    protected readonly descreverPrazo = descreverPrazo;
+    protected readonly tomPrazo = tomPrazo;
+
+    /** Abertas com o prazo mais próximo primeiro (sem prazo por último). */
+    protected readonly emAndamento = computed(() => {
+        const progresso = progressoPorProposta(this.redacoes.redacoes());
+
+        return [...this.propostas.abertas()]
+            .sort((a, b) => (a.prazo ?? '9999').localeCompare(b.prazo ?? '9999'))
+            .slice(0, 4)
+            .map((proposta) => {
+                const p = progressoDe(progresso, proposta.id);
+
+                return { proposta, progresso: p, porcentagem: p.total ? (100 * p.devolvidas) / p.total : 0 };
+            });
+    });
 
     protected readonly titulo = computed(() => `${saudacao()}, ${(this.auth.usuario()?.nome ?? '').split(/\s+/)[0]}`);
 
