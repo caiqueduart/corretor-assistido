@@ -32,7 +32,9 @@ type Servidor struct {
 	cancelar  context.CancelFunc
 	jobs      sync.WaitGroup
 	limitador *auth.Limitador
-	mux       *http.ServeMux
+	// limitadorAluno limita códigos de acesso errados por IP nas rotas públicas do aluno.
+	limitadorAluno *auth.Limitador
+	mux            *http.ServeMux
 }
 
 // Novo monta o servidor. ia pode ser nil (só a correção simulada fica disponível).
@@ -41,8 +43,9 @@ func Novo(st *store.Store, cfg config.Config, log *slog.Logger, ia corretor.Moto
 	s := &Servidor{
 		st: st, cfg: cfg, log: log, ia: ia, simulado: corretor.Simulado{},
 		fila: make(chan struct{}, cfg.CorrecaoConcorrencia), ctx: ctx, cancelar: cancel,
-		limitador: auth.NovoLimitador(5, 15*time.Minute),
-		mux:       http.NewServeMux(),
+		limitador:      auth.NovoLimitador(5, 15*time.Minute),
+		limitadorAluno: auth.NovoLimitador(10, 15*time.Minute),
+		mux:            http.NewServeMux(),
 	}
 	s.rotas()
 	return s
@@ -110,6 +113,15 @@ func (s *Servidor) rotas() {
 	m.Handle("GET /api/propostas/{id}", s.com(todos, s.obterProposta))
 	m.Handle("PATCH /api/propostas/{id}", s.com(escritores, s.alterarProposta))
 	m.Handle("DELETE /api/propostas/{id}", s.com(escritores, s.excluirProposta))
+
+	m.Handle("GET /api/codigos", s.com(escritores, s.listarCodigos))
+	m.Handle("POST /api/codigos", s.com(escritores, s.gerarCodigos))
+	m.Handle("DELETE /api/codigos/{aluno}", s.com(escritores, s.revogarCodigo))
+
+	// Rotas públicas do aluno: autenticadas só pelo código de acesso.
+	m.HandleFunc("POST /api/aluno/acesso", s.acessoAluno)
+	m.HandleFunc("POST /api/aluno/entregas", s.entregaDoAluno)
+	m.HandleFunc("POST /api/aluno/devolutiva", s.devolutivaDoAluno)
 
 	m.Handle("GET /api/metricas", s.com(todos, s.metricas))
 	m.Handle("GET /api/metricas/decisoes.csv", s.com(todos, s.decisoesCSV))

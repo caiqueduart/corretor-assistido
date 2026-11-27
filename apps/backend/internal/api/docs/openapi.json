@@ -15,6 +15,8 @@
     { "name": "Textos", "description": "Criação, importação e consulta das produções textuais." },
     { "name": "Correção e revisão", "description": "Correção (IA ou simulada), decisões do professor e envio da devolutiva." },
     { "name": "Propostas", "description": "Propostas de redação: tema e orientações que agrupam as redações de uma atividade." },
+    { "name": "Códigos de acesso", "description": "O professor gera um código por aluno para o envio sem conta." },
+    { "name": "Aluno", "description": "Rotas públicas do aluno, autenticadas só pelo código de acesso (sem login). Limite de 10 códigos errados por IP a cada 15 minutos." },
     { "name": "Métricas" }
   ],
   "security": [{ "bearer": [] }],
@@ -710,6 +712,151 @@
         }
       }
     },
+    "/api/codigos": {
+      "get": {
+        "tags": ["Códigos de acesso"],
+        "summary": "Listar códigos ativos",
+        "description": "Perfis `admin` e `professor`. Não devolve os códigos (só ficam guardados como hash).",
+        "operationId": "listarCodigos",
+        "parameters": [{ "name": "turma", "in": "query", "schema": { "type": "string" } }],
+        "responses": {
+          "200": {
+            "description": "Alunos com código ativo.",
+            "content": { "application/json": { "schema": { "type": "object", "required": ["codigos"], "properties": { "codigos": { "type": "array", "items": { "$ref": "#/components/schemas/CodigoAcesso" } } } } } }
+          },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" }
+        }
+      },
+      "post": {
+        "tags": ["Códigos de acesso"],
+        "summary": "Gerar códigos",
+        "description": "Perfis `admin` e `professor`. Cria ou recria o código de cada aluno (revoga o anterior). Os códigos só aparecem nesta resposta. Exige o consentimento das famílias.",
+        "operationId": "gerarCodigos",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["alunos", "consentimento"],
+                "properties": {
+                  "alunos": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 60,
+                    "items": {
+                      "type": "object",
+                      "required": ["aluno_codigo", "turma"],
+                      "properties": {
+                        "aluno_codigo": { "type": "string", "maxLength": 40 },
+                        "turma": { "type": "string", "maxLength": 30 },
+                        "grupo": { "type": "string", "description": "Perfil sociolinguístico. Padrão: \"Não informado\"." }
+                      }
+                    }
+                  },
+                  "consentimento": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Códigos gerados (mostre ao professor uma única vez).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["codigos"],
+                  "properties": {
+                    "codigos": {
+                      "type": "array",
+                      "items": { "type": "object", "required": ["aluno_codigo", "turma", "codigo"], "properties": { "aluno_codigo": { "type": "string" }, "turma": { "type": "string" }, "codigo": { "type": "string", "example": "K7PM-3QXA" } } }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "422": { "description": "Dados inválidos (consentimento, alunos, proposta ou conteúdo).", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/codigos/{aluno}": {
+      "parameters": [{ "name": "aluno", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Apelido (identificador) do aluno." }],
+      "delete": {
+        "tags": ["Códigos de acesso"],
+        "summary": "Revogar código",
+        "description": "Perfis `admin` e `professor`.",
+        "operationId": "revogarCodigo",
+        "responses": {
+          "204": { "description": "Revogado." },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "404": { "$ref": "#/components/responses/NaoEncontrado" }
+        }
+      }
+    },
+    "/api/aluno/acesso": {
+      "post": {
+        "tags": ["Aluno"],
+        "summary": "Entrar com o código",
+        "description": "Público. Devolve o apelido, as propostas abertas da turma (com a entrega do aluno, se houver) e as devolutivas já enviadas pelo professor.",
+        "operationId": "acessoAluno",
+        "security": [],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["codigo"], "properties": { "codigo": { "type": "string" } } } } } },
+        "responses": {
+          "200": { "description": "Painel do aluno.", "content": { "application/json": { "schema": { "type": "object" } } } },
+          "401": { "description": "`codigo_invalido`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "429": { "description": "`muitas_tentativas`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/aluno/entregas": {
+      "post": {
+        "tags": ["Aluno"],
+        "summary": "Enviar redação",
+        "description": "Público. Texto colado (JSON `{codigo, proposta_id, conteudo}`) ou arquivo (`multipart/form-data` com `codigo`, `proposta_id` e `arquivo`). Uma entrega por proposta; reenviar troca o texto enquanto a correção não começou.",
+        "operationId": "entregaDoAluno",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "type": "object", "required": ["codigo", "proposta_id", "conteudo"], "properties": { "codigo": { "type": "string" }, "proposta_id": { "type": "string" }, "conteudo": { "type": "string" } } } },
+            "multipart/form-data": { "schema": { "type": "object", "required": ["codigo", "proposta_id", "arquivo"], "properties": { "codigo": { "type": "string" }, "proposta_id": { "type": "string" }, "arquivo": { "type": "string", "format": "binary" } } } }
+          }
+        },
+        "responses": {
+          "200": { "description": "Reenvio: o texto foi trocado.", "content": { "application/json": { "schema": { "type": "object" } } } },
+          "201": { "description": "Entrega criada; vai para a fila do professor.", "content": { "application/json": { "schema": { "type": "object" } } } },
+          "401": { "description": "`codigo_invalido`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "409": { "description": "A correção já começou ou a devolutiva ainda não foi enviada.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "422": { "description": "Dados inválidos (consentimento, alunos, proposta ou conteúdo).", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "429": { "description": "`muitas_tentativas`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/aluno/devolutiva": {
+      "post": {
+        "tags": ["Aluno"],
+        "summary": "Ver devolutiva",
+        "description": "Público. Só depois que o professor revisa e envia, e só do próprio aluno.",
+        "operationId": "devolutivaDoAluno",
+        "security": [],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["codigo", "texto_id"], "properties": { "codigo": { "type": "string" }, "texto_id": { "type": "string" } } } } } },
+        "responses": {
+          "200": { "description": "Devolutiva.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Devolutiva" } } } },
+          "401": { "description": "`codigo_invalido`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "404": { "$ref": "#/components/responses/NaoEncontrado" },
+          "409": { "description": "A correção já começou ou a devolutiva ainda não foi enviada.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "429": { "description": "`muitas_tentativas`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
     "/api/metricas": {
       "get": {
         "tags": ["Métricas"],
@@ -890,7 +1037,7 @@
       },
       "Texto": {
         "type": "object",
-        "required": ["id", "aluno_codigo", "turma", "grupo", "titulo", "versao", "origem_id", "proposta_id", "conteudo", "status", "consentimento", "exemplo", "motor", "criterios_usados", "comentario_ia", "comentario_professor", "descartados", "erro_correcao", "criado_por", "criado_em", "atualizado_em", "avaliado_em", "enviado_em", "enviado_por", "palavras", "total_apontamentos", "pendentes"],
+        "required": ["id", "aluno_codigo", "turma", "grupo", "titulo", "versao", "origem_id", "proposta_id", "origem", "conteudo", "status", "consentimento", "exemplo", "motor", "criterios_usados", "comentario_ia", "comentario_professor", "descartados", "erro_correcao", "criado_por", "criado_em", "atualizado_em", "avaliado_em", "enviado_em", "enviado_por", "palavras", "total_apontamentos", "pendentes"],
         "properties": {
           "id": { "type": "string" },
           "aluno_codigo": { "type": "string" },
@@ -900,6 +1047,7 @@
           "versao": { "type": "integer", "enum": [1, 2] },
           "origem_id": { "type": "string", "nullable": true, "description": "Na reescrita, ID da 1ª versão." },
           "proposta_id": { "type": "string", "nullable": true, "description": "Proposta de redação; null nas redações avulsas." },
+          "origem": { "type": "string", "enum": ["professor", "aluno"], "description": "Quem enviou: o professor (importação) ou o aluno (código de acesso)." },
           "conteudo": { "type": "string" },
           "status": { "$ref": "#/components/schemas/Status" },
           "consentimento": { "type": "boolean" },
@@ -974,6 +1122,18 @@
           "texto_corrigido": { "type": "string", "description": "Conteúdo com as correções validadas aplicadas." },
           "segmentos": { "type": "array", "items": { "$ref": "#/components/schemas/Segmento" }, "description": "Texto em pedaços, para destacar as correções." },
           "para_reescrita": { "type": "array", "items": { "$ref": "#/components/schemas/ItemReescrita" } }
+        }
+      },
+      "CodigoAcesso": {
+        "type": "object",
+        "required": ["id", "aluno_codigo", "turma", "grupo", "criado_em", "ultimo_uso"],
+        "properties": {
+          "id": { "type": "string" },
+          "aluno_codigo": { "type": "string" },
+          "turma": { "type": "string" },
+          "grupo": { "type": "string" },
+          "criado_em": { "type": "string", "format": "date-time" },
+          "ultimo_uso": { "type": "string", "format": "date-time", "nullable": true }
         }
       },
       "Proposta": {
