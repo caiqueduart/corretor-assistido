@@ -1,48 +1,50 @@
+@use 'atlas-tokens';
+
 /*
- * Cores do corretor.
- * lousa: barra de navegação. grafite: o que a IA sugeriu (ainda lápis).
+ * Cores do corretor sobre os tokens do Atlas Design System.
+ * Os nomes guardam o significado no domínio:
+ * lousa: navegação. grafite: o que a IA sugeriu (ainda lápis).
  * caneta: o que o professor validou. correcao: o que o professor recusou.
  * marca-texto: variação linguística apontada pela IA.
  */
 :root {
-    --fundo: #f3f5f3;
-    --folha: #ffffff;
-    --folha-2: #f8faf8;
-    --linha: #dde3df;
-    --linha-forte: #c3ccc6;
-    --texto: #18221d;
-    --texto-2: #55625b;
+    --fundo: var(--bg);
+    --folha: var(--surface);
+    --folha-2: var(--surface-muted);
+    --linha: var(--border);
+    --linha-forte: var(--border-strong);
+    --texto: var(--text);
+    --texto-2: var(--text-muted);
 
-    --lousa: #1c3a31;
-    --lousa-2: #24493e;
-    --lousa-texto: #e6efea;
-    --lousa-texto-2: #a9c0b5;
+    --lousa: #172554;
+    --lousa-2: var(--sidebar-active);
+    --lousa-texto: var(--sidebar-text-strong);
+    --lousa-texto-2: var(--sidebar-text);
 
-    --caneta: #1f43b4;
-    --caneta-forte: #17348f;
-    --caneta-clara: #7d93d8;
-    --caneta-suave: #e8edfb;
+    --caneta: var(--primary);
+    --caneta-forte: var(--primary-soft-text);
+    --caneta-clara: #93c5fd;
+    --caneta-suave: var(--primary-soft);
 
-    --grafite: #5d6863;
-    --grafite-suave: #eceeed;
+    --grafite: var(--text-subtle);
+    --grafite-suave: var(--surface-muted);
 
-    --correcao: #b3261e;
-    --correcao-suave: #fbeae8;
+    --correcao: var(--danger-text);
+    --correcao-suave: var(--danger-soft);
 
-    --marca-texto: #8a5a00;
-    --marca-texto-suave: #fdf0cf;
+    --marca-texto: var(--warning);
+    --marca-texto-suave: var(--warning-soft);
 
-    --sucesso: #1d6e47;
-    --sucesso-suave: #e2f2e9;
+    --sucesso: var(--success);
+    --sucesso-suave: var(--success-soft);
 
-    --foco: #1f43b4;
-    --raio: 8px;
-    --sombra-flutuante: 0 8px 24px rgb(24 34 29 / 12%), 0 2px 6px rgb(24 34 29 / 8%);
+    --foco: var(--primary);
+    --raio: var(--radius-lg);
+    --sombra-flutuante: var(--shadow-lg);
 
-    --fonte-ui: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --fonte-ui: var(--font-sans);
+    /* Só o texto do aluno usa serifa, para facilitar a leitura e a marcação. */
     --fonte-texto: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-
-    color-scheme: light;
 }
 
 *,
@@ -57,11 +59,11 @@ html {
 
 body {
     margin: 0;
-    background: var(--fundo);
-    color: var(--texto);
-    font-family: var(--fonte-ui);
-    font-size: 1rem;
-    line-height: 1.5;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
     font-variant-numeric: tabular-nums;
     -webkit-font-smoothing: antialiased;
 }
@@ -77,6 +79,7 @@ h1,
 h2,
 h3 {
     text-wrap: balance;
+    letter-spacing: -0.01em;
 }
 
 button,
@@ -87,19 +90,28 @@ textarea {
     color: inherit;
 }
 
+button {
+    cursor: pointer;
+}
+
 a {
-    color: var(--caneta);
+    color: var(--primary);
     text-underline-offset: 0.2em;
 }
 
+svg {
+    flex-shrink: 0;
+}
+
 ::selection {
-    background: var(--caneta-suave);
-    color: var(--caneta-forte);
+    background: var(--primary-soft);
+    color: var(--primary-soft-text);
 }
 
 :focus-visible {
-    outline: 2px solid var(--foco);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: var(--radius-sm);
 }
 
 .visualmente-oculto {
@@ -111,106 +123,400 @@ a {
     white-space: nowrap;
 }
 
-/* Botões compartilhados por todas as telas. */
+/* Botões (Atlas: ds-btn). Padrão = outline. */
 .botao {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    min-height: 2.5rem;
-    padding: 0 1rem;
-    border: 1px solid var(--linha-forte);
-    border-radius: 6px;
-    background: var(--folha);
-    font-size: 0.9375rem;
-    font-weight: 600;
+    gap: var(--space-2);
+    height: var(--control-md);
+    padding: 0 var(--space-4);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    color: var(--text);
+    font-size: var(--text-base);
+    font-weight: var(--weight-medium);
+    line-height: 1;
+    white-space: nowrap;
     text-decoration: none;
-    color: var(--texto);
     cursor: pointer;
     transition:
-        background-color 150ms ease-out,
-        border-color 150ms ease-out;
+        background var(--duration-fast) var(--ease),
+        border-color var(--duration-fast) var(--ease),
+        color var(--duration-fast) var(--ease);
 
     &:hover:not(:disabled) {
-        border-color: var(--texto-2);
-        background: var(--folha-2);
+        background: var(--surface-hover);
+        text-decoration: none;
+    }
+
+    &:active:not(:disabled) {
+        background: var(--secondary-hover);
     }
 
     &:disabled {
+        background: var(--surface-muted);
+        color: var(--text-disabled);
+        border-color: var(--border);
         cursor: not-allowed;
-        opacity: 0.5;
     }
 
     &--primario {
-        border-color: var(--caneta);
-        background: var(--caneta);
-        color: #ffffff;
+        border-color: transparent;
+        background: var(--primary);
+        color: var(--on-primary);
 
         &:hover:not(:disabled) {
-            border-color: var(--caneta-forte);
-            background: var(--caneta-forte);
+            background: var(--primary-hover);
+        }
+
+        &:active:not(:disabled) {
+            background: var(--primary-active);
         }
     }
 
     &--discreto {
         border-color: transparent;
         background: transparent;
-        color: var(--texto-2);
+        color: var(--text-muted);
 
         &:hover:not(:disabled) {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        &:disabled {
+            background: transparent;
             border-color: transparent;
-            background: var(--grafite-suave);
-            color: var(--texto);
         }
     }
 
     &--perigo {
-        color: var(--correcao);
+        color: var(--danger-text);
 
         &:hover:not(:disabled) {
-            border-color: var(--correcao);
-            background: var(--correcao-suave);
+            border-color: var(--danger-border);
+            background: var(--danger-soft);
         }
     }
 
     &--pequeno {
-        min-height: 2rem;
-        padding: 0 0.75rem;
-        font-size: 0.875rem;
+        height: var(--control-sm);
+        padding: 0 var(--space-3);
+        font-size: var(--text-sm);
     }
 }
 
-/* Etiquetas curtas de estado e metadados. */
+/* Etiquetas curtas de estado e metadados (Atlas: ds-badge). */
 .etiqueta {
+    --fg: var(--text-muted);
+    --bg-etiqueta: var(--surface-muted);
+    --bd: var(--border);
+
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.125rem 0.5rem;
-    border-radius: 999px;
-    background: var(--grafite-suave);
-    color: var(--texto-2);
-    font-size: 0.75rem;
-    font-weight: 600;
+    gap: 0.375rem;
+    height: 1.5rem;
+    padding: 0 var(--space-2);
+    border: 1px solid var(--bd);
+    border-radius: var(--radius-full);
+    background: var(--bg-etiqueta);
+    color: var(--fg);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
     white-space: nowrap;
 
     &--caneta {
-        background: var(--caneta-suave);
-        color: var(--caneta-forte);
+        --fg: var(--primary-soft-text);
+        --bg-etiqueta: var(--primary-soft);
+        --bd: transparent;
     }
 
     &--marca-texto {
-        background: var(--marca-texto-suave);
-        color: var(--marca-texto);
+        --fg: var(--warning);
+        --bg-etiqueta: var(--warning-soft);
+        --bd: var(--warning-border);
     }
 
     &--sucesso {
-        background: var(--sucesso-suave);
-        color: var(--sucesso);
+        --fg: var(--success);
+        --bg-etiqueta: var(--success-soft);
+        --bd: var(--success-border);
     }
 
     &--correcao {
-        background: var(--correcao-suave);
-        color: var(--correcao);
+        --fg: var(--danger-text);
+        --bg-etiqueta: var(--danger-soft);
+        --bd: var(--danger-border);
+    }
+}
+
+/* Campos de formulário (Atlas: ds-field, ds-control, ds-help, ds-error). */
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+
+    > label,
+    &__rotulo {
+        font-size: var(--text-sm);
+        font-weight: var(--weight-medium);
+        color: var(--text);
+    }
+
+    input:not([type='checkbox'], [type='radio']),
+    select,
+    textarea {
+        width: 100%;
+        height: var(--control-md);
+        padding: 0 var(--space-3);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+        color: var(--text);
+        font-size: var(--text-base);
+        transition:
+            border-color var(--duration-fast) var(--ease),
+            box-shadow var(--duration-fast) var(--ease);
+
+        &::placeholder {
+            color: var(--text-disabled);
+        }
+
+        &:hover:not(:disabled) {
+            border-color: var(--text-disabled);
+        }
+
+        &:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent);
+        }
+
+        &:disabled {
+            background: var(--surface-muted);
+            color: var(--text-disabled);
+            cursor: not-allowed;
+        }
+
+        &.ng-touched.ng-invalid {
+            border-color: var(--danger);
+        }
+    }
+
+    textarea {
+        height: auto;
+        min-height: 5.5rem;
+        padding: var(--space-2) var(--space-3);
+        line-height: var(--leading-normal);
+        resize: vertical;
+    }
+
+    &__dica {
+        color: var(--text-subtle);
+        font-size: var(--text-xs);
+    }
+
+    &__erro {
+        color: var(--danger-text);
+        font-size: var(--text-xs);
+    }
+}
+
+/* Caixa de seleção ou opção com rótulo e explicação (Atlas: ds-check). */
+.escolha {
+    display: flex;
+    gap: var(--space-2);
+    align-items: flex-start;
+    cursor: pointer;
+
+    input {
+        appearance: none;
+        display: grid;
+        place-content: center;
+        flex: none;
+        width: 1rem;
+        height: 1rem;
+        margin: 0.1875rem 0 0;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        background: var(--surface);
+        cursor: pointer;
+        transition:
+            background var(--duration-fast) var(--ease),
+            border-color var(--duration-fast) var(--ease);
+
+        &[type='radio'] {
+            border-radius: 50%;
+        }
+
+        &:hover {
+            border-color: var(--text-disabled);
+        }
+
+        &:checked {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        &[type='checkbox']:checked::after {
+            content: '';
+            width: 0.3rem;
+            height: 0.55rem;
+            border: solid var(--on-primary);
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg) translate(-1px, -1px);
+        }
+
+        &[type='radio']:checked::after {
+            content: '';
+            width: 0.375rem;
+            height: 0.375rem;
+            border-radius: 50%;
+            background: var(--on-primary);
+        }
+
+        &:disabled {
+            background: var(--surface-muted);
+            cursor: not-allowed;
+        }
+
+        &:disabled:checked {
+            background: var(--text-disabled);
+            border-color: var(--text-disabled);
+        }
+    }
+
+    &__textos {
+        display: grid;
+    }
+
+    &__titulo {
+        font-weight: var(--weight-medium);
+    }
+
+    &__dica {
+        color: var(--text-muted);
+        font-size: var(--text-xs);
+    }
+
+    &:has(input:disabled) {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+}
+
+/* Mensagens em faixa (Atlas: ds-alert). */
+.aviso {
+    --tom: var(--info);
+    --tom-suave: var(--info-soft);
+    --tom-borda: var(--info-border);
+
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--tom-borda);
+    border-radius: var(--radius-lg);
+    background: var(--tom-suave);
+    color: var(--text);
+    font-size: var(--text-sm);
+
+    &--sucesso {
+        --tom-suave: var(--success-soft);
+        --tom-borda: var(--success-border);
+        color: var(--success);
+    }
+
+    &--erro {
+        --tom-suave: var(--danger-soft);
+        --tom-borda: var(--danger-border);
+        color: var(--danger-text);
+    }
+
+    &--atencao {
+        --tom-suave: var(--warning-soft);
+        --tom-borda: var(--warning-border);
+        color: var(--warning);
+    }
+}
+
+/* Tabela de dados dentro de um cartão (Atlas: ds-card + ds-table). */
+.tabela-folha {
+    overflow-x: auto;
+    background: var(--surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: var(--text-base);
+    }
+
+    th,
+    td {
+        padding: var(--space-3) var(--space-4);
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    thead th {
+        height: 2.5rem;
+        padding-block: 0;
+        background: var(--surface-muted);
+        color: var(--text-muted);
+        font-size: var(--text-xs);
+        font-weight: var(--weight-medium);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    tbody tr {
+        transition: background var(--duration-fast) var(--ease);
+
+        &:hover {
+            background: var(--surface-hover);
+        }
+
+        &:last-child > * {
+            border-bottom: 0;
+        }
+    }
+
+    &__vazio {
+        padding: var(--space-8) var(--space-4);
+        color: var(--text-muted);
+        text-align: center;
+    }
+}
+
+/* Diálogo modal nativo (Atlas: ds-modal + ds-overlay). */
+.dialogo {
+    width: min(100% - 2rem, 31rem);
+    max-height: calc(100dvh - 2rem);
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-lg);
+
+    &[open] {
+        animation: atlas-subir var(--duration-base) var(--ease);
+    }
+
+    &::backdrop {
+        background: var(--overlay);
+        backdrop-filter: blur(2px);
+    }
+}
+
+@keyframes atlas-subir {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
     }
 }
 
@@ -220,164 +526,5 @@ a {
     *::after {
         transition-duration: 0ms !important;
         animation-duration: 0ms !important;
-    }
-}
-
-/* Campos de formulário compartilhados pelas telas de administração. */
-.campo {
-    display: grid;
-    gap: 0.375rem;
-    align-content: start;
-
-    > label,
-    &__rotulo {
-        font-size: 0.875rem;
-        font-weight: 600;
-    }
-
-    input:not([type='checkbox'], [type='radio']),
-    select,
-    textarea {
-        width: 100%;
-        min-height: 2.5rem;
-        padding: 0.5rem 0.75rem;
-        border: 1px solid var(--linha-forte);
-        border-radius: 6px;
-        background: var(--folha);
-
-        &:disabled {
-            background: var(--folha-2);
-            color: var(--texto-2);
-        }
-
-        &.ng-touched.ng-invalid {
-            border-color: var(--correcao);
-        }
-    }
-
-    &__dica {
-        color: var(--texto-2);
-        font-size: 0.8125rem;
-    }
-
-    &__erro {
-        color: var(--correcao);
-        font-size: 0.875rem;
-    }
-}
-
-/* Caixa de seleção com rótulo e explicação ao lado. */
-.escolha {
-    display: flex;
-    gap: 0.75rem;
-    align-items: flex-start;
-    cursor: pointer;
-
-    input {
-        flex: none;
-        width: 1.125rem;
-        height: 1.125rem;
-        margin-top: 0.125rem;
-        accent-color: var(--caneta);
-    }
-
-    &__textos {
-        display: grid;
-    }
-
-    &__titulo {
-        font-weight: 600;
-    }
-
-    &__dica {
-        color: var(--texto-2);
-        font-size: 0.8125rem;
-    }
-
-    &:has(input:disabled) {
-        cursor: not-allowed;
-        opacity: 0.6;
-    }
-}
-
-/* Mensagens em faixa: sucesso, erro e atenção. */
-.aviso {
-    padding: 0.625rem 0.875rem;
-    border-radius: 6px;
-    background: var(--grafite-suave);
-    color: var(--texto);
-    font-size: 0.875rem;
-
-    &--sucesso {
-        background: var(--sucesso-suave);
-        color: var(--sucesso);
-    }
-
-    &--erro {
-        background: var(--correcao-suave);
-        color: var(--correcao);
-    }
-
-    &--atencao {
-        background: var(--marca-texto-suave);
-        color: var(--marca-texto);
-    }
-}
-
-/* Tabela de dados sobre uma folha, com rolagem horizontal no celular. */
-.tabela-folha {
-    overflow-x: auto;
-    background: var(--folha);
-    border: 1px solid var(--linha);
-    border-radius: var(--raio);
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.9375rem;
-    }
-
-    th,
-    td {
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid var(--linha);
-        text-align: left;
-        vertical-align: middle;
-    }
-
-    thead th {
-        background: var(--folha-2);
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--texto-2);
-        white-space: nowrap;
-    }
-
-    tbody tr:last-child > * {
-        border-bottom: 0;
-    }
-
-    &__vazio {
-        padding: 2rem 1rem;
-        color: var(--texto-2);
-        text-align: center;
-    }
-}
-
-/* Diálogo modal nativo (<dialog>). */
-.dialogo {
-    width: min(100% - 2rem, 32rem);
-    max-height: calc(100dvh - 2rem);
-    padding: 0;
-    border: 0;
-    border-radius: var(--raio);
-    background: var(--folha);
-    color: var(--texto);
-    box-shadow: var(--sombra-flutuante);
-
-    &::backdrop {
-        background: rgb(24 34 29 / 45%);
     }
 }
