@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, untracked
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { ConfigService } from './core/admin/config.service';
-import { ROTULO_PERFIL } from './core/auth/auth.model';
+import { Perfil, ROTULO_PERFIL, rotaInicial } from './core/auth/auth.model';
 import { AuthService } from './core/auth/auth.service';
 import { RedacoesService } from './core/redacoes/redacoes.service';
 import { Icone, NomeIcone } from './shared/icone/icone';
@@ -13,12 +13,13 @@ interface ItemNavegacao {
     readonly icone: NomeIcone;
 }
 
-const NAVEGACAO: readonly ItemNavegacao[] = [
-    { rota: '/redacoes', rotulo: 'Redações', icone: 'redacoes' },
-    { rota: '/alunos', rotulo: 'Alunos', icone: 'alunos' },
-];
-
-const ITEM_ADMIN: ItemNavegacao = { rota: '/admin', rotulo: 'Administração', icone: 'escudo' };
+const NAVEGACAO: Readonly<Record<Perfil, readonly ItemNavegacao[]>> = {
+    professor: [
+        { rota: '/redacoes', rotulo: 'Redações', icone: 'redacoes' },
+        { rota: '/alunos', rotulo: 'Alunos', icone: 'alunos' },
+    ],
+    admin: [{ rota: '/admin', rotulo: 'Administração', icone: 'escudo' }],
+};
 
 @Component({
     selector: 'app-root',
@@ -34,9 +35,13 @@ export class App {
 
     protected readonly rotuloPerfil = ROTULO_PERFIL;
 
-    protected readonly navegacao = computed(() =>
-        this.auth.temPerfil('admin') ? [...NAVEGACAO, ITEM_ADMIN] : NAVEGACAO,
-    );
+    protected readonly navegacao = computed(() => {
+        const perfil = this.auth.perfil();
+
+        return perfil ? NAVEGACAO[perfil] : [];
+    });
+
+    protected readonly inicio = computed(() => rotaInicial(this.auth.perfil()));
 
     /** Só a troca de usuário importa (não, por exemplo, a mudança do nome). */
     private readonly idUsuario = computed(() => this.auth.usuario()?.id ?? null);

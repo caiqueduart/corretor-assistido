@@ -1,18 +1,20 @@
 import { DatePipe } from '@angular/common';
 import {
+    afterNextRender,
     ChangeDetectionStrategy,
     Component,
     computed,
     effect,
     inject,
+    Injector,
     input,
     signal,
     untracked,
     viewChildren,
 } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 
-import { AuthService } from '../../../core/auth/auth.service';
 import { apontamentosDaDevolutiva, contarDecisoes } from '../../../core/redacoes/analise';
 import { RedacoesService } from '../../../core/redacoes/redacoes.service';
 import { Icone } from '../../../shared/icone/icone';
@@ -32,10 +34,8 @@ type Visao = 'revisao' | 'aluno';
 })
 export class RevisaoPage {
     protected readonly redacoes = inject(RedacoesService);
-    private readonly auth = inject(AuthService);
-
-    /** O perfil leitura vê tudo, mas não decide nem envia. */
-    protected readonly podeEditar = computed(() => this.auth.temPerfil('admin', 'professor'));
+    private readonly titulo = inject(Title);
+    private readonly injector = inject(Injector);
 
     /** Vem do parâmetro `:id` da rota. */
     readonly id = input.required<string>();
@@ -74,6 +74,31 @@ export class RevisaoPage {
                 untracked(() => this.visao.set('aluno'));
             }
         });
+    }
+
+    /**
+     * Abre a impressão do navegador só com a devolutiva, para salvar em PDF e entregar ao aluno.
+     * O título da página vira o nome sugerido do arquivo.
+     */
+    protected gerarPdf(): void {
+        const redacao = this.redacao();
+
+        if (!redacao) {
+            return;
+        }
+
+        this.visao.set('aluno');
+
+        afterNextRender(
+            () => {
+                const anterior = this.titulo.getTitle();
+
+                this.titulo.setTitle(`Devolutiva ${redacao.aluno} - ${redacao.titulo || 'redação'}`);
+                window.print();
+                this.titulo.setTitle(anterior);
+            },
+            { injector: this.injector },
+        );
     }
 
     protected selecionar(apontamentoId: string, rolar = false): void {
@@ -124,7 +149,6 @@ export class RevisaoPage {
 
         if (
             this.redacao()?.status !== 'em-revisao' ||
-            !this.podeEditar() ||
             this.visao() !== 'revisao' ||
             evento.ctrlKey ||
             evento.metaKey ||

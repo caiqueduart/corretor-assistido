@@ -1,18 +1,22 @@
-export type Perfil = 'admin' | 'professor' | 'leitura';
+/** Os perfis previstos na POC. */
+export type Perfil = 'admin' | 'professor';
 
-export const PERFIS: readonly Perfil[] = ['admin', 'professor', 'leitura'];
+export const PERFIS: readonly Perfil[] = ['admin', 'professor'];
 
 export const ROTULO_PERFIL: Readonly<Record<Perfil, string>> = {
     admin: 'Administrador',
     professor: 'Professor',
-    leitura: 'Leitura',
 };
 
 export const DESCRICAO_PERFIL: Readonly<Record<Perfil, string>> = {
-    admin: 'Tudo, mais usuários, configuração da correção e auditoria.',
+    admin: 'Cadastra usuários, define a configuração da correção e acompanha métricas e auditoria.',
     professor: 'Importa, corrige, revisa e envia devolutivas.',
-    leitura: 'Só consulta textos, devolutivas e métricas.',
 };
+
+/** Tela inicial de cada perfil: o professor trabalha nas redações; o admin, na administração. */
+export function rotaInicial(perfil: Perfil | null): string {
+    return perfil === 'admin' ? '/admin' : '/redacoes';
+}
 
 export interface Usuario {
     readonly id: string;

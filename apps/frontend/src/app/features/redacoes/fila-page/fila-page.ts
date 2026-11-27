@@ -1,8 +1,7 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { AuthService } from '../../../core/auth/auth.service';
 import { contarDecisoes } from '../../../core/redacoes/analise';
 import { Redacao, contarPalavras } from '../../../core/redacoes/redacao.model';
 import { RedacoesService } from '../../../core/redacoes/redacoes.service';
@@ -19,14 +18,9 @@ import { Icone } from '../../../shared/icone/icone';
 export class FilaPage {
     protected readonly redacoes = inject(RedacoesService);
 
-    private readonly auth = inject(AuthService);
-
     protected readonly erros = signal<Readonly<Record<string, string>>>({});
     protected readonly carregandoExemplos = signal(false);
     protected readonly erroExemplos = signal<string | null>(null);
-
-    /** O perfil leitura só consulta. */
-    protected readonly podeEditar = computed(() => this.auth.temPerfil('admin', 'professor'));
 
     protected readonly contarDecisoes = contarDecisoes;
     protected readonly contarPalavras = contarPalavras;

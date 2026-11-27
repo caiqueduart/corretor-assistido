@@ -3,6 +3,7 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { Router } from '@angular/router';
 
 import { mensagemDeErro } from '../../core/api/erro-api';
+import { rotaInicial } from '../../core/auth/auth.model';
 import { AuthService } from '../../core/auth/auth.service';
 import { destinoSeguro } from '../../core/auth/guards';
 
@@ -43,7 +44,7 @@ export class LoginPage {
 
         try {
             await this.auth.login(email.trim(), senha);
-            await this.router.navigateByUrl(destinoSeguro(this.voltar()));
+            await this.router.navigateByUrl(destinoSeguro(this.voltar(), rotaInicial(this.auth.perfil())));
         } catch (erro) {
             this.erro.set(mensagemDeErro(erro, 'Não foi possível entrar. Tente de novo.'));
             this.formulario.controls.senha.reset();

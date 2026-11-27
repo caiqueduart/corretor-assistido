@@ -47,9 +47,10 @@ Testes: `make testar` (ou `go test -race ./...`).
 
 | Perfil | Pode |
 |---|---|
-| `admin` | Tudo, mais critérios de correção, perfis sociolinguísticos, alerta de viés, usuários e auditoria |
+| `admin` | Cadastrar professores e outros usuários, definir critérios de correção, perfis sociolinguísticos e alerta de viés, ver textos, métricas e auditoria. **Não corrige.** |
 | `professor` | Importar, corrigir, revisar, enviar devolutivas e carregar ou remover exemplos |
-| `leitura` | Ver textos, devolutivas e métricas |
+
+São os dois perfis previstos na POC. O estudante não tem conta: entra só por código e recebe a devolutiva pelo professor. Contas `leitura` de versões anteriores viram professor desativado na migração `002`; o admin decide se reativa.
 
 ## Fluxo de um texto
 
@@ -60,12 +61,16 @@ Testes: `make testar` (ou `go test -race ./...`).
 - Corrigir de novo um texto em `revisao` descarta as decisões anteriores. Um texto `concluido` não pode ser corrigido de novo.
 - O envio só é aceito quando todos os apontamentos têm decisão. A devolutiva mostra só os apontamentos aceitos ou editados.
 
-Exemplo com `curl`:
+Exemplo com `curl` (o admin cadastra a professora, e é ela quem corrige):
 
 ```bash
 B=http://localhost:8080
-TOKEN=$(curl -s -X POST $B/api/auth/login -H 'content-type: application/json' \
+ADMIN=$(curl -s -X POST $B/api/auth/login -H 'content-type: application/json' \
   -d '{"email":"admin@escola.exemplo","senha":"..."}' | jq -r .token)
+curl -s -X POST $B/api/usuarios -H "Authorization: Bearer $ADMIN" -H 'content-type: application/json' \
+  -d '{"nome":"Ana","email":"ana@escola.exemplo","senha":"senha-da-ana","perfil":"professor"}'
+TOKEN=$(curl -s -X POST $B/api/auth/login -H 'content-type: application/json' \
+  -d '{"email":"ana@escola.exemplo","senha":"senha-da-ana"}' | jq -r .token)
 H="Authorization: Bearer $TOKEN"
 
 # Importar dois arquivos (sem aluno_codigo, o nome do arquivo vira o código)

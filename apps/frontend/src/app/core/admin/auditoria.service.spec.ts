@@ -57,7 +57,7 @@ describe('descrição dos registros', () => {
             'criterios=Ortografia,Pontuação limiar=15',
             'critérios: Ortografia, Pontuação · limiar 15 p.p.',
         ],
-        ['criar_usuario', 'perfil=leitura', 'perfil Leitura'],
+        ['criar_usuario', 'perfil=professor', 'perfil Professor'],
         [
             'alterar_usuario',
             'nome perfil=admin ativo=false senha',

@@ -222,3 +222,17 @@ $largura-trilho: 15rem;
         padding: 2rem 2.5rem 4rem;
     }
 }
+
+// Ao imprimir (PDF da devolutiva), só o conteúdo da página.
+@media print {
+    .pular,
+    .barra {
+        display: none;
+    }
+
+    .conteudo {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+    }
+}

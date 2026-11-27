@@ -39,7 +39,7 @@ npm install
 npm start
 ```
 
-O front-end sobe em http://localhost:4200 e encaminha `/api` para `http://localhost:8080` (`apps/frontend/proxy.conf.json`), sem precisar de CORS. Entre com o e-mail e a senha do administrador definidos no `.env`. Sem `ADMIN_SENHA`, a senha gerada aparece uma única vez no log do back-end.
+O front-end sobe em http://localhost:4200 e encaminha `/api` para `http://localhost:8080` (`apps/frontend/proxy.conf.json`), sem precisar de CORS. Entre com o e-mail e a senha do administrador definidos no `.env` e cadastre um professor em Administração › Usuários: é com ele que se corrige. Sem `ADMIN_SENHA`, a senha gerada aparece uma única vez no log do back-end.
 
 > **Windows com espaço no nome do usuário:** o gcc do MinGW falha ao linkar (`cannot find C:/Users/Nome`). Instale o toolchain num caminho sem espaços, ou use o Docker.
 
@@ -58,17 +58,18 @@ Testes do back-end: `cd apps/backend && go test ./...`.
 
 Todas as telas usam o back-end:
 
-| Área                                             | Rotas                                                      |
-| ------------------------------------------------ | ---------------------------------------------------------- |
-| Login e sessão                                   | `/api/auth`, `/api/me`                                     |
-| Redações: importar, corrigir, revisar, enviar    | `/api/textos` (`RedacoesHttpApi`)                          |
-| Alunos                                           | `/api/textos?completo=true`, calculadas na tela            |
-| Administração: usuários, configuração, auditoria | `/api/usuarios`, `/api/config`, `/api/auditoria`           |
-| Administração › Métricas (só admin)              | `/api/textos?completo=true` e `/api/metricas/decisoes.csv` |
+| Área                                                             | Perfil    | Rotas                                                      |
+| ---------------------------------------------------------------- | --------- | ---------------------------------------------------------- |
+| Login e sessão                                                   | todos     | `/api/auth`, `/api/me`                                     |
+| Redações: importar, corrigir, revisar, enviar, PDF da devolutiva | professor | `/api/textos` (`RedacoesHttpApi`)                          |
+| Alunos                                                           | professor | `/api/textos?completo=true`, calculadas na tela            |
+| Administração: usuários, configuração, auditoria                 | admin     | `/api/usuarios`, `/api/config`, `/api/auditoria`           |
+| Administração › Métricas                                         | admin     | `/api/textos?completo=true` e `/api/metricas/decisoes.csv` |
+
+Perfis (os mesmos da POC): o **administrador** cadastra professores e outros usuários e cuida da configuração, das métricas e da auditoria, sem corrigir redações. O **professor** importa, corrige, revisa e envia a devolutiva. Depois do envio, o botão "Gerar PDF para o aluno" abre a impressão do navegador só com a devolutiva; escolha "Salvar como PDF". O estudante não tem login.
 
 - O token de acesso fica no `localStorage` até expirar (`SESSAO_DURACAO`, 12h por padrão). Uma resposta 401 encerra a sessão e volta ao login.
 - A configuração do admin (critérios, perfis sociolinguísticos e limiar de viés) vale na importação e nas métricas.
 - A correção espera o resultado (`?aguardar=true`). Sem `ANTHROPIC_API_KEY`, o back-end usa o motor simulado.
-- O perfil `leitura` vê tudo, mas não importa, corrige, decide nem envia.
 - Com o banco vazio, a tela de Redações oferece "Carregar textos de exemplo".
 - `RedacoesMockApi` (em `core/redacoes/mock/`) fica só para os testes.

@@ -66,9 +66,9 @@ func (s *Servidor) Handler() http.Handler {
 type manipulador func(w http.ResponseWriter, r *http.Request, u dominio.Usuario)
 
 var (
-	todos      = []dominio.Perfil{dominio.PerfilAdmin, dominio.PerfilProfessor, dominio.PerfilLeitura}
-	escritores = []dominio.Perfil{dominio.PerfilAdmin, dominio.PerfilProfessor}
-	admins     = []dominio.Perfil{dominio.PerfilAdmin}
+	todos       = []dominio.Perfil{dominio.PerfilAdmin, dominio.PerfilProfessor}
+	professores = []dominio.Perfil{dominio.PerfilProfessor}
+	admins      = []dominio.Perfil{dominio.PerfilAdmin}
 )
 
 func (s *Servidor) rotas() {
@@ -92,17 +92,17 @@ func (s *Servidor) rotas() {
 	m.Handle("GET /api/auditoria", s.com(admins, s.listarAuditoria))
 
 	m.Handle("GET /api/textos", s.com(todos, s.listarTextos))
-	m.Handle("POST /api/textos", s.com(escritores, s.criarTexto))
-	m.Handle("POST /api/textos/importar", s.com(escritores, s.importarTextos))
-	m.Handle("POST /api/textos/exemplos", s.com(escritores, s.carregarExemplos))
-	m.Handle("DELETE /api/textos/exemplos", s.com(escritores, s.removerExemplos))
+	m.Handle("POST /api/textos", s.com(professores, s.criarTexto))
+	m.Handle("POST /api/textos/importar", s.com(professores, s.importarTextos))
+	m.Handle("POST /api/textos/exemplos", s.com(professores, s.carregarExemplos))
+	m.Handle("DELETE /api/textos/exemplos", s.com(professores, s.removerExemplos))
 	m.Handle("GET /api/textos/{id}", s.com(todos, s.obterTexto))
-	m.Handle("DELETE /api/textos/{id}", s.com(escritores, s.excluirTexto))
-	m.Handle("POST /api/textos/{id}/corrigir", s.com(escritores, s.corrigir))
-	m.Handle("PATCH /api/textos/{id}/apontamentos/{aid}", s.com(escritores, s.decidir))
-	m.Handle("POST /api/textos/{id}/decisoes", s.com(escritores, s.decidirTodos))
-	m.Handle("PUT /api/textos/{id}/comentario", s.com(escritores, s.comentar))
-	m.Handle("POST /api/textos/{id}/enviar", s.com(escritores, s.enviar))
+	m.Handle("DELETE /api/textos/{id}", s.com(professores, s.excluirTexto))
+	m.Handle("POST /api/textos/{id}/corrigir", s.com(professores, s.corrigir))
+	m.Handle("PATCH /api/textos/{id}/apontamentos/{aid}", s.com(professores, s.decidir))
+	m.Handle("POST /api/textos/{id}/decisoes", s.com(professores, s.decidirTodos))
+	m.Handle("PUT /api/textos/{id}/comentario", s.com(professores, s.comentar))
+	m.Handle("POST /api/textos/{id}/enviar", s.com(professores, s.enviar))
 	m.Handle("GET /api/textos/{id}/devolutiva", s.com(todos, s.devolutiva))
 
 	m.Handle("GET /api/metricas", s.com(todos, s.metricas))

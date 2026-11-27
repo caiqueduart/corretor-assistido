@@ -13,6 +13,17 @@ Prioridades: **Alta** (indispensável para o lançamento), **Média** (important
 | RF05 | A IA deve avaliar o texto e gerar uma correção segundo os critérios de correção. | Alta       |
 | RF06 | O professor deve aceitar ou negar a correção da IA como um todo.                 | Alta       |
 | RF07 | O professor deve poder ajustar o resultado da IA antes de validá-lo.             | Alta       |
+| RF08 | O administrador deve cadastrar os professores e os demais usuários.              | Alta       |
+| RF09 | O professor deve gerar a devolutiva validada em PDF para entregar ao aluno.      | Alta       |
+
+## Perfis
+
+| Perfil        | Pode                                                                                                       |
+| ------------- | ---------------------------------------------------------------------------------------------------------- |
+| Administrador | Cadastrar e gerenciar usuários, definir critérios e perfis sociolinguísticos, ver métricas e auditoria.    |
+| Professor     | Importar redações, pedir a correção da IA, aceitar, recusar ou ajustar, enviar a devolutiva e gerar o PDF. |
+
+O estudante não acessa o sistema: é identificado só por código e recebe do professor o PDF da devolutiva validada. O administrador não corrige redações.
 
 ## Critérios de correção
 
@@ -25,6 +36,8 @@ Prioridades: **Alta** (indispensável para o lançamento), **Média** (important
 | ---- | --------------------------------------------------------------------------------------- |
 | RN01 | Nenhuma devolutiva chega ao estudante sem a validação do professor.                     |
 | RN02 | Só entram no sistema textos de estudantes cujas famílias deram consentimento informado. |
+| RN03 | Só o professor importa, corrige, revisa e envia devolutivas.                            |
+| RN04 | O PDF da devolutiva só pode ser gerado depois do envio, com as correções validadas.     |
 
 ## Requisitos não funcionais
 

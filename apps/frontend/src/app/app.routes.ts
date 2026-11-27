@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { autenticadoGuard, perfilGuard, visitanteGuard } from './core/auth/guards';
+import { autenticadoGuard, inicioGuard, perfilGuard, visitanteGuard } from './core/auth/guards';
 
 export const routes: Routes = [
     {
@@ -13,32 +13,41 @@ export const routes: Routes = [
         path: '',
         canActivate: [autenticadoGuard],
         children: [
-            { path: '', pathMatch: 'full', redirectTo: 'redacoes' },
+            { path: '', pathMatch: 'full', canActivate: [inicioGuard], children: [] },
             {
-                path: 'redacoes',
-                title: 'Redações · Corretor Assistido',
-                loadComponent: () => import('./features/redacoes/fila-page/fila-page').then((m) => m.FilaPage),
-            },
-            {
-                path: 'redacoes/nova',
-                title: 'Importar redação · Corretor Assistido',
-                loadComponent: () =>
-                    import('./features/redacoes/importar-page/importar-page').then((m) => m.ImportarPage),
-            },
-            {
-                path: 'redacoes/:id',
-                title: 'Revisão · Corretor Assistido',
-                loadComponent: () => import('./features/revisao/revisao-page/revisao-page').then((m) => m.RevisaoPage),
-            },
-            {
-                path: 'alunos',
-                title: 'Alunos · Corretor Assistido',
-                loadComponent: () => import('./features/alunos/alunos-page/alunos-page').then((m) => m.AlunosPage),
-            },
-            {
-                path: 'alunos/:codigo',
-                title: 'Evolução do aluno · Corretor Assistido',
-                loadComponent: () => import('./features/alunos/aluno-page/aluno-page').then((m) => m.AlunoPage),
+                // Correção é trabalho do professor. O admin só administra.
+                path: '',
+                canActivate: [perfilGuard('professor')],
+                children: [
+                    {
+                        path: 'redacoes',
+                        title: 'Redações · Corretor Assistido',
+                        loadComponent: () => import('./features/redacoes/fila-page/fila-page').then((m) => m.FilaPage),
+                    },
+                    {
+                        path: 'redacoes/nova',
+                        title: 'Importar redação · Corretor Assistido',
+                        loadComponent: () =>
+                            import('./features/redacoes/importar-page/importar-page').then((m) => m.ImportarPage),
+                    },
+                    {
+                        path: 'redacoes/:id',
+                        title: 'Revisão · Corretor Assistido',
+                        loadComponent: () =>
+                            import('./features/revisao/revisao-page/revisao-page').then((m) => m.RevisaoPage),
+                    },
+                    {
+                        path: 'alunos',
+                        title: 'Alunos · Corretor Assistido',
+                        loadComponent: () =>
+                            import('./features/alunos/alunos-page/alunos-page').then((m) => m.AlunosPage),
+                    },
+                    {
+                        path: 'alunos/:codigo',
+                        title: 'Evolução do aluno · Corretor Assistido',
+                        loadComponent: () => import('./features/alunos/aluno-page/aluno-page').then((m) => m.AlunoPage),
+                    },
+                ],
             },
             // Métricas agora ficam em Administração; o endereço antigo continua funcionando.
             { path: 'metricas', pathMatch: 'full', redirectTo: 'admin/metricas' },
@@ -49,5 +58,5 @@ export const routes: Routes = [
             },
         ],
     },
-    { path: '**', redirectTo: 'redacoes' },
+    { path: '**', redirectTo: '' },
 ];

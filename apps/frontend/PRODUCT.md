@@ -11,8 +11,8 @@ web
 ## Users
 
 - **Professor de Língua Portuguesa** do ensino fundamental (8º e 9º ano, _inferido do protótipo_). Importa as produções dos alunos, revisa a correção da IA e libera a devolutiva. É quem usa a ferramenta no dia a dia, geralmente no computador da escola ou de casa, com várias redações por turma.
-- **Administrador do sistema**: cadastra usuários e define os critérios de correção.
-- **Estudante**: não acessa o sistema nesta POC; recebe apenas a devolutiva validada pelo professor.
+- **Administrador do sistema**: cadastra professores e demais usuários, define os critérios de correção e acompanha métricas e auditoria. Não corrige redações.
+- **Estudante**: não acessa o sistema nesta POC; recebe do professor o PDF da devolutiva validada.
 
 ## Product Purpose
 
@@ -26,7 +26,7 @@ A IA nunca fala direto com o estudante. O professor é o filtro obrigatório e a
 
 ## Operating Context
 
-Fluxo: importar texto (PDF, TXT ou DOCX) com código do aluno, turma, perfil sociolinguístico e consentimento da família → IA corrige → professor revisa apontamento a apontamento → envia devolutiva → aluno reescreve → v2 entra no mesmo ciclo e mostra o ganho.
+Fluxo: importar texto (PDF, TXT ou DOCX) com código do aluno, turma, perfil sociolinguístico e consentimento da família → IA corrige → professor revisa apontamento a apontamento → envia devolutiva → gera o PDF e entrega ao aluno → aluno reescreve → v2 entra no mesmo ciclo e mostra o ganho.
 
 ## Capabilities and Constraints
 
@@ -35,7 +35,7 @@ Fluxo: importar texto (PDF, TXT ou DOCX) com código do aluno, turma, perfil soc
 - RN02: só entram textos com consentimento informado da família.
 - Estudantes são identificados por código, nunca por nome. Perfil sociolinguístico não vai para a IA.
 - Apontamentos que tratam variação linguística (regional, oralidade) como erro devem ficar visíveis como tal.
-- Back-end ainda não existe: o front usa dados mockados atrás de serviços, a serem trocados pelas APIs.
+- Os dados vêm do back-end em Go (`apps/backend`); os mocks ficam só para os testes.
 - Stack: Angular 21 (standalone, zoneless, signals), SCSS.
 
 ## Evidence on Hand

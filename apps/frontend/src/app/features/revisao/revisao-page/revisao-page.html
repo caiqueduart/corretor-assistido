@@ -131,7 +131,7 @@
                         <header class="mesa__painel-topo">
                             <h2 class="mesa__painel-titulo" id="titulo-apontamentos">Apontamentos da IA</h2>
 
-                            @if (decisoes().pendentes && podeEditar()) {
+                            @if (decisoes().pendentes) {
                                 <div class="mesa__lote">
                                     <button
                                         class="botao botao--pequeno"
@@ -167,7 +167,6 @@
                                 [apontamento]="apontamento"
                                 [numero]="i + 1"
                                 [selecionado]="apontamento.id === selecionadoId()"
-                                [bloqueado]="!podeEditar()"
                                 (selecionar)="selecionar(apontamento.id)"
                                 (decidir)="decidir(apontamento.id, $event)"
                             />
@@ -178,7 +177,7 @@
                             </p>
                         }
 
-                        @if (atual.apontamentos.length && podeEditar()) {
+                        @if (atual.apontamentos.length) {
                             <p class="mesa__atalhos">
                                 Atalhos: <kbd>A</kbd> aceitar · <kbd>E</kbd> ajustar · <kbd>R</kbd> recusar ·
                                 <kbd>↑</kbd><kbd>↓</kbd> navegar
@@ -202,8 +201,7 @@
                     id="campo-recado"
                     rows="3"
                     [value]="atual.comentarioProfessor"
-                    [readOnly]="!podeEditar()"
-                    (blur)="podeEditar() && salvarComentario(campoRecado.value)"
+                    (blur)="salvarComentario(campoRecado.value)"
                     #campoRecado
                 ></textarea>
 
@@ -212,54 +210,45 @@
                 }
             </section>
 
-            @if (!podeEditar()) {
-                <p class="revisao__previa">Seu perfil é só de leitura: as decisões e o envio ficam com o professor.</p>
-            } @else {
-                <div class="envio" [class.envio--confirmando]="confirmandoEnvio()">
-                    @if (confirmandoEnvio()) {
-                        <p class="envio__texto">
-                            Enviar a devolutiva para <span class="envio__destaque">{{ atual.aluno }}</span>? Ele vai ver
-                            {{ validados() === 1 ? '1 correção' : validados() + ' correções' }} e o seu recado. Depois
-                            de enviada, ela não pode ser alterada.
-                        </p>
+            <div class="envio" [class.envio--confirmando]="confirmandoEnvio()">
+                @if (confirmandoEnvio()) {
+                    <p class="envio__texto">
+                        Enviar a devolutiva para <span class="envio__destaque">{{ atual.aluno }}</span>? Ele vai ver
+                        {{ validados() === 1 ? '1 correção' : validados() + ' correções' }} e o seu recado. Depois de
+                        enviada, ela não pode ser alterada.
+                    </p>
 
-                        <div class="envio__acoes">
-                            <button class="botao" type="button" (click)="confirmandoEnvio.set(false)">Voltar</button>
-                            <button
-                                class="botao botao--primario"
-                                type="button"
-                                [disabled]="ocupada()"
-                                (click)="enviar()"
-                            >
-                                <app-icone nome="enviar" />
-                                Confirmar envio
-                            </button>
-                        </div>
-                    } @else {
-                        <p class="envio__texto">
-                            @if (decisoes().pendentes) {
-                                Faltam
-                                <span class="envio__destaque">{{
-                                    decisoes().pendentes === 1 ? '1 decisão' : decisoes().pendentes + ' decisões'
-                                }}</span>
-                                para liberar o envio.
-                            } @else {
-                                Tudo decidido. O aluno só recebe depois que você enviar.
-                            }
-                        </p>
-
-                        <button
-                            class="botao botao--primario"
-                            type="button"
-                            [disabled]="decisoes().pendentes > 0"
-                            (click)="confirmandoEnvio.set(true)"
-                        >
+                    <div class="envio__acoes">
+                        <button class="botao" type="button" (click)="confirmandoEnvio.set(false)">Voltar</button>
+                        <button class="botao botao--primario" type="button" [disabled]="ocupada()" (click)="enviar()">
                             <app-icone nome="enviar" />
-                            Enviar devolutiva
+                            Confirmar envio
                         </button>
-                    }
-                </div>
-            }
+                    </div>
+                } @else {
+                    <p class="envio__texto">
+                        @if (decisoes().pendentes) {
+                            Faltam
+                            <span class="envio__destaque">{{
+                                decisoes().pendentes === 1 ? '1 decisão' : decisoes().pendentes + ' decisões'
+                            }}</span>
+                            para liberar o envio.
+                        } @else {
+                            Tudo decidido. O aluno só recebe depois que você enviar.
+                        }
+                    </p>
+
+                    <button
+                        class="botao botao--primario"
+                        type="button"
+                        [disabled]="decisoes().pendentes > 0"
+                        (click)="confirmandoEnvio.set(true)"
+                    >
+                        <app-icone nome="enviar" />
+                        Enviar devolutiva
+                    </button>
+                }
+            </div>
         }
 
         @case ('devolvida') {
@@ -271,24 +260,35 @@
                 </span>
             </p>
 
-            <div class="revisao__abas" role="group" aria-label="Visualização">
-                <button
-                    class="revisao__aba"
-                    type="button"
-                    [attr.aria-pressed]="visao() === 'aluno'"
-                    (click)="visao.set('aluno')"
-                >
-                    <app-icone nome="olho" />
-                    O que o aluno recebeu
-                </button>
-                <button
-                    class="revisao__aba"
-                    type="button"
-                    [attr.aria-pressed]="visao() === 'revisao'"
-                    (click)="visao.set('revisao')"
-                >
-                    <app-icone nome="lapis" />
-                    Sua revisão
+            <p class="revisao__impressao">
+                Devolutiva validada pelo professor em {{ atual.enviadaEm | date: 'dd/MM/yyyy' }}.
+            </p>
+
+            <div class="revisao__acoes">
+                <div class="revisao__abas" role="group" aria-label="Visualização">
+                    <button
+                        class="revisao__aba"
+                        type="button"
+                        [attr.aria-pressed]="visao() === 'aluno'"
+                        (click)="visao.set('aluno')"
+                    >
+                        <app-icone nome="olho" />
+                        O que o aluno recebeu
+                    </button>
+                    <button
+                        class="revisao__aba"
+                        type="button"
+                        [attr.aria-pressed]="visao() === 'revisao'"
+                        (click)="visao.set('revisao')"
+                    >
+                        <app-icone nome="lapis" />
+                        Sua revisão
+                    </button>
+                </div>
+
+                <button class="botao" type="button" (click)="gerarPdf()">
+                    <app-icone nome="baixar" />
+                    Gerar PDF para o aluno
                 </button>
             </div>
 
@@ -345,12 +345,11 @@
                             A IA vai apontar desvios de ortografia e pontuação. Nada é enviado ao aluno até você
                             revisar.
                         </p>
-                        @if (podeEditar()) {
-                            <button class="botao botao--primario" type="button" (click)="corrigirComIa()">
-                                <app-icone nome="lapis" />
-                                Corrigir com IA
-                            </button>
-                        }
+
+                        <button class="botao botao--primario" type="button" (click)="corrigirComIa()">
+                            <app-icone nome="lapis" />
+                            Corrigir com IA
+                        </button>
                     }
                 </section>
             </div>

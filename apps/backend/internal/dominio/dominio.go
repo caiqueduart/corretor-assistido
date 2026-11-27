@@ -7,17 +7,16 @@ import "time"
 type Perfil string
 
 const (
-	PerfilAdmin     Perfil = "admin"     // define critérios, perfis sociolinguísticos e usuários
+	PerfilAdmin     Perfil = "admin"     // cadastra usuários, define critérios e perfis sociolinguísticos, vê métricas e auditoria
 	PerfilProfessor Perfil = "professor" // importa, corrige, revisa e envia devolutivas
-	PerfilLeitura   Perfil = "leitura"   // só visualiza textos e métricas
 )
 
 func (p Perfil) Valido() bool {
-	return p == PerfilAdmin || p == PerfilProfessor || p == PerfilLeitura
+	return p == PerfilAdmin || p == PerfilProfessor
 }
 
-// PodeEscrever indica se o perfil pode alterar textos.
-func (p Perfil) PodeEscrever() bool { return p == PerfilAdmin || p == PerfilProfessor }
+// PodeEscrever indica se o perfil pode alterar textos. Só o professor corrige.
+func (p Perfil) PodeEscrever() bool { return p == PerfilProfessor }
 
 // Status do ciclo de vida de um texto.
 type Status string

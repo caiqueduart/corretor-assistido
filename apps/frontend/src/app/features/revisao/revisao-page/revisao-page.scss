@@ -69,6 +69,18 @@
         color: var(--caneta-forte);
     }
 
+    &__acoes {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    &__impressao {
+        display: none;
+    }
+
     &__abas {
         display: inline-flex;
         justify-self: start;
@@ -228,5 +240,21 @@
     &__acoes {
         display: flex;
         gap: 0.5rem;
+    }
+}
+
+// PDF da devolutiva: só o cabeçalho da redação e o que o aluno recebe.
+@media print {
+    .revisao__voltar,
+    .revisao__meta a,
+    .revisao__selo,
+    .revisao__acoes,
+    .etapas {
+        display: none;
+    }
+
+    .revisao__impressao {
+        display: block;
+        color: var(--texto-2);
     }
 }
