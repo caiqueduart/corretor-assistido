@@ -21,22 +21,22 @@ corretor-assistido/
 
 ## Como rodar
 
-O front-end exige login, então o back-end precisa estar no ar. Em um terminal:
+Com o Docker Desktop instalado, um comando na raiz sobe tudo:
+
+```bash
+npm install                       # só na primeira vez
+npm run dev
+```
+
+O `npm run dev` (`scripts/dev.mjs`) cria `apps/backend/.env` a partir do exemplo se ele não existir (defina `ADMIN_SENHA` com 10+ caracteres), abre o Docker Desktop se estiver fechado, constrói e sobe o back-end no contêiner `corretor-assistido` (`docker-compose.yml`) e, quando ele responde, inicia o front-end. O banco fica no volume `corretor-dados` e continua entre execuções; o contêiner reinicia sozinho com o Docker.
+
+Sem Docker, dá para rodar o back-end com Go:
 
 ```bash
 cd apps/backend
-cp .env.example .env              # defina ADMIN_EMAIL e ADMIN_SENHA
+cp .env.example .env
 set -a; source .env; set +a
 SEED_EXEMPLOS=true go run ./cmd/server
-```
-
-Ou com Docker: `docker build -t corretor-textual apps/backend` e `docker run -p 8080:8080 -v corretor-dados:/dados --env-file apps/backend/.env corretor-textual`.
-
-Em outro terminal, na raiz:
-
-```bash
-npm install
-npm start
 ```
 
 O front-end sobe em http://localhost:4200 e encaminha `/api` para `http://localhost:8080` (`apps/frontend/proxy.conf.json`), sem precisar de CORS. Entre com o e-mail e a senha do administrador definidos no `.env` e cadastre um professor em Administração › Usuários: é com ele que se corrige. Sem `ADMIN_SENHA`, a senha gerada aparece uma única vez no log do back-end.
@@ -45,12 +45,15 @@ O front-end sobe em http://localhost:4200 e encaminha `/api` para `http://localh
 
 ## Scripts da raiz
 
-| Script           | O que faz                                   |
-| ---------------- | ------------------------------------------- |
-| `npm start`      | Sobe o front-end em modo de desenvolvimento |
-| `npm run build`  | Gera o build de todos os apps               |
-| `npm test`       | Roda os testes de todos os apps             |
-| `npm run format` | Formata o código com Prettier               |
+| Script               | O que faz                                     |
+| -------------------- | --------------------------------------------- |
+| `npm run dev`        | Sobe back-end (Docker) e front-end            |
+| `npm start`          | Sobe o front-end em modo de desenvolvimento   |
+| `npm run back:parar` | Para o contêiner do back-end (os dados ficam) |
+| `npm run back:logs`  | Mostra o log do back-end                      |
+| `npm run build`      | Gera o build de todos os apps                 |
+| `npm test`           | Roda os testes de todos os apps               |
+| `npm run format`     | Formata o código com Prettier                 |
 
 Testes do back-end: `cd apps/backend && go test ./...`.
 
