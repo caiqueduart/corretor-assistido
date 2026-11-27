@@ -1,49 +1,54 @@
 @if (auth.usuario(); as usuario) {
     <a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
-    <header class="barra">
-        <a class="barra__marca" [routerLink]="inicio()">
-            <span class="barra__nome">Corretor Assistido</span>
-            <span class="barra__versao">POC 1.3</span>
-        </a>
+    <div class="app">
+        <aside class="sidebar" id="menu-principal" [attr.data-open]="menuAberto()" aria-label="Navegação principal">
+            <a class="sidebar__brand" routerLink="/inicio">
+                <span class="sidebar__logo"><app-icone nome="lapis" /></span>
+                <span class="sidebar__marca">
+                    Corretor Assistido
+                    <span class="sidebar__versao">POC 1.3</span>
+                </span>
+            </a>
 
-        <nav class="barra__nav" aria-label="Principal">
-            @for (item of navegacao(); track item.rota) {
-                <a
-                    class="barra__link"
-                    [routerLink]="item.rota"
-                    routerLinkActive="barra__link--ativo"
-                    ariaCurrentWhenActive="page"
-                >
-                    <app-icone [nome]="item.icone" />
-                    <span>{{ item.rotulo }}</span>
+            <nav class="sidebar__nav">
+                @for (secao of secoes(); track secao.titulo) {
+                    <div class="sidebar__section">
+                        <span class="sidebar__group">{{ secao.titulo }}</span>
 
-                    @if (item.rota === '/redacoes' && redacoes.porStatus().emRevisao.length) {
-                        <span class="barra__contador">
-                            {{ redacoes.porStatus().emRevisao.length }}
-                            <span class="visualmente-oculto">para revisar</span>
-                        </span>
-                    }
-                </a>
-            }
-        </nav>
+                        @for (item of secao.itens; track item.rota) {
+                            <a class="nav-link" [routerLink]="item.rota" routerLinkActive ariaCurrentWhenActive="page">
+                                <app-icone [nome]="item.icone" />
+                                <span>{{ item.rotulo }}</span>
 
-        <div class="barra__perfil">
-            <p class="barra__perfil-textos">
-                <span class="barra__perfil-nome">{{ usuario.nome }}</span>
-                <span class="barra__perfil-papel">{{ rotuloPerfil[usuario.perfil] }}</span>
-            </p>
+                                @if (item.rota === '/redacoes' && redacoes.porStatus().emRevisao.length) {
+                                    <span class="nav-link__contador">
+                                        {{ redacoes.porStatus().emRevisao.length }}
+                                        <span class="visualmente-oculto">para revisar</span>
+                                    </span>
+                                }
+                            </a>
+                        }
+                    </div>
+                }
+            </nav>
+        </aside>
 
-            <button class="barra__sair" type="button" (click)="sair()">
-                <app-icone nome="sair" />
-                <span>Sair</span>
-            </button>
+        <div class="sidebar-scrim" [attr.data-open]="menuAberto()" (click)="menuAberto.set(false)"></div>
+
+        <div class="main">
+            <app-topbar (abrirMenu)="menuAberto.set(true)" />
+
+            <main class="content" id="conteudo" tabindex="-1">
+                <div class="page">
+                    <router-outlet />
+                </div>
+            </main>
         </div>
-    </header>
+    </div>
 
-    <main class="conteudo" id="conteudo" tabindex="-1">
-        <router-outlet />
-    </main>
+    <app-avisos />
+    <app-confirmacao />
 } @else {
     <router-outlet />
 }

@@ -33,36 +33,50 @@ const ABAS: readonly Aba[] = [
         <router-outlet />
     `,
     styles: `
+        /* Atlas: ds-tabs (sublinhado). */
         :host {
             display: block;
         }
 
         .abas {
             display: flex;
-            gap: 0.25rem;
-            margin-bottom: 1.5rem;
+            gap: var(--space-1);
+            margin-bottom: var(--space-6);
             overflow-x: auto;
-            border-bottom: 1px solid var(--linha);
+            box-shadow: inset 0 -1px 0 var(--border);
+            scrollbar-width: none;
         }
 
         .abas__item {
-            margin-bottom: -1px;
-            padding: 0.625rem 0.875rem;
-            border-bottom: 2px solid transparent;
-            color: var(--texto-2);
-            font-size: 0.9375rem;
-            font-weight: 600;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            height: var(--control-md);
+            padding: 0 var(--space-3);
+            color: var(--text-muted);
+            font-weight: var(--weight-medium);
             text-decoration: none;
             white-space: nowrap;
+            transition: color var(--duration-fast) var(--ease);
 
             &:hover {
-                color: var(--texto);
+                color: var(--text);
             }
         }
 
         .abas__item--ativa {
-            border-bottom-color: var(--caneta);
-            color: var(--caneta-forte);
+            color: var(--text);
+
+            &::after {
+                content: '';
+                position: absolute;
+                right: var(--space-3);
+                bottom: 0;
+                left: var(--space-3);
+                height: 2px;
+                border-radius: 2px;
+                background: var(--primary);
+            }
         }
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,

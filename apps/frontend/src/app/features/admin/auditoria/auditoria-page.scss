@@ -53,14 +53,14 @@ app-cabecalho-pagina {
     }
 
     &__acao {
-        font-weight: 600;
+        font-weight: var(--weight-semibold);
     }
 
     &__alvo {
         display: block;
         color: var(--texto-2);
         font-size: 0.8125rem;
-        font-weight: 400;
+        font-weight: var(--weight-regular);
     }
 
     &__detalhe {

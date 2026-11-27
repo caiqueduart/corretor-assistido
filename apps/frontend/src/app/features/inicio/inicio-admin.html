@@ -1,0 +1,68 @@
+<section class="cartao" aria-labelledby="titulo-sistema">
+    <header class="cartao__cabecalho">
+        <h2 class="cartao__titulo" id="titulo-sistema">Sistema</h2>
+        <a class="cartao__link" routerLink="/admin/configuracao">Configurar</a>
+    </header>
+
+    <ul class="lista" role="list">
+        <li class="lista__item">
+            <span class="lista__textos">
+                <span class="lista__titulo">Correção</span>
+                <span class="lista__detalhe">{{ config.criterios().join(', ') }}</span>
+            </span>
+            @if (config.iaConfigurada() === null) {
+                <span class="etiqueta">…</span>
+            } @else if (config.iaConfigurada()) {
+                <span class="etiqueta etiqueta--sucesso">IA ativa</span>
+            } @else {
+                <span class="etiqueta etiqueta--marca-texto" title="Sem chave da IA no servidor.">Simulada</span>
+            }
+        </li>
+
+        @if (carregandoEquipe()) {
+            <li class="lista__item"><app-esqueleto [quantidade]="2" rotulo="Carregando a equipe…" /></li>
+        } @else if (!erro()) {
+            @for (linha of equipe(); track linha.perfil) {
+                <li class="lista__item">
+                    <span class="lista__textos"
+                        ><span class="lista__titulo">{{ linha.rotulo }}</span></span
+                    >
+                    <span class="lista__numero">{{ linha.quantidade }}</span>
+                </li>
+            }
+        }
+    </ul>
+
+    <a class="botao botao--pequeno" routerLink="/admin/usuarios">Gerenciar usuários</a>
+</section>
+
+<section class="cartao" aria-labelledby="titulo-atividade">
+    <header class="cartao__cabecalho">
+        <h2 class="cartao__titulo" id="titulo-atividade">Atividade recente</h2>
+        <a class="cartao__link" routerLink="/admin/auditoria">Ver auditoria</a>
+    </header>
+
+    @if (erro()) {
+        <p class="aviso aviso--erro">Não foi possível carregar a atividade.</p>
+    } @else if (atividades(); as lista) {
+        <ul class="lista" role="list">
+            @for (item of lista; track item.id) {
+                <li class="lista__item">
+                    <span class="lista__textos">
+                        <span class="atividade__frase">
+                            <strong>{{ item.autor }}</strong> {{ item.acao }}
+                            @if (item.alvo) {
+                                <span class="atividade__alvo">· {{ item.alvo }}</span>
+                            }
+                        </span>
+                        <time class="lista__detalhe" [attr.datetime]="item.quando">{{ tempo(item.quando) }}</time>
+                    </span>
+                </li>
+            } @empty {
+                <li class="lista__item lista__detalhe">Nenhuma atividade ainda.</li>
+            }
+        </ul>
+    } @else {
+        <app-esqueleto [quantidade]="4" rotulo="Carregando a atividade…" />
+    }
+</section>

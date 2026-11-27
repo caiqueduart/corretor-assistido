@@ -34,7 +34,7 @@
 
     &__nova {
         color: var(--caneta);
-        font-weight: 600;
+        font-weight: var(--weight-semibold);
         text-decoration: none;
     }
 
@@ -42,7 +42,7 @@
         margin-left: 0.125rem;
         font-family: var(--fonte-ui);
         font-size: pxToRem(11px);
-        font-weight: 700;
+        font-weight: var(--weight-semibold);
         line-height: 0;
         color: var(--grafite);
     }

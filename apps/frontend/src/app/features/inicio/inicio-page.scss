@@ -1,0 +1,113 @@
+@use 'variables' as *;
+
+:host {
+    display: grid;
+    gap: var(--space-6);
+}
+
+.inicio {
+    &__topo {
+        display: grid;
+        gap: var(--space-1);
+    }
+
+    &__titulo {
+        font-size: var(--text-xl);
+        font-weight: var(--weight-semibold);
+        letter-spacing: -0.015em;
+    }
+
+    &__subtitulo {
+        color: var(--text-muted);
+    }
+
+    &__erro {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+    }
+
+    &__falhas {
+        display: flex;
+        gap: var(--space-2);
+        align-items: flex-start;
+    }
+
+    &__grade {
+        display: grid;
+        gap: var(--space-4);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+
+        &--kpi {
+            grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+        }
+
+        &--principal {
+            @media (width >= 1100px) {
+                grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+            }
+        }
+    }
+}
+
+/* Atlas: ds-kpi em ds-card--interactive. */
+.kpi {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+    transition:
+        transform var(--duration-base) var(--ease),
+        box-shadow var(--duration-base) var(--ease);
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(24, 24, 27, 0.09);
+    }
+
+    &__topo {
+        display: flex;
+        justify-content: space-between;
+        color: var(--text-muted);
+        font-size: var(--text-sm);
+    }
+
+    &__icone {
+        color: var(--text-disabled);
+    }
+
+    &__valor {
+        margin-top: var(--space-2);
+        font-size: var(--text-3xl);
+        font-weight: var(--weight-semibold);
+        letter-spacing: -0.02em;
+        line-height: var(--leading-tight);
+    }
+
+    &__detalhe {
+        color: var(--text-subtle);
+        font-size: var(--text-xs);
+    }
+
+    &--atencao .kpi__detalhe {
+        color: var(--warning);
+        font-weight: var(--weight-medium);
+    }
+}
+
+.lista__linha {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.lista__item--coluna {
+    flex-direction: column;
+    align-items: stretch;
+}

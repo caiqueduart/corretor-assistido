@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { UsuariosService } from '../../../core/admin/usuarios.service';
+import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
 import { Usuario } from '../../../core/auth/auth.model';
 import { UsuarioFormulario, UsuarioSalvo } from './usuario-formulario';
 
@@ -13,13 +14,19 @@ const BRUNO: Usuario = {
     criadoEm: '2026-11-02T08:00:00Z',
 };
 
-function montar(usuario: Usuario | null, ehVoce = false) {
+function montar(usuario: Usuario | null, ehVoce = false, confirma = true) {
+    const confirmacao = { confirmar: vi.fn(async () => confirma) };
     const api = {
         criar: vi.fn(async (novo) => ({ ...BRUNO, ...novo, id: 'novo' })),
         alterar: vi.fn(async (_id: string, alt) => ({ ...BRUNO, ...alt })),
     };
 
-    TestBed.configureTestingModule({ providers: [{ provide: UsuariosService, useValue: api }] });
+    TestBed.configureTestingModule({
+        providers: [
+            { provide: UsuariosService, useValue: api },
+            { provide: ConfirmacaoService, useValue: confirmacao },
+        ],
+    });
     const fixture = TestBed.createComponent(UsuarioFormulario);
     fixture.componentRef.setInput('usuario', usuario);
     fixture.componentRef.setInput('ehVoce', ehVoce);
@@ -40,7 +47,7 @@ function montar(usuario: Usuario | null, ehVoce = false) {
         fixture.detectChanges();
     };
 
-    return { fixture, el, api, salvos, preencher, enviar };
+    return { fixture, el, api, salvos, preencher, enviar, confirmacao };
 }
 
 describe('UsuarioFormulario', () => {
@@ -73,14 +80,24 @@ describe('UsuarioFormulario', () => {
         expect(el.textContent).toContain('pelo menos 10 caracteres');
     });
 
-    it('na edição envia só o que mudou', async () => {
-        const { el, api, salvos, enviar } = montar(BRUNO);
+    it('na edição envia só o que mudou (desativar pede confirmação)', async () => {
+        const { el, api, salvos, enviar, confirmacao } = montar(BRUNO);
 
         el.querySelector<HTMLInputElement>('input[type=checkbox]')!.click();
         await enviar();
 
+        expect(confirmacao.confirmar).toHaveBeenCalledWith(expect.objectContaining({ perigo: true }));
         expect(api.alterar).toHaveBeenCalledWith('u2', { ativo: false });
         expect(salvos[0]).toMatchObject({ novo: false, senha: null });
+    });
+
+    it('cancelar a confirmação mantém o usuário ativo', async () => {
+        const { el, api, enviar } = montar(BRUNO, false, false);
+
+        el.querySelector<HTMLInputElement>('input[type=checkbox]')!.click();
+        await enviar();
+
+        expect(api.alterar).not.toHaveBeenCalled();
     });
 
     it('sem mudanças, não chama a API', async () => {

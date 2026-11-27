@@ -1,12 +1,7 @@
 <app-cabecalho-pagina
     titulo="Redações"
     descricao="Importe as redações, valide a correção da IA e registre a devolutiva de cada aluno."
->
-    <a class="botao botao--primario" routerLink="/redacoes/nova">
-        <app-icone nome="importar" />
-        Importar redação
-    </a>
-</app-cabecalho-pagina>
+/>
 
 @if (redacoes.erroCarga(); as mensagem) {
     <div class="aviso aviso--erro fila__erro-carga" role="alert">
@@ -14,172 +9,173 @@
         <button class="botao botao--pequeno" type="button" (click)="redacoes.carregar()">Tentar de novo</button>
     </div>
 } @else if (!redacoes.carregado()) {
-    <p class="fila__carregando" role="status">Carregando redações…</p>
+    <div class="cartao"><app-esqueleto [quantidade]="6" rotulo="Carregando redações…" /></div>
 } @else if (!redacoes.redacoes().length) {
-    <section class="fila fila__inicio">
-        <h2 class="fila__titulo">Nenhuma redação ainda</h2>
-
-        <p class="fila__vazio">
-            Importe a primeira redação ou carregue os textos fictícios do roteiro de demonstração.
-        </p>
-        <div class="fila__inicio-acoes">
-            <a class="botao botao--primario" routerLink="/redacoes/nova">
-                <app-icone nome="importar" />
-                Importar redação
-            </a>
-            <button class="botao" type="button" [disabled]="carregandoExemplos()" (click)="carregarExemplos()">
-                {{ carregandoExemplos() ? 'Carregando…' : 'Carregar textos de exemplo' }}
-            </button>
-        </div>
-        @if (erroExemplos(); as erro) {
-            <p class="fila__erro" role="alert">{{ erro }}</p>
-        }
-    </section>
+    <div class="cartao">
+        <app-estado-vazio
+            icone="importar"
+            titulo="Nenhuma redação ainda"
+            texto="Importe a primeira redação (PDF, TXT ou DOCX) ou carregue os textos fictícios do roteiro de demonstração."
+        >
+            <div class="fila__acoes-vazio">
+                <a class="botao botao--primario" routerLink="/redacoes/nova">
+                    <app-icone nome="importar" />
+                    Importar redação
+                </a>
+                <button class="botao" type="button" [disabled]="carregandoExemplos()" (click)="carregarExemplos()">
+                    {{ carregandoExemplos() ? 'Carregando…' : 'Carregar textos de exemplo' }}
+                </button>
+            </div>
+        </app-estado-vazio>
+    </div>
 } @else {
-    @let grupos = redacoes.porStatus();
+    <section class="cartao fila">
+        <div class="fila__abas" role="tablist" aria-label="Situação das redações">
+            @for (definicao of abas; track definicao.id) {
+                <button
+                    class="fila__aba"
+                    type="button"
+                    role="tab"
+                    [id]="'aba-' + definicao.id"
+                    aria-controls="fila-lista"
+                    [attr.aria-selected]="aba() === definicao.id"
+                    (click)="aba.set(definicao.id)"
+                >
+                    {{ definicao.rotulo }}
+                    <span class="fila__contador">{{ contagem()[definicao.id] }}</span>
+                </button>
+            }
+        </div>
 
-    <section class="fila" aria-labelledby="titulo-revisar">
-        <header class="fila__cabecalho">
-            <h2 class="fila__titulo" id="titulo-revisar">Esperando a sua revisão</h2>
-            <span class="fila__total">{{ grupos.emRevisao.length }}</span>
-        </header>
-
-        @if (grupos.emRevisao.length) {
-            <ul class="fila__lista">
-                @for (redacao of grupos.emRevisao; track redacao.id) {
-                    @let decisoes = contarDecisoes(redacao.apontamentos);
-
-                    <li class="fila__item">
-                        <div class="fila__info">
-                            <p class="fila__aluno">
-                                {{ redacao.aluno }}
-                                <span class="fila__titulo-redacao">{{ redacao.titulo }}</span>
-                            </p>
-
-                            <p class="fila__meta">
-                                {{ redacao.turma }} · {{ redacao.versao === 1 ? '1ª versão' : 'Reescrita' }}
-
-                                @if (redacao.exemplo) {
-                                    <span class="etiqueta">Exemplo</span>
-                                }
-                            </p>
-                        </div>
-
-                        <div
-                            class="fila__progresso"
-                            [attr.aria-label]="
-                                'Decididos ' + (decisoes.total - decisoes.pendentes) + ' de ' + decisoes.total
-                            "
-                        >
-                            <span class="fila__barra" aria-hidden="true">
-                                <span
-                                    class="fila__barra-preenchida"
-                                    [style.width.%]="
-                                        decisoes.total
-                                            ? (100 * (decisoes.total - decisoes.pendentes)) / decisoes.total
-                                            : 0
-                                    "
-                                ></span>
-                            </span>
-
-                            <span class="fila__progresso-texto" aria-hidden="true">
-                                {{ decisoes.total - decisoes.pendentes }} de {{ decisoes.total }} decididos
-                            </span>
-                        </div>
-
-                        <a class="botao botao--primario botao--pequeno" [routerLink]="['/redacoes', redacao.id]">
-                            {{ decisoes.pendentes === decisoes.total ? 'Revisar' : 'Continuar' }}
-                        </a>
-                    </li>
-                }
-            </ul>
-        } @else {
-            <p class="fila__vazio">Nenhuma correção esperando por você.</p>
-        }
-    </section>
-
-    <section class="fila" aria-labelledby="titulo-corrigir">
-        <header class="fila__cabecalho">
-            <h2 class="fila__titulo" id="titulo-corrigir">Ainda sem correção da IA</h2>
-            <span class="fila__total">{{ grupos.aguardandoIa.length }}</span>
-        </header>
-
-        @if (grupos.aguardandoIa.length) {
-            <ul class="fila__lista">
-                @for (redacao of grupos.aguardandoIa; track redacao.id) {
-                    <li class="fila__item">
-                        <div class="fila__info">
-                            <p class="fila__aluno">
-                                {{ redacao.aluno }}
-                                <span class="fila__titulo-redacao">{{ redacao.titulo }}</span>
-                            </p>
-
-                            <p class="fila__meta">
-                                {{ redacao.turma }} · {{ contarPalavras(redacao.conteudo) }} palavras
-
-                                @if (redacao.exemplo) {
-                                    <span class="etiqueta">Exemplo</span>
-                                }
-                            </p>
-
-                            @if (erros()[redacao.id] || redacao.erroCorrecao; as erro) {
-                                <p class="fila__erro" role="alert">{{ erro }}</p>
-                            }
-                        </div>
-
-                        @if (redacao.status === 'corrigindo') {
-                            <p class="fila__corrigindo" role="status">
-                                <span class="fila__giro" aria-hidden="true"></span>
-                                A IA está lendo o texto…
-                            </p>
-                        } @else {
-                            <button class="botao botao--pequeno" type="button" (click)="corrigir(redacao)">
-                                <app-icone nome="lapis" />
-                                Corrigir com IA
-                            </button>
+        <div class="fila__filtros">
+            <div class="campo fila__busca">
+                <label class="visualmente-oculto" for="fila-busca">Buscar por aluno ou título</label>
+                <input
+                    id="fila-busca"
+                    type="search"
+                    placeholder="Buscar por aluno ou título"
+                    [value]="busca()"
+                    (input)="busca.set($any($event.target).value)"
+                />
+            </div>
+            @if (turmas().length > 1) {
+                <div class="campo">
+                    <label class="visualmente-oculto" for="fila-turma">Turma</label>
+                    <select id="fila-turma" [value]="turma()" (change)="turma.set($any($event.target).value)">
+                        <option value="">Todas as turmas</option>
+                        @for (t of turmas(); track t) {
+                            <option [value]="t">{{ t }}</option>
                         }
-                    </li>
-                }
-            </ul>
-        } @else {
-            <p class="fila__vazio">
-                Todas as redações importadas já passaram pela IA.
+                    </select>
+                </div>
+            }
+        </div>
 
-                <a routerLink="/redacoes/nova">Importar outra</a>
-            </p>
-        }
-    </section>
+        <div id="fila-lista" role="tabpanel" [attr.aria-labelledby]="'aba-' + aba()">
+            @if (itens().length) {
+                <ul class="lista" role="list">
+                    @for (item of itens(); track item.redacao.id) {
+                        @let redacao = item.redacao;
 
-    <section class="fila" aria-labelledby="titulo-devolvidas">
-        <header class="fila__cabecalho">
-            <h2 class="fila__titulo" id="titulo-devolvidas">Devolutiva registrada</h2>
-            <span class="fila__total">{{ grupos.devolvidas.length }}</span>
-        </header>
+                        <li class="lista__item fila__item">
+                            <span class="lista__textos">
+                                <span class="lista__titulo">
+                                    {{ chamada.rotulo(redacao.aluno) }}
+                                    <span class="fila__titulo">· {{ redacao.titulo }}</span>
+                                </span>
+                                <span class="fila__meta">
+                                    {{ redacao.turma }} · {{ redacao.versao === 1 ? '1ª versão' : 'Reescrita' }}
+                                    @if (aba() === 'todas') {
+                                        <span class="etiqueta">{{ rotuloStatus[redacao.status] }}</span>
+                                    }
+                                    @if (redacao.exemplo) {
+                                        <span class="etiqueta">Exemplo</span>
+                                    }
+                                </span>
 
-        @if (grupos.devolvidas.length) {
-            <ul class="fila__lista">
-                @for (redacao of grupos.devolvidas; track redacao.id) {
-                    <li class="fila__item">
-                        <div class="fila__info">
-                            <p class="fila__aluno">
-                                {{ redacao.aluno }}
-                                <span class="fila__titulo-redacao">{{ redacao.titulo }}</span>
-                            </p>
+                                @if (redacao.status === 'em-revisao') {
+                                    <span class="fila__progresso">
+                                        <span class="progresso" aria-hidden="true">
+                                            <span
+                                                class="progresso__barra"
+                                                [style.width.%]="item.total ? (100 * item.feitas) / item.total : 100"
+                                            ></span>
+                                        </span>
+                                        <span class="lista__detalhe"
+                                            >{{ item.feitas }} de {{ item.total }} decididos</span
+                                        >
+                                    </span>
+                                } @else if (redacao.status === 'devolvida') {
+                                    <span class="lista__detalhe">
+                                        Registrada em {{ redacao.enviadaEm | date: "dd/MM 'às' HH:mm" }}
+                                    </span>
+                                } @else {
+                                    <span class="lista__detalhe">{{ item.palavras }} palavras</span>
+                                }
 
-                            <p class="fila__meta">
-                                {{ redacao.versao === 1 ? '1ª versão' : 'Reescrita' }} · registrada em
-                                {{ redacao.enviadaEm | date: "dd/MM 'às' HH:mm" }}
-                            </p>
-                        </div>
+                                @if (erros()[redacao.id] || redacao.erroCorrecao; as erro) {
+                                    <span class="fila__erro" role="alert">
+                                        <app-icone nome="alerta" />
+                                        {{ erro }}
+                                    </span>
+                                }
+                            </span>
 
-                        <a class="botao botao--discreto botao--pequeno" [routerLink]="['/redacoes', redacao.id]">
-                            Ver devolutiva
-                        </a>
-                    </li>
-                }
-            </ul>
-        } @else {
-            <p class="fila__vazio">Nenhuma devolutiva registrada ainda.</p>
-        }
+                            @switch (redacao.status) {
+                                @case ('em-revisao') {
+                                    <a
+                                        class="botao botao--primario botao--pequeno"
+                                        [routerLink]="['/redacoes', redacao.id]"
+                                    >
+                                        {{ item.feitas ? 'Continuar' : 'Revisar' }}
+                                        <span class="visualmente-oculto">{{ chamada.rotulo(redacao.aluno) }}</span>
+                                    </a>
+                                }
+                                @case ('corrigindo') {
+                                    <span class="fila__corrigindo" role="status">
+                                        <span class="fila__giro" aria-hidden="true"></span>
+                                        Corrigindo…
+                                    </span>
+                                }
+                                @case ('aguardando-ia') {
+                                    <button class="botao botao--pequeno" type="button" (click)="corrigir(redacao)">
+                                        <app-icone nome="lapis" />
+                                        {{ redacao.erroCorrecao ? 'Tentar de novo' : 'Corrigir com IA' }}
+                                        <span class="visualmente-oculto">{{ chamada.rotulo(redacao.aluno) }}</span>
+                                    </button>
+                                }
+                                @default {
+                                    <a
+                                        class="botao botao--discreto botao--pequeno"
+                                        [routerLink]="['/redacoes', redacao.id]"
+                                    >
+                                        Ver devolutiva
+                                        <span class="visualmente-oculto">{{ chamada.rotulo(redacao.aluno) }}</span>
+                                    </a>
+                                }
+                            }
+                        </li>
+                    }
+                </ul>
+            } @else if (temFiltro()) {
+                <app-estado-vazio
+                    icone="buscar"
+                    titulo="Nada encontrado"
+                    texto="Nenhuma redação desta aba com esses filtros."
+                >
+                    <button class="botao botao--pequeno" type="button" (click)="limparFiltros()">Limpar filtros</button>
+                </app-estado-vazio>
+            } @else {
+                <app-estado-vazio
+                    [icone]="abaAtual().vazio.icone"
+                    [titulo]="abaAtual().vazio.titulo"
+                    [texto]="abaAtual().vazio.texto"
+                >
+                    @if (aba() === 'aguardando') {
+                        <a class="botao botao--primario botao--pequeno" routerLink="/redacoes/nova">Importar redação</a>
+                    }
+                </app-estado-vazio>
+            }
+        </div>
     </section>
 }

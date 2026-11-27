@@ -4,11 +4,15 @@
 </a>
 
 @if (!redacoes.carregado()) {
-    <p class="revisao__aviso" role="status">{{ redacoes.erroCarga() ?? 'Carregando redação…' }}</p>
+    @if (redacoes.erroCarga(); as erro) {
+        <p class="aviso aviso--erro" role="alert">{{ erro }}</p>
+    } @else {
+        <div class="cartao"><app-esqueleto [quantidade]="6" rotulo="Carregando redação…" /></div>
+    }
 } @else if (redacao(); as atual) {
     <header class="revisao__topo">
         <h1 class="revisao__titulo">
-            {{ atual.aluno }}
+            {{ chamada.rotulo(atual.aluno) }}
             <span class="revisao__titulo-redacao">{{ atual.titulo }}</span>
         </h1>
 
@@ -198,7 +202,8 @@
             <div class="envio" [class.envio--confirmando]="confirmandoEnvio()">
                 @if (confirmandoEnvio()) {
                     <p class="envio__texto">
-                        Registrar a devolutiva de <span class="envio__destaque">{{ atual.aluno }}</span>? Ela terá
+                        Registrar a devolutiva de
+                        <span class="envio__destaque">{{ chamada.rotulo(atual.aluno) }}</span>? Ela terá
                         {{ validados() === 1 ? '1 correção' : validados() + ' correções' }} e o seu recado. Depois de
                         registrada, ela não pode ser alterada.
                     </p>
@@ -306,8 +311,8 @@
                             </p>
                         }
                         <p>
-                            A IA vai apontar desvios de ortografia e pontuação. Nada é enviado ao aluno até você
-                            revisar.
+                            A IA vai apontar desvios de ortografia e pontuação. A devolutiva só é registrada depois da
+                            sua revisão.
                         </p>
 
                         <button class="botao botao--primario" type="button" (click)="corrigirComIa()">

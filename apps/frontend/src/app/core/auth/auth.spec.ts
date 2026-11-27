@@ -5,10 +5,10 @@ import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree, provideRo
 import { firstValueFrom } from 'rxjs';
 
 import { codigoDeErro, mensagemDeErro } from '../api/erro-api';
-import { UsuarioApi, rotaInicial } from './auth.model';
+import { UsuarioApi } from './auth.model';
 import { AuthService } from './auth.service';
 import { autenticacaoInterceptor } from './autenticacao.interceptor';
-import { autenticadoGuard, destinoSeguro, inicioGuard, perfilGuard, visitanteGuard } from './guards';
+import { autenticadoGuard, destinoSeguro, perfilGuard, visitanteGuard } from './guards';
 import { SessaoService } from './sessao.service';
 
 const ADMIN: UsuarioApi = {
@@ -191,7 +191,7 @@ describe('guards', () => {
         expect(await rodarGuard(visitanteGuard)).toBeInstanceOf(UrlTree);
     });
 
-    it('o admin não entra nas telas de correção e volta para a administração', async () => {
+    it('o admin não entra nas telas de correção e volta para o início', async () => {
         const { http, auth } = configurar();
         const promessa = auth.login('ana@escola.exemplo', 'x');
         http.expectOne('/api/auth/login').flush({ token: 'tok', expira_em: DAQUI_A_UMA_HORA(), usuario: ADMIN });
@@ -200,22 +200,15 @@ describe('guards', () => {
         const router = TestBed.inject(Router);
         const barrado = await rodarGuard(perfilGuard('professor'));
 
-        expect(router.serializeUrl(barrado as UrlTree)).toBe('/admin');
-        expect(router.serializeUrl((await rodarGuard(inicioGuard)) as UrlTree)).toBe('/admin');
-    });
-
-    it('rotaInicial leva cada perfil à sua tela', () => {
-        expect(rotaInicial('professor')).toBe('/redacoes');
-        expect(rotaInicial('admin')).toBe('/admin');
-        expect(destinoSeguro(undefined, rotaInicial('admin'))).toBe('/admin');
+        expect(router.serializeUrl(barrado as UrlTree)).toBe('/inicio');
     });
 
     it('destinoSeguro só aceita caminhos internos', () => {
         expect(destinoSeguro('/admin/usuarios')).toBe('/admin/usuarios');
-        expect(destinoSeguro('//site.exemplo')).toBe('/redacoes');
-        expect(destinoSeguro('https://site.exemplo')).toBe('/redacoes');
-        expect(destinoSeguro('/login')).toBe('/redacoes');
-        expect(destinoSeguro(undefined)).toBe('/redacoes');
+        expect(destinoSeguro('//site.exemplo')).toBe('/inicio');
+        expect(destinoSeguro('https://site.exemplo')).toBe('/inicio');
+        expect(destinoSeguro('/login')).toBe('/inicio');
+        expect(destinoSeguro(undefined)).toBe('/inicio');
     });
 });
 

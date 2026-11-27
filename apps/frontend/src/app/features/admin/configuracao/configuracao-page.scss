@@ -45,7 +45,7 @@ app-cabecalho-pagina {
         width: 100%;
         padding: 0;
         font-size: 1.0625rem;
-        font-weight: 700;
+        font-weight: var(--weight-semibold);
     }
 
     &__explicacao {
@@ -66,7 +66,7 @@ app-cabecalho-pagina {
     &__criterio {
         padding: 0.75rem;
         border: 1px solid var(--linha);
-        border-radius: 6px;
+        border-radius: var(--radius-md);
 
         .escolha__titulo {
             display: flex;
@@ -100,7 +100,7 @@ app-cabecalho-pagina {
             min-height: 2.5rem;
             padding: 0.5rem 0.75rem;
             border: 1px solid var(--linha-forte);
-            border-radius: 6px;
+            border-radius: var(--radius-md);
             background: var(--folha);
 
             &:disabled {
@@ -142,7 +142,7 @@ app-cabecalho-pagina {
 
     &__rodape {
         position: sticky;
-        bottom: 4.5rem;
+        bottom: var(--space-4);
         display: flex;
         flex-wrap: wrap;
         align-items: center;
@@ -153,10 +153,6 @@ app-cabecalho-pagina {
         border-radius: var(--raio);
         background: var(--folha);
         box-shadow: var(--sombra-flutuante);
-
-        @media (width >= $breakpoint-lg) {
-            bottom: 1rem;
-        }
     }
 
     &__situacao {
@@ -165,12 +161,12 @@ app-cabecalho-pagina {
 
     &__salvo {
         color: var(--sucesso);
-        font-weight: 600;
+        font-weight: var(--weight-semibold);
     }
 
     &__pendente {
         color: var(--marca-texto);
-        font-weight: 600;
+        font-weight: var(--weight-semibold);
     }
 
     &__acoes {

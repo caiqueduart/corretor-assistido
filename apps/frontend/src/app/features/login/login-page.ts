@@ -3,13 +3,15 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { Router } from '@angular/router';
 
 import { mensagemDeErro } from '../../core/api/erro-api';
-import { rotaInicial } from '../../core/auth/auth.model';
 import { AuthService } from '../../core/auth/auth.service';
 import { destinoSeguro } from '../../core/auth/guards';
+import { Icone } from '../../shared/icone/icone';
+import { AcessoRapido } from './acesso-rapido';
+import { ContaDemo } from './contas-demo';
 
 @Component({
     selector: 'app-login-page',
-    imports: [ReactiveFormsModule],
+    imports: [ReactiveFormsModule, Icone, AcessoRapido],
     templateUrl: './login-page.html',
     styleUrl: './login-page.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,6 +33,13 @@ export class LoginPage {
     protected readonly erro = signal<string | null>(null);
     protected readonly senhaVisivel = signal(false);
 
+    /** Preenche e-mail e senha da conta de teste; o usuário confirma em "Entrar". */
+    protected preencher(conta: ContaDemo): void {
+        this.formulario.setValue({ email: conta.email, senha: conta.senha });
+        this.formulario.markAsPristine();
+        this.erro.set(null);
+    }
+
     protected async entrar(): Promise<void> {
         this.formulario.markAllAsTouched();
 
@@ -44,7 +53,7 @@ export class LoginPage {
 
         try {
             await this.auth.login(email.trim(), senha);
-            await this.router.navigateByUrl(destinoSeguro(this.voltar(), rotaInicial(this.auth.perfil())));
+            await this.router.navigateByUrl(destinoSeguro(this.voltar()));
         } catch (erro) {
             this.erro.set(mensagemDeErro(erro, 'Não foi possível entrar. Tente de novo.'));
             this.formulario.controls.senha.reset();
