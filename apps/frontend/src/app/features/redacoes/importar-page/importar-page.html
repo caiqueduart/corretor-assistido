@@ -1,14 +1,44 @@
-<a class="botao botao--discreto botao--pequeno importar__voltar" routerLink="/redacoes">
-    <app-icone nome="voltar" />
-    Redações
-</a>
+@if (escolhida(); as proposta) {
+    <a class="botao botao--discreto botao--pequeno importar__voltar" [routerLink]="['/propostas', proposta.id]">
+        <app-icone nome="voltar" />
+        {{ proposta.tema }}
+    </a>
+} @else {
+    <a class="botao botao--discreto botao--pequeno importar__voltar" routerLink="/redacoes">
+        <app-icone nome="voltar" />
+        Redações
+    </a>
+}
 
 <app-cabecalho-pagina
     titulo="Importar redação"
-    descricao="Depois de importar, a IA corrige e você revisa. O aluno é identificado só por código."
+    descricao="Depois de importar, a IA corrige e você revisa. O aluno é identificado só por um apelido."
 />
 
 <form class="importar" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+    <fieldset class="importar__bloco">
+        <legend class="importar__legenda">Proposta</legend>
+
+        <div class="campo">
+            <label for="campo-proposta">Proposta de redação</label>
+            <select
+                id="campo-proposta"
+                [value]="formulario.controls.propostaId.value"
+                (change)="escolherProposta($any($event.target).value)"
+            >
+                <option value="">Sem proposta (redação avulsa)</option>
+                @for (opcao of abertas(); track opcao.id) {
+                    <option [value]="opcao.id">{{ opcao.tema }} · {{ opcao.turmas.join(', ') }}</option>
+                }
+            </select>
+            @if (escolhida(); as proposta) {
+                <p class="campo__dica">{{ proposta.genero }} · {{ descreverPrazo(proposta.prazo) }}</p>
+            } @else if (!abertas().length) {
+                <p class="campo__dica">Nenhuma proposta aberta. Crie uma em Propostas para organizar as redações.</p>
+            }
+        </div>
+    </fieldset>
+
     <fieldset class="importar__bloco">
         <legend class="importar__legenda">Texto do aluno</legend>
 
@@ -121,7 +151,22 @@
 
             <div class="campo">
                 <label for="campo-turma">Turma</label>
-                <input id="campo-turma" formControlName="turma" autocomplete="off" placeholder="Ex.: 8º A" />
+                @if (turmasDaProposta().length > 1) {
+                    <select id="campo-turma" formControlName="turma">
+                        <option value="" disabled>Escolha a turma</option>
+                        @for (turma of turmasDaProposta(); track turma) {
+                            <option [value]="turma">{{ turma }}</option>
+                        }
+                    </select>
+                } @else {
+                    <input
+                        id="campo-turma"
+                        formControlName="turma"
+                        autocomplete="off"
+                        placeholder="Ex.: 8º A"
+                        [readOnly]="turmasDaProposta().length === 1"
+                    />
+                }
 
                 @if (formulario.controls.turma.touched && formulario.controls.turma.invalid) {
                     <p class="campo__erro">Informe a turma.</p>
@@ -130,7 +175,12 @@
 
             <div class="campo">
                 <label for="campo-titulo">Título <span class="importar__opcional">(opcional)</span></label>
-                <input id="campo-titulo" formControlName="titulo" autocomplete="off" />
+                <input
+                    id="campo-titulo"
+                    formControlName="titulo"
+                    autocomplete="off"
+                    [placeholder]="escolhida()?.tema ?? ''"
+                />
             </div>
 
             <div class="campo">

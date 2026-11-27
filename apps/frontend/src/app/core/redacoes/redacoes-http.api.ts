@@ -34,6 +34,7 @@ export class RedacoesHttpApi extends RedacoesApi {
             grupo: nova.perfil,
             titulo: nova.titulo.trim(),
             origem_id: nova.origemId ?? '',
+            proposta_id: nova.propostaId ?? '',
         };
 
         if (!nova.arquivo) {

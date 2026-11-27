@@ -5,6 +5,7 @@ import { filter, map } from 'rxjs';
 
 import { RedacoesService } from '../redacoes/redacoes.service';
 import { ChamadaService } from '../alunos/chamada.service';
+import { PropostasService } from '../propostas/propostas.service';
 
 /** Um passo do caminho mostrado no topo ("Redações › 8A-07 · Minha cidade"). */
 export interface Migalha {
@@ -38,6 +39,7 @@ export class TrilhaService {
     private readonly router = inject(Router);
     private readonly redacoes = inject(RedacoesService);
     private readonly chamada = inject(ChamadaService);
+    private readonly propostas = inject(PropostasService);
 
     private readonly coleta = toSignal(
         this.router.events.pipe(
@@ -58,6 +60,10 @@ export class TrilhaService {
             const redacao = this.redacoes.redacoes().find((item) => item.id === params['id']);
 
             return redacao ? `${this.chamada.rotulo(redacao.aluno)} · ${redacao.titulo}` : 'Redação';
+        }
+
+        if (rotulo === ':proposta') {
+            return this.propostas.proposta(params['id'])?.tema ?? 'Proposta';
         }
 
         if (rotulo === ':aluno') {

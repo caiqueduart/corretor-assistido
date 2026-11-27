@@ -75,6 +75,7 @@ type Texto struct {
 	Titulo              string        `json:"titulo"`
 	Versao              int           `json:"versao"`
 	OrigemID            *string       `json:"origem_id"`
+	PropostaID          *string       `json:"proposta_id"`
 	Conteudo            string        `json:"conteudo"`
 	Status              Status        `json:"status"`
 	Consentimento       bool          `json:"consentimento"`
@@ -174,4 +175,37 @@ type RegistroAuditoria struct {
 	EntidadeID string    `json:"entidade_id"`
 	Detalhe    string    `json:"detalhe"`
 	CriadoEm   time.Time `json:"criado_em"`
+}
+
+// GenerosTextuais aceitos na proposta de redação.
+var GenerosTextuais = []string{
+	"Dissertativo-argumentativo",
+	"Narrativo",
+	"Artigo de opinião",
+	"Carta argumentativa",
+	"Relato",
+	"Outro",
+}
+
+// Proposta de redação: tema e orientações que agrupam as redações de uma atividade.
+type Proposta struct {
+	ID           string           `json:"id"`
+	Tema         string           `json:"tema"`
+	Genero       string           `json:"genero"`
+	Enunciado    string           `json:"enunciado"`
+	Turmas       []string         `json:"turmas"`
+	Prazo        *string          `json:"prazo"` // AAAA-MM-DD, informativo
+	Encerrada    bool             `json:"encerrada"`
+	CriadoPor    *string          `json:"criado_por"`
+	CriadoEm     time.Time        `json:"criado_em"`
+	AtualizadoEm time.Time        `json:"atualizado_em"`
+	Contagem     ContagemProposta `json:"contagem"`
+}
+
+// ContagemProposta resume a situação das redações da proposta.
+type ContagemProposta struct {
+	Total        int `json:"total"`
+	AguardandoIA int `json:"aguardando_ia"` // pendente ou corrigindo
+	Revisao      int `json:"revisao"`
+	Concluidos   int `json:"concluidos"`
 }

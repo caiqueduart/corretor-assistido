@@ -105,6 +105,12 @@ func (s *Servidor) rotas() {
 	m.Handle("POST /api/textos/{id}/enviar", s.com(professores, s.enviar))
 	m.Handle("GET /api/textos/{id}/devolutiva", s.com(todos, s.devolutiva))
 
+	m.Handle("GET /api/propostas", s.com(todos, s.listarPropostas))
+	m.Handle("POST /api/propostas", s.com(professores, s.criarProposta))
+	m.Handle("GET /api/propostas/{id}", s.com(todos, s.obterProposta))
+	m.Handle("PATCH /api/propostas/{id}", s.com(professores, s.alterarProposta))
+	m.Handle("DELETE /api/propostas/{id}", s.com(professores, s.excluirProposta))
+
 	m.Handle("GET /api/metricas", s.com(todos, s.metricas))
 	m.Handle("GET /api/metricas/decisoes.csv", s.com(todos, s.decisoesCSV))
 

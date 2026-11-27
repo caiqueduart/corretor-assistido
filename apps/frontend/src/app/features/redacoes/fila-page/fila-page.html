@@ -58,6 +58,18 @@
                     (input)="busca.set($any($event.target).value)"
                 />
             </div>
+            @if (propostas.propostas().length) {
+                <div class="campo">
+                    <label class="visualmente-oculto" for="fila-proposta">Proposta</label>
+                    <select id="fila-proposta" [value]="proposta()" (change)="proposta.set($any($event.target).value)">
+                        <option value="">Todas as propostas</option>
+                        <option value="avulsas">Sem proposta</option>
+                        @for (p of propostas.propostas(); track p.id) {
+                            <option [value]="p.id">{{ p.tema }}</option>
+                        }
+                    </select>
+                </div>
+            }
             @if (turmas().length > 1) {
                 <div class="campo">
                     <label class="visualmente-oculto" for="fila-turma">Turma</label>
@@ -85,6 +97,9 @@
                                 </span>
                                 <span class="fila__meta">
                                     {{ redacao.turma }} · {{ redacao.versao === 1 ? '1ª versão' : 'Reescrita' }}
+                                    @if (propostas.proposta(redacao.propostaId); as daProposta) {
+                                        · {{ daProposta.tema }}
+                                    }
                                     @if (aba() === 'todas') {
                                         <span class="etiqueta">{{ rotuloStatus[redacao.status] }}</span>
                                     }

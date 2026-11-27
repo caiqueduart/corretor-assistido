@@ -1,0 +1,96 @@
+<form class="formulario" [formGroup]="formulario" (ngSubmit)="salvar()" novalidate>
+    <header class="formulario__cabecalho">
+        <h2 class="formulario__titulo" id="titulo-proposta">
+            {{ nova() ? 'Nova proposta de redação' : 'Editar proposta' }}
+        </h2>
+        <p class="formulario__subtitulo">O tema e as orientações que os alunos vão seguir.</p>
+    </header>
+
+    <div class="formulario__corpo">
+        <div class="campo">
+            <label for="proposta-tema">Tema</label>
+            <input
+                id="proposta-tema"
+                formControlName="tema"
+                autocomplete="off"
+                placeholder="Ex.: Os desafios da mobilidade no campo"
+            />
+            @if (formulario.controls.tema.touched && formulario.controls.tema.invalid) {
+                <p class="campo__erro">Informe um tema de 3 a 200 caracteres.</p>
+            }
+        </div>
+
+        <div class="formulario__grade">
+            <div class="campo">
+                <label for="proposta-genero">Gênero textual</label>
+                <select id="proposta-genero" formControlName="genero">
+                    @for (genero of generos(); track genero) {
+                        <option [value]="genero">{{ genero }}</option>
+                    }
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="proposta-prazo">Prazo <span class="formulario__opcional">(opcional)</span></label>
+                <input id="proposta-prazo" type="date" formControlName="prazo" aria-describedby="dica-prazo" />
+                <p class="campo__dica" id="dica-prazo">Só informativo: avisa quando vence, mas não bloqueia.</p>
+            </div>
+        </div>
+
+        <div class="campo">
+            <label for="proposta-turma">Turmas</label>
+            <div class="turmas" [class.turmas--erro]="tentou() && !turmas().length" (click)="campoTurma.focus()">
+                @for (turma of turmas(); track turma) {
+                    <span class="turmas__chip">
+                        {{ turma }}
+                        <button type="button" [attr.aria-label]="'Remover ' + turma" (click)="removerTurma(turma)">
+                            <app-icone nome="recusar" />
+                        </button>
+                    </span>
+                }
+                <input
+                    #campoTurma
+                    id="proposta-turma"
+                    list="turmas-conhecidas"
+                    autocomplete="off"
+                    [placeholder]="turmas().length ? '' : 'Ex.: 8º A (Enter para adicionar)'"
+                    [value]="turmaDigitada()"
+                    (input)="turmaDigitada.set($any($event.target).value)"
+                    (keydown)="teclarTurma($event)"
+                    (change)="adicionarTurma($any($event.target).value)"
+                />
+                <datalist id="turmas-conhecidas">
+                    @for (turma of sugestoes(); track turma) {
+                        <option [value]="turma"></option>
+                    }
+                </datalist>
+            </div>
+            @if (tentou() && !turmas().length) {
+                <p class="campo__erro">Informe ao menos uma turma.</p>
+            } @else {
+                <p class="campo__dica">A mesma proposta pode valer para várias turmas.</p>
+            }
+        </div>
+
+        <div class="campo">
+            <label for="proposta-enunciado">Enunciado <span class="formulario__opcional">(opcional)</span></label>
+            <textarea
+                id="proposta-enunciado"
+                rows="5"
+                formControlName="enunciado"
+                placeholder="Orientações, textos motivadores ou critérios combinados com a turma."
+            ></textarea>
+        </div>
+
+        @if (erro(); as mensagem) {
+            <p class="aviso aviso--erro" role="alert">{{ mensagem }}</p>
+        }
+    </div>
+
+    <footer class="formulario__acoes">
+        <button class="botao botao--discreto" type="button" (click)="cancelado.emit()">Cancelar</button>
+        <button class="botao botao--primario" type="submit" [disabled]="salvando()">
+            {{ salvando() ? 'Salvando…' : nova() ? 'Criar proposta' : 'Salvar' }}
+        </button>
+    </footer>
+</form>

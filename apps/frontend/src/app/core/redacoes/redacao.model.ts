@@ -54,6 +54,8 @@ export interface Redacao {
     readonly exemplo: boolean;
     /** Motivo da última correção que falhou, para o professor tentar de novo. */
     readonly erroCorrecao?: string;
+    /** Proposta de redação a que pertence; ausente ou null nas avulsas. */
+    readonly propostaId?: string | null;
 }
 
 export interface NovaRedacao {
@@ -62,6 +64,8 @@ export interface NovaRedacao {
     readonly perfil: PerfilSociolinguistico;
     readonly titulo: string;
     readonly origemId: string | null;
+    /** Proposta de redação (opcional). */
+    readonly propostaId?: string | null;
     readonly consentimentoFamilia: boolean;
     /** Arquivo PDF, TXT ou DOCX. Quando ausente, usa o texto colado. */
     readonly arquivo: File | null;

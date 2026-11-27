@@ -12,6 +12,7 @@ import { EstadoVazio } from '../../../shared/estado-vazio/estado-vazio';
 import { Icone, NomeIcone } from '../../../shared/icone/icone';
 import { normalizar } from '../../../layout/busca-rapida/busca';
 import { ChamadaService } from '../../../core/alunos/chamada.service';
+import { PropostasService } from '../../../core/propostas/propostas.service';
 
 type Aba = 'revisar' | 'aguardando' | 'devolvidas' | 'todas';
 
@@ -88,6 +89,9 @@ export class FilaPage {
     protected readonly aba = signal<Aba>('revisar');
     protected readonly busca = signal('');
     protected readonly turma = signal('');
+    /** '' = todas, 'avulsas' = sem proposta, ou o id da proposta. */
+    protected readonly proposta = signal('');
+    protected readonly propostas = inject(PropostasService);
 
     protected readonly turmas = computed(() =>
         [
@@ -107,6 +111,11 @@ export class FilaPage {
 
         return [...this.redacoes.redacoes()]
             .filter((r) => !turma || r.turma === turma)
+            .filter((r) => {
+                const proposta = this.proposta();
+
+                return !proposta || (proposta === 'avulsas' ? !r.propostaId : r.propostaId === proposta);
+            })
             .filter((r) => !termo || normalizar(`${this.chamada.rotulo(r.aluno)} ${r.titulo}`).includes(termo))
             .sort((a, b) => b.criadaEm.localeCompare(a.criadaEm));
     });
@@ -136,11 +145,12 @@ export class FilaPage {
             }),
     );
 
-    protected readonly temFiltro = computed(() => !!(this.busca().trim() || this.turma()));
+    protected readonly temFiltro = computed(() => !!(this.busca().trim() || this.turma() || this.proposta()));
 
     protected limparFiltros(): void {
         this.busca.set('');
         this.turma.set('');
+        this.proposta.set('');
     }
 
     protected async carregarExemplos(): Promise<void> {

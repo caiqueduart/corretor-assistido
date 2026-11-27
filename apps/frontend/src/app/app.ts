@@ -4,6 +4,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { filter } from 'rxjs';
 
 import { ConfigService } from './core/admin/config.service';
+import { PropostasService } from './core/propostas/propostas.service';
 import { AuthService } from './core/auth/auth.service';
 import { RedacoesService } from './core/redacoes/redacoes.service';
 import { Avisos } from './layout/avisos/avisos';
@@ -27,7 +28,11 @@ const INICIO: ItemNavegacao = { rota: '/inicio', rotulo: 'Início', icone: 'inic
 /** O professor corrige; o admin só administra. */
 const PROFESSOR: SecaoNavegacao = {
     titulo: 'Principal',
-    itens: [INICIO, { rota: '/redacoes', rotulo: 'Redações', icone: 'redacoes' }],
+    itens: [
+        INICIO,
+        { rota: '/propostas', rotulo: 'Propostas', icone: 'proposta' },
+        { rota: '/redacoes', rotulo: 'Redações', icone: 'redacoes' },
+    ],
 };
 
 const ADMIN: SecaoNavegacao = { titulo: 'Principal', itens: [INICIO] };
@@ -49,6 +54,7 @@ export class App {
     protected readonly auth = inject(AuthService);
     protected readonly redacoes = inject(RedacoesService);
     private readonly config = inject(ConfigService);
+    private readonly propostas = inject(PropostasService);
 
     /** Menu lateral aberto no celular (no desktop ele fica sempre visível). */
     protected readonly menuAberto = signal(false);
@@ -66,10 +72,12 @@ export class App {
             untracked(() => {
                 this.redacoes.limpar();
                 this.config.limpar();
+                this.propostas.limpar();
 
                 if (id) {
                     void this.redacoes.carregar();
                     void this.config.carregar();
+                    void this.propostas.carregar();
                 }
             });
         });

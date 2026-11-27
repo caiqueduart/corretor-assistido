@@ -7,6 +7,7 @@ import { RedacoesService } from '../../core/redacoes/redacoes.service';
 import { Icone } from '../../shared/icone/icone';
 import { GrupoBusca, ItemBusca, buscar } from './busca';
 import { ChamadaService } from '../../core/alunos/chamada.service';
+import { PropostasService, descreverPrazo } from '../../core/propostas/propostas.service';
 
 const STATUS: Readonly<Record<StatusRedacao, string>> = {
     'aguardando-ia': 'Aguardando IA',
@@ -15,7 +16,7 @@ const STATUS: Readonly<Record<StatusRedacao, string>> = {
     devolvida: 'Devolutiva registrada',
 };
 
-/** Busca global (Ctrl+K): páginas e, para o professor, redações. Atlas: ds-palette. */
+/** Busca global (Ctrl+K): páginas e, para o professor, propostas e redações. Atlas: ds-palette. */
 @Component({
     selector: 'app-busca-rapida',
     imports: [Icone],
@@ -29,6 +30,7 @@ export class BuscaRapida {
     private readonly router = inject(Router);
     private readonly auth = inject(AuthService);
     private readonly redacoes = inject(RedacoesService);
+    private readonly propostas = inject(PropostasService);
 
     private readonly dialogo = viewChild.required<ElementRef<HTMLDialogElement>>('dialogo');
     private readonly campo = viewChild.required<ElementRef<HTMLInputElement>>('campo');
@@ -56,6 +58,7 @@ export class BuscaRapida {
                       pagina('auditoria', 'Auditoria', '/admin/auditoria', 'escudo'),
                   ]
                 : [
+                      pagina('propostas', 'Propostas de redação', '/propostas', 'proposta'),
                       pagina('redacoes', 'Redações', '/redacoes', 'redacoes'),
                       pagina('importar', 'Importar redação', '/redacoes/nova', 'importar'),
                   ]),
@@ -78,7 +81,18 @@ export class BuscaRapida {
                 link: `/redacoes/${redacao.id}`,
             }));
 
-        return [...paginas, ...redacoes];
+        const propostas = [...this.propostas.propostas()]
+            .sort((a, b) => Number(a.encerrada) - Number(b.encerrada))
+            .map<ItemBusca>((proposta) => ({
+                id: `pr-${proposta.id}`,
+                grupo: 'Propostas',
+                titulo: proposta.tema,
+                detalhe: `${proposta.turmas.join(', ')} · ${proposta.encerrada ? 'encerrada' : descreverPrazo(proposta.prazo)}`,
+                icone: 'proposta',
+                link: `/propostas/${proposta.id}`,
+            }));
+
+        return [...paginas, ...propostas, ...redacoes];
     });
 
     protected readonly resultados = computed(() => buscar(this.termo(), this.itens()));

@@ -64,6 +64,7 @@ Todas as telas usam o back-end:
 | Área                                                                | Perfil    | Rotas                                            |
 | ------------------------------------------------------------------- | --------- | ------------------------------------------------ |
 | Login e sessão                                                      | todos     | `/api/auth`, `/api/me`                           |
+| Propostas de redação (tema, gênero, turmas, prazo)                  | professor | `/api/propostas`                                 |
 | Redações: importar, corrigir, validar, registrar, PDF da devolutiva | professor | `/api/textos` (`RedacoesHttpApi`)                |
 | Administração: usuários, configuração, auditoria                    | admin     | `/api/usuarios`, `/api/config`, `/api/auditoria` |
 
@@ -73,4 +74,6 @@ Perfis (os mesmos da POC): o **administrador** cadastra professores e outros usu
 - A configuração do admin (critérios, perfis sociolinguísticos e limiar de viés) vale na importação.
 - A correção espera o resultado (`?aguardar=true`). Sem `ANTHROPIC_API_KEY`, o back-end usa o motor simulado.
 - Com o banco vazio, a tela de Redações oferece "Carregar textos de exemplo".
+- Propostas organizam as redações por atividade: a importação pode escolher a proposta (turma e título vêm dela), e a fila, as métricas e o CSV filtram por proposta. Proposta encerrada não recebe redações novas.
+- Alunos são identificados por apelidos de fauna e flora ("Ipê Lilás"). O nome real é opcional e fica só no navegador do professor (lista de chamada local), nunca no servidor.
 - `RedacoesMockApi` (em `core/redacoes/mock/`) fica só para os testes.

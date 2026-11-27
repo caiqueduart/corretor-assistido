@@ -1,0 +1,123 @@
+<app-cabecalho-pagina
+    titulo="Propostas de redação"
+    descricao="Cada proposta reúne o tema, as orientações e as redações de uma atividade."
+>
+    <button class="botao botao--primario" type="button" (click)="criando.set(true)">
+        <app-icone nome="mais" />
+        Nova proposta
+    </button>
+</app-cabecalho-pagina>
+
+@if (propostas.erroCarga(); as mensagem) {
+    <div class="aviso aviso--erro propostas__erro" role="alert">
+        <p>{{ mensagem }}</p>
+        <button class="botao botao--pequeno" type="button" (click)="propostas.carregar()">Tentar de novo</button>
+    </div>
+} @else if (!propostas.carregado()) {
+    <div class="cartao"><app-esqueleto [quantidade]="5" rotulo="Carregando propostas…" /></div>
+} @else if (!propostas.propostas().length) {
+    <div class="cartao">
+        <app-estado-vazio
+            icone="proposta"
+            titulo="Nenhuma proposta ainda"
+            texto="Crie a primeira proposta com o tema e as turmas. Depois, importe as redações dentro dela."
+        >
+            <button class="botao botao--primario botao--pequeno" type="button" (click)="criando.set(true)">
+                Nova proposta
+            </button>
+        </app-estado-vazio>
+    </div>
+} @else {
+    <div class="propostas__barra">
+        <div class="propostas__abas" role="tablist" aria-label="Situação das propostas">
+            <button type="button" role="tab" [attr.aria-selected]="aba() === 'abertas'" (click)="aba.set('abertas')">
+                Abertas <span class="propostas__contador">{{ contagem().abertas }}</span>
+            </button>
+            <button
+                type="button"
+                role="tab"
+                [attr.aria-selected]="aba() === 'encerradas'"
+                (click)="aba.set('encerradas')"
+            >
+                Encerradas <span class="propostas__contador">{{ contagem().encerradas }}</span>
+            </button>
+        </div>
+        <div class="campo propostas__busca">
+            <label class="visualmente-oculto" for="busca-proposta">Buscar proposta</label>
+            <input
+                id="busca-proposta"
+                type="search"
+                placeholder="Buscar por tema, gênero ou turma"
+                [value]="busca()"
+                (input)="busca.set($any($event.target).value)"
+            />
+        </div>
+    </div>
+
+    @if (cartoes().length) {
+        <ul class="propostas__grade" role="list">
+            @for (item of cartoes(); track item.proposta.id) {
+                @let proposta = item.proposta;
+
+                <li>
+                    <a class="cartao proposta" [routerLink]="['/propostas', proposta.id]">
+                        <span class="proposta__topo">
+                            <span class="etiqueta">{{ proposta.genero }}</span>
+                            @if (proposta.encerrada) {
+                                <span class="etiqueta">Encerrada</span>
+                            } @else if (tomPrazo(proposta.prazo); as tom) {
+                                <span
+                                    class="etiqueta"
+                                    [class.etiqueta--marca-texto]="tom === 'perto'"
+                                    [class.etiqueta--correcao]="tom === 'vencido'"
+                                >
+                                    <app-icone nome="calendario" />
+                                    {{ descreverPrazo(proposta.prazo) }}
+                                </span>
+                            }
+                        </span>
+
+                        <span class="proposta__tema">{{ proposta.tema }}</span>
+                        <span class="proposta__turmas">{{ proposta.turmas.join(' · ') }}</span>
+
+                        <span class="proposta__progresso">
+                            <span class="progresso" aria-hidden="true">
+                                <span class="progresso__barra" [style.width.%]="item.porcentagem"></span>
+                            </span>
+                            <span class="proposta__numeros">
+                                @if (item.progresso.total) {
+                                    {{ item.progresso.total }}
+                                    {{ item.progresso.total === 1 ? 'redação' : 'redações' }} ·
+                                    {{ item.progresso.revisao }} para revisar ·
+                                    {{ item.progresso.devolvidas }} devolvidas
+                                } @else {
+                                    Nenhuma redação importada
+                                }
+                            </span>
+                        </span>
+                    </a>
+                </li>
+            }
+        </ul>
+    } @else {
+        <div class="cartao">
+            <app-estado-vazio
+                [icone]="busca() ? 'buscar' : 'proposta'"
+                [titulo]="
+                    busca()
+                        ? 'Nada encontrado'
+                        : aba() === 'abertas'
+                          ? 'Nenhuma proposta aberta'
+                          : 'Nenhuma proposta encerrada'
+                "
+                [texto]="busca() ? 'Nenhuma proposta com esse termo.' : ''"
+            />
+        </div>
+    }
+}
+
+<dialog #dialogo class="dialogo dialogo--largo" aria-labelledby="titulo-proposta" (close)="criando.set(false)">
+    @if (criando()) {
+        <app-proposta-formulario (salvo)="aoCriar($event)" (cancelado)="criando.set(false)" />
+    }
+</dialog>

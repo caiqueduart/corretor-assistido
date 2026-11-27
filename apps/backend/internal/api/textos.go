@@ -29,6 +29,7 @@ type novoTexto struct {
 	Titulo        string `json:"titulo"`
 	Conteudo      string `json:"conteudo"`
 	OrigemID      string `json:"origem_id"`
+	PropostaID    string `json:"proposta_id"`
 	Consentimento bool   `json:"consentimento"`
 }
 
@@ -70,6 +71,7 @@ func (s *Servidor) preparar(ctx context.Context, n novoTexto, cfg dominio.Config
 	if len([]rune(t.Conteudo)) > corretor.MaxCaracteres {
 		return t, invalido("texto_longo", fmt.Sprintf("O texto passa de %d caracteres. Divida em partes.", corretor.MaxCaracteres))
 	}
+	propostaID := strings.TrimSpace(n.PropostaID)
 	if origemID := strings.TrimSpace(n.OrigemID); origemID != "" {
 		o, err := s.st.BuscarTexto(ctx, origemID, false)
 		if errors.Is(err, store.ErrNaoEncontrado) {
@@ -85,12 +87,37 @@ func (s *Servidor) preparar(ctx context.Context, n novoTexto, cfg dominio.Config
 			return t, invalido("aluno_divergente", "A reescrita precisa ser do mesmo estudante da 1ª versão.")
 		}
 		t.AlunoCodigo, t.Grupo, t.Versao, t.OrigemID = o.AlunoCodigo, o.Grupo, 2, &o.ID
+		if propostaID == "" && o.PropostaID != nil {
+			propostaID = *o.PropostaID // a reescrita fica na mesma proposta
+		}
 		if t.Turma == "" {
 			t.Turma = o.Turma
 		}
 		if t.Titulo == "" {
 			t.Titulo = o.Titulo
 		}
+	}
+	if propostaID != "" {
+		p, err := s.st.BuscarProposta(ctx, propostaID)
+		if errors.Is(err, store.ErrNaoEncontrado) {
+			return t, invalido("proposta_invalida", "A proposta informada não existe.")
+		}
+		if err != nil {
+			return t, err
+		}
+		if p.Encerrada {
+			return t, invalido("proposta_encerrada", "Esta proposta está encerrada. Reabra-a para importar novas redações.")
+		}
+		if t.Turma == "" && len(p.Turmas) == 1 {
+			t.Turma = p.Turmas[0]
+		}
+		if t.Turma != "" && !slices.Contains(p.Turmas, t.Turma) {
+			return t, invalido("turma_fora_da_proposta", "A turma não faz parte desta proposta. Use: "+strings.Join(p.Turmas, ", ")+".")
+		}
+		if t.Titulo == "" {
+			t.Titulo = string([]rune(p.Tema)[:min(len([]rune(p.Tema)), 120)])
+		}
+		t.PropostaID = &p.ID
 	}
 	if t.AlunoCodigo == "" {
 		return t, invalido("aluno_obrigatorio", "Informe o código do estudante. Use um código, nunca o nome.")
@@ -192,6 +219,7 @@ func (s *Servidor) importarTextos(w http.ResponseWriter, r *http.Request, u domi
 		Grupo:         r.FormValue("grupo"),
 		Titulo:        r.FormValue("titulo"),
 		OrigemID:      r.FormValue("origem_id"),
+		PropostaID:    r.FormValue("proposta_id"),
 		Consentimento: valorBool(r.FormValue("consentimento")),
 	}
 	if !base.Consentimento {
@@ -285,7 +313,7 @@ func (s *Servidor) removerExemplos(w http.ResponseWriter, r *http.Request, u dom
 
 func (s *Servidor) listarTextos(w http.ResponseWriter, r *http.Request, u dominio.Usuario) {
 	q := r.URL.Query()
-	f := store.FiltroTextos{Status: q.Get("status"), Turma: q.Get("turma"), Grupo: q.Get("grupo"), AlunoCodigo: q.Get("aluno")}
+	f := store.FiltroTextos{Status: q.Get("status"), Turma: q.Get("turma"), Grupo: q.Get("grupo"), AlunoCodigo: q.Get("aluno"), PropostaID: q.Get("proposta")}
 	if f.Status != "" && !dominio.Status(f.Status).Valido() {
 		falha(w, http.StatusBadRequest, "status_invalido", "Use status pendente, corrigindo, revisao ou concluido.")
 		return

@@ -498,3 +498,77 @@ func TestListarCompletoEDecidirSoPendentes(t *testing.T) {
 		}
 	}
 }
+
+func TestPropostas(t *testing.T) {
+	c, _ := novoAmbiente(t, nil)
+	admin := c.login("admin@escola.test", "senha-do-admin")
+	prof := novoProfessor(c, admin)
+
+	base := map[string]any{"tema": "A vida no campo", "genero": "Narrativo", "turmas": []string{"8º A"}, "prazo": "2026-12-10"}
+	exigir(t, c.chamar("POST", "/api/propostas", admin, base), 403, "admin criando proposta")
+	exigir(t, c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "Ok", "genero": "Narrativo", "turmas": []string{"8º A"}}), 422, "tema curto")
+	exigir(t, c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "Tema bom", "genero": "Poema", "turmas": []string{"8º A"}}), 422, "gênero inválido")
+	exigir(t, c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "Tema bom", "genero": "Narrativo", "turmas": []string{" "}}), 422, "sem turma")
+	exigir(t, c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "Tema bom", "genero": "Narrativo", "turmas": []string{"8º A"}, "prazo": "10/12/2026"}), 422, "prazo inválido")
+
+	r := c.chamar("POST", "/api/propostas", prof, base)
+	exigir(t, r, 201, "criar proposta")
+	id := r.corpo["id"].(string)
+	if r.corpo["prazo"] != "2026-12-10" || r.corpo["encerrada"] != false {
+		t.Fatalf("proposta criada: %s", r.bruto)
+	}
+
+	// Importar dentro da proposta: turma e título vêm dela.
+	r = c.chamar("POST", "/api/textos", prof, map[string]any{"aluno_codigo": "Ipê Lilás", "conteudo": "Eu ja fui na roça.", "consentimento": true, "proposta_id": id})
+	exigir(t, r, 201, "texto na proposta")
+	if r.corpo["turma"] != "8º A" || r.corpo["titulo"] != "A vida no campo" || r.corpo["proposta_id"] != id {
+		t.Fatalf("herança da proposta: %s", r.bruto)
+	}
+	textoID := r.corpo["id"].(string)
+	exigir(t, c.chamar("POST", "/api/textos", prof, map[string]any{"aluno_codigo": "Onça Jade", "turma": "9º B", "conteudo": "Texto.", "consentimento": true, "proposta_id": id}), 422, "turma fora da proposta")
+	exigir(t, c.chamar("POST", "/api/textos", prof, map[string]any{"aluno_codigo": "Onça Jade", "conteudo": "Texto.", "consentimento": true, "proposta_id": "nao-existe"}), 422, "proposta inexistente")
+	exigir(t, c.chamar("POST", "/api/textos", prof, map[string]any{"aluno_codigo": "Avulso", "conteudo": "Texto avulso.", "consentimento": true}), 201, "texto avulso")
+
+	// Filtro e contagem.
+	if n := len(lista(c.chamar("GET", "/api/textos?proposta="+id, admin, nil).corpo["textos"])); n != 1 {
+		t.Fatalf("filtro por proposta: %d textos", n)
+	}
+	r = c.chamar("GET", "/api/propostas/"+id, admin, nil)
+	exigir(t, r, 200, "obter proposta")
+	if cont := r.corpo["contagem"].(map[string]any); cont["total"] != float64(1) || cont["aguardando_ia"] != float64(1) {
+		t.Fatalf("contagem: %s", r.bruto)
+	}
+
+	// CSV ganha a coluna proposta_id e aceita o filtro.
+	exigir(t, c.chamar("POST", "/api/textos/"+textoID+"/corrigir?aguardar=true", prof, nil), 200, "corrigir")
+	exigir(t, c.chamar("POST", "/api/textos/"+textoID+"/decisoes", prof, map[string]any{"decisao": "aceita"}), 200, "decidir")
+	r = c.chamar("GET", "/api/metricas/decisoes.csv?proposta="+id, admin, nil)
+	exigir(t, r, 200, "csv")
+	linhas := strings.Split(strings.TrimSpace(string(r.bruto)), "\n")
+	if !strings.HasSuffix(linhas[0], ",proposta_id") || len(linhas) < 2 || !strings.HasSuffix(linhas[1], ","+id) {
+		t.Fatalf("csv: %s", r.bruto)
+	}
+
+	// Encerrar: não aceita novas redações; reabrir volta a aceitar.
+	r = c.chamar("PATCH", "/api/propostas/"+id, prof, map[string]any{"encerrada": true, "prazo": nil})
+	exigir(t, r, 200, "encerrar")
+	if r.corpo["encerrada"] != true || r.corpo["prazo"] != nil {
+		t.Fatalf("encerrar: %s", r.bruto)
+	}
+	r = c.chamar("POST", "/api/textos", prof, map[string]any{"aluno_codigo": "Onça Jade", "conteudo": "Texto.", "consentimento": true, "proposta_id": id})
+	if r.status != 422 || r.erro() != "proposta_encerrada" {
+		t.Fatalf("importar em proposta encerrada: %d %s", r.status, r.bruto)
+	}
+	if n := len(lista(c.chamar("GET", "/api/propostas?situacao=abertas", admin, nil).corpo["propostas"])); n != 0 {
+		t.Fatalf("abertas: %d", n)
+	}
+
+	// Excluir: só sem redações.
+	exigir(t, c.chamar("DELETE", "/api/propostas/"+id, prof, nil), 409, "excluir com redações")
+	r = c.chamar("POST", "/api/propostas", prof, map[string]any{"tema": "Rascunho de tema", "genero": "Outro", "turmas": []string{"8º A"}})
+	exigir(t, c.chamar("DELETE", "/api/propostas/"+r.corpo["id"].(string), prof, nil), 204, "excluir vazia")
+	r = c.chamar("GET", "/api/propostas/nao-existe", admin, nil)
+	if r.status != 404 || !strings.Contains(string(r.bruto), "Proposta não encontrada") {
+		t.Fatalf("404: %d %s", r.status, r.bruto)
+	}
+}
