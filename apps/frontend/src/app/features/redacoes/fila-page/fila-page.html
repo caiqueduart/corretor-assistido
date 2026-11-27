@@ -98,10 +98,10 @@
 
                         <li class="lista__item fila__item">
                             <span class="lista__textos">
-                                <span class="lista__titulo">
+                                <a class="lista__titulo fila__abrir" [routerLink]="['/redacoes', redacao.id]">
                                     {{ chamada.rotulo(redacao.aluno) }}
                                     <span class="fila__titulo">· {{ redacao.titulo }}</span>
-                                </span>
+                                </a>
                                 <span class="fila__meta">
                                     {{ redacao.turma }} · {{ redacao.versao === 1 ? '1ª versão' : 'Reescrita' }}
                                     @if (propostas.proposta(redacao.propostaId); as daProposta) {

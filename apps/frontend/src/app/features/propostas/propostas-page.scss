@@ -77,46 +77,102 @@
     }
 }
 
-/* Atlas: ds-card--interactive. */
+/* Cartão limpo: borda leve, tema em destaque, prazo e progresso no rodapé. */
 .proposta {
+    position: relative;
+    display: flex;
+    flex-direction: column;
     gap: var(--space-2);
     height: 100%;
+    padding: var(--space-5) var(--space-5) var(--space-6);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--surface);
     color: inherit;
     text-decoration: none;
     transition:
-        transform var(--duration-base) var(--ease),
-        box-shadow var(--duration-base) var(--ease);
+        border-color var(--duration-fast) var(--ease),
+        box-shadow var(--duration-fast) var(--ease);
 
     &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(24, 24, 27, 0.09);
+        border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+        box-shadow: var(--shadow-md);
     }
 
-    &__topo {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--space-2);
+    &__meta {
+        color: var(--text-subtle);
+        font-size: var(--text-xs);
     }
 
     &__tema {
+        display: -webkit-box;
+        overflow: hidden;
         font-size: var(--text-md);
         font-weight: var(--weight-semibold);
         line-height: var(--leading-snug);
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
     }
 
-    &__turmas {
-        color: var(--text-muted);
-        font-size: var(--text-sm);
-    }
-
-    &__progresso {
-        display: grid;
+    &__rodape {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
         margin-top: auto;
-        padding-top: var(--space-2);
+        padding-top: var(--space-3);
+        color: var(--text-muted);
+        font-size: var(--text-xs);
     }
 
-    &__numeros {
-        color: var(--text-subtle);
-        font-size: var(--text-xs);
+    &__prazo {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+
+        &--perto {
+            color: var(--warning);
+            font-weight: var(--weight-medium);
+        }
+
+        &--vencido {
+            color: var(--danger-text);
+            font-weight: var(--weight-medium);
+        }
+    }
+
+    &__contagem {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-variant-numeric: tabular-nums;
+    }
+
+    &__revisar {
+        padding: 0 var(--space-2);
+        border-radius: var(--radius-full);
+        background: var(--primary-soft);
+        color: var(--primary-soft-text);
+        font-weight: var(--weight-medium);
+        line-height: 1.25rem;
+    }
+
+    /* Barra fina na borda de baixo: parte devolvida. */
+    &__barra {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: var(--surface-muted);
+
+        span {
+            display: block;
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: width var(--duration-base) var(--ease);
+        }
     }
 }

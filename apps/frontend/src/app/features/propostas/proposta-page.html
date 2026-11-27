@@ -85,7 +85,9 @@
 
                         <li class="lista__item">
                             <span class="lista__textos">
-                                <span class="lista__titulo">{{ chamada.rotulo(redacao.aluno) }}</span>
+                                <a class="lista__titulo" [routerLink]="['/redacoes', redacao.id]">{{
+                                    chamada.rotulo(redacao.aluno)
+                                }}</a>
                                 <span class="lista__detalhe">
                                     {{ redacao.turma }} · {{ rotuloStatus[redacao.status] }}
                                     @if (redacao.origem === 'aluno') {
