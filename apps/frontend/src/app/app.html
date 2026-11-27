@@ -11,6 +11,18 @@
                 </span>
             </a>
 
+            <button
+                class="sidebar__recolher"
+                type="button"
+                aria-controls="menu-principal"
+                [attr.aria-expanded]="!recolhido()"
+                [attr.aria-label]="recolhido() ? 'Expandir menu' : 'Recolher menu'"
+                [attr.data-rotulo]="recolhido() ? 'Expandir menu' : 'Recolher menu'"
+                (click)="alternarRecolhido()"
+            >
+                <app-icone nome="anterior" />
+            </button>
+
             <nav class="sidebar__nav">
                 @for (secao of secoes(); track secao.titulo) {
                     <div class="sidebar__section">
@@ -38,21 +50,6 @@
                     </div>
                 }
             </nav>
-
-            <div class="sidebar__footer">
-                <button
-                    class="nav-link sidebar__recolher"
-                    type="button"
-                    aria-controls="menu-principal"
-                    [attr.aria-expanded]="!recolhido()"
-                    [attr.aria-label]="recolhido() ? 'Expandir menu' : 'Recolher menu'"
-                    [attr.data-rotulo]="recolhido() ? 'Expandir menu' : null"
-                    (click)="alternarRecolhido()"
-                >
-                    <app-icone nome="recolher" />
-                    <span class="nav-link__texto">Recolher menu</span>
-                </button>
-            </div>
         </aside>
 
         <div class="sidebar-scrim" [attr.data-open]="menuAberto()" (click)="menuAberto.set(false)"></div>
