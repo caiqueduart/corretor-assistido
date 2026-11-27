@@ -58,13 +58,13 @@ Testes do back-end: `cd apps/backend && go test ./...`.
 
 Todas as telas usam o back-end:
 
-| Área                                             | Rotas                                                |
-| ------------------------------------------------ | ---------------------------------------------------- |
-| Login e sessão                                   | `/api/auth`, `/api/me`                               |
-| Redações: importar, corrigir, revisar, enviar    | `/api/textos` (`RedacoesHttpApi`)                    |
-| Alunos e Métricas                                | `/api/textos?completo=true`, calculadas na tela      |
-| Exportação do CSV de decisões                    | `/api/metricas/decisoes.csv`                         |
-| Administração: usuários, configuração, auditoria | `/api/usuarios`, `/api/config`, `/api/auditoria`     |
+| Área                                             | Rotas                                                      |
+| ------------------------------------------------ | ---------------------------------------------------------- |
+| Login e sessão                                   | `/api/auth`, `/api/me`                                     |
+| Redações: importar, corrigir, revisar, enviar    | `/api/textos` (`RedacoesHttpApi`)                          |
+| Alunos                                           | `/api/textos?completo=true`, calculadas na tela            |
+| Administração: usuários, configuração, auditoria | `/api/usuarios`, `/api/config`, `/api/auditoria`           |
+| Administração › Métricas (só admin)              | `/api/textos?completo=true` e `/api/metricas/decisoes.csv` |
 
 - O token de acesso fica no `localStorage` até expirar (`SESSAO_DURACAO`, 12h por padrão). Uma resposta 401 encerra a sessão e volta ao login.
 - A configuração do admin (critérios, perfis sociolinguísticos e limiar de viés) vale na importação e nas métricas.
