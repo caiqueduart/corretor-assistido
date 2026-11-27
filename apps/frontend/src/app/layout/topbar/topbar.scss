@@ -1,0 +1,161 @@
+/* Atlas: topbar, ds-breadcrumbs. */
+$celular: 860px;
+
+:host {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: 4rem;
+    padding: 0 var(--space-6);
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
+    backdrop-filter: saturate(1.4) blur(12px);
+
+    @media (width <= $celular) {
+        height: 3.5rem;
+        padding: 0 var(--space-3);
+    }
+}
+
+.topbar__menu {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--control-md);
+    height: var(--control-md);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--text-muted);
+
+    &:hover {
+        background: var(--surface-hover);
+        color: var(--text);
+    }
+
+    @media (width <= $celular) {
+        display: inline-flex;
+    }
+}
+
+.trilha {
+    min-width: 0;
+
+    ol {
+        display: flex;
+        align-items: center;
+        gap: var(--space-1);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-size: var(--text-sm);
+    }
+
+    li {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+        min-width: 0;
+
+        /* No celular, só a página atual. */
+        @media (width <= $celular) {
+            &:not(:last-child) {
+                display: none;
+            }
+        }
+    }
+
+    a {
+        color: var(--text-muted);
+        white-space: nowrap;
+
+        &:hover {
+            color: var(--text);
+        }
+    }
+
+    span[aria-current] {
+        overflow: hidden;
+        color: var(--text);
+        font-weight: var(--weight-medium);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__seta {
+        color: var(--text-disabled);
+    }
+}
+
+.topbar__espaco {
+    flex: 1;
+}
+
+.topbar__busca {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 17rem;
+    height: var(--control-md);
+    padding: 0 var(--space-3);
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
+    background: var(--surface-muted);
+    color: var(--text-subtle);
+    text-align: left;
+
+    &:hover {
+        border-color: var(--border-strong);
+    }
+
+    @media (width <= 1100px) {
+        width: auto;
+
+        .topbar__busca-texto,
+        .topbar__tecla {
+            display: none;
+        }
+    }
+}
+
+.topbar__busca-texto {
+    flex: 1;
+}
+
+.topbar__tecla {
+    padding: 0.125rem 0.375rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    font: inherit;
+    font-size: 0.6875rem;
+}
+
+.topbar__ia {
+    @media (width <= 1100px) {
+        display: none;
+    }
+}
+
+.topbar__ponto {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.topbar__importar-texto {
+    @media (width <= $celular) {
+        display: none;
+    }
+}
+
+.topbar__divisor {
+    width: 1px;
+    height: 1.5rem;
+    margin: 0 var(--space-1);
+    background: var(--border);
+}

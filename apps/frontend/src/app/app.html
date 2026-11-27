@@ -32,37 +32,12 @@
                     </div>
                 }
             </nav>
-
-            <div class="sidebar__footer">
-                <div class="sidebar__user">
-                    <span class="avatar" aria-hidden="true">{{ iniciais() }}</span>
-                    <span class="sidebar__user-textos">
-                        <span class="sidebar__user-name">{{ usuario.nome }}</span>
-                        <span class="sidebar__user-role">{{ rotuloPerfil[usuario.perfil] }}</span>
-                    </span>
-                    <button class="sidebar__sair" type="button" aria-label="Sair" title="Sair" (click)="sair()">
-                        <app-icone nome="sair" />
-                    </button>
-                </div>
-            </div>
         </aside>
 
         <div class="sidebar-scrim" [attr.data-open]="menuAberto()" (click)="menuAberto.set(false)"></div>
 
         <div class="main">
-            <header class="topbar">
-                <button
-                    class="topbar__menu"
-                    type="button"
-                    aria-label="Abrir menu"
-                    aria-controls="menu-principal"
-                    [attr.aria-expanded]="menuAberto()"
-                    (click)="menuAberto.set(true)"
-                >
-                    <app-icone nome="menu" />
-                </button>
-                <a class="topbar__marca" routerLink="/redacoes">Corretor Assistido</a>
-            </header>
+            <app-topbar (abrirMenu)="menuAberto.set(true)" />
 
             <main class="content" id="conteudo" tabindex="-1">
                 <div class="page">

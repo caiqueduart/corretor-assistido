@@ -115,73 +115,6 @@ app-root {
         letter-spacing: 0.08em;
         text-transform: uppercase;
     }
-
-    &__footer {
-        padding: var(--space-3);
-    }
-
-    &__user {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        padding: var(--space-3);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: var(--radius-lg);
-        background: rgba(0, 0, 0, 0.18);
-    }
-
-    &__user-textos {
-        display: grid;
-        flex: 1;
-        min-width: 0;
-    }
-
-    &__user-name {
-        overflow: hidden;
-        color: #fff;
-        font-size: var(--text-sm);
-        font-weight: var(--weight-medium);
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    &__user-role {
-        color: rgba(255, 255, 255, 0.65);
-        font-size: var(--text-xs);
-    }
-
-    &__sair {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: none;
-        width: var(--control-sm);
-        height: var(--control-sm);
-        border: 0;
-        border-radius: var(--radius-md);
-        background: transparent;
-        color: var(--sidebar-text);
-        transition: background var(--duration-fast) var(--ease);
-
-        &:hover {
-            background: var(--sidebar-hover);
-            color: #fff;
-        }
-    }
-}
-
-.avatar {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: none;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    background: #fff;
-    color: var(--primary-active);
-    font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
 }
 
 .nav-link {
@@ -249,11 +182,6 @@ app-root {
     min-width: 0;
 }
 
-/* A barra do topo só aparece no celular, com o botão do menu. */
-.topbar {
-    display: none;
-}
-
 .content {
     position: relative;
     flex: 1;
@@ -312,44 +240,6 @@ app-root {
         z-index: 29;
         display: block;
         background: var(--overlay);
-    }
-
-    .topbar {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-        height: 3.5rem;
-        padding: 0 var(--space-4);
-        border-bottom: 1px solid var(--border);
-        background: color-mix(in srgb, var(--surface) 82%, transparent);
-        backdrop-filter: saturate(1.4) blur(12px);
-
-        &__menu {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: var(--control-md);
-            height: var(--control-md);
-            border: 0;
-            border-radius: var(--radius-md);
-            background: transparent;
-            color: var(--text-muted);
-            font-size: 1.125rem;
-
-            &:hover {
-                background: var(--surface-hover);
-                color: var(--text);
-            }
-        }
-
-        &__marca {
-            color: var(--text);
-            font-weight: var(--weight-semibold);
-            text-decoration: none;
-        }
     }
 
     .page {

@@ -4,9 +4,9 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { filter } from 'rxjs';
 
 import { ConfigService } from './core/admin/config.service';
-import { ROTULO_PERFIL } from './core/auth/auth.model';
 import { AuthService } from './core/auth/auth.service';
 import { RedacoesService } from './core/redacoes/redacoes.service';
+import { Topbar } from './layout/topbar/topbar';
 import { Icone, NomeIcone } from './shared/icone/icone';
 
 interface ItemNavegacao {
@@ -35,7 +35,7 @@ const SISTEMA: SecaoNavegacao = {
 
 @Component({
     selector: 'app-root',
-    imports: [RouterOutlet, RouterLink, RouterLinkActive, Icone],
+    imports: [RouterOutlet, RouterLink, RouterLinkActive, Icone, Topbar],
     templateUrl: './app.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -44,19 +44,10 @@ export class App {
     protected readonly redacoes = inject(RedacoesService);
     private readonly config = inject(ConfigService);
 
-    protected readonly rotuloPerfil = ROTULO_PERFIL;
-
     /** Menu lateral aberto no celular (no desktop ele fica sempre visível). */
     protected readonly menuAberto = signal(false);
 
     protected readonly secoes = computed(() => (this.auth.temPerfil('admin') ? [PRINCIPAL, SISTEMA] : [PRINCIPAL]));
-
-    /** Iniciais do nome para o avatar (ex.: "Ana Admin" → "AA"). */
-    protected readonly iniciais = computed(() => {
-        const partes = (this.auth.usuario()?.nome ?? '').trim().split(/\s+/).filter(Boolean);
-
-        return ((partes[0]?.[0] ?? '') + (partes.length > 1 ? partes[partes.length - 1][0] : '')).toUpperCase();
-    });
 
     /** Só a troca de usuário importa (não, por exemplo, a mudança do nome). */
     private readonly idUsuario = computed(() => this.auth.usuario()?.id ?? null);
@@ -84,9 +75,5 @@ export class App {
                 takeUntilDestroyed(),
             )
             .subscribe(() => this.menuAberto.set(false));
-    }
-
-    protected sair(): void {
-        void this.auth.logout();
     }
 }

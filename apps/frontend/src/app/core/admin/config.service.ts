@@ -86,6 +86,10 @@ export class ConfigService {
 
     /** Última configuração lida ou salva. Null antes do login ou se a leitura falhou. */
     private readonly ativa = signal<ConfiguracaoCorrecao | null>(null);
+    private readonly ia = signal<boolean | null>(null);
+
+    /** Se o servidor tem a chave da IA (null enquanto não se sabe). Sem ela, a correção é simulada. */
+    readonly iaConfigurada = this.ia.asReadonly();
 
     /** Perfis que o professor pode escolher ao importar. */
     readonly grupos = computed(() => this.ativa()?.grupos ?? GRUPOS_PADRAO);
@@ -97,6 +101,7 @@ export class ConfigService {
     async obter(): Promise<EstadoConfiguracao> {
         const estado = await firstValueFrom(this.http.get<EstadoConfiguracaoApi>('/api/config').pipe(map(deApi)));
         this.ativa.set(estado.configuracao);
+        this.ia.set(estado.iaConfigurada);
 
         return estado;
     }
@@ -107,6 +112,7 @@ export class ConfigService {
             this.http.put<EstadoConfiguracaoApi>('/api/config', corpo).pipe(map(deApi)),
         );
         this.ativa.set(estado.configuracao);
+        this.ia.set(estado.iaConfigurada);
 
         return estado;
     }
@@ -122,6 +128,7 @@ export class ConfigService {
 
     limpar(): void {
         this.ativa.set(null);
+        this.ia.set(null);
     }
 }
 
