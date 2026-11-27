@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { AuditoriaService, descreverAlvo, rotuloAcao } from '../../core/admin/auditoria.service';
+import { AuditoriaService, autorDe, descreverAlvo, rotuloAcao } from '../../core/admin/auditoria.service';
 import { ConfigService } from '../../core/admin/config.service';
 import { UsuariosService } from '../../core/admin/usuarios.service';
 import { PERFIS, ROTULO_PERFIL, Usuario } from '../../core/auth/auth.model';
@@ -60,7 +60,7 @@ export class InicioAdmin implements OnInit {
             this.atividades.set(
                 registros.map((r) => ({
                     id: r.id,
-                    autor: r.usuarioId ? (nomes.get(r.usuarioId) ?? 'Usuário removido') : 'Sistema',
+                    autor: autorDe(r, nomes),
                     acao: rotuloAcao(r.acao).toLowerCase(),
                     alvo: descreverAlvo(r, nomes),
                     quando: r.criadoEm,

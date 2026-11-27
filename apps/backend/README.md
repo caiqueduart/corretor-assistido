@@ -27,29 +27,29 @@ Testes: `make testar` (ou `go test -race ./...`).
 
 ## Configuração
 
-| Variável | Padrão | Para que serve |
-|---|---|---|
-| `ADDR` | `:8080` | Endereço HTTP |
-| `DB_PATH` | `./dados/corretor.db` | Arquivo SQLite |
-| `ANTHROPIC_API_KEY` | vazio | Liga a correção por IA |
-| `ANTHROPIC_MODEL` | `claude-sonnet-5-5` | Modelo usado na correção |
-| `ANTHROPIC_VERSION` | `2026-10-21` | Cabeçalho `anthropic-version` |
-| `CORRECAO_CONCORRENCIA` | `4` | Correções simultâneas |
-| `CORRECAO_TIMEOUT` | `150s` | Tempo máximo de uma correção |
-| `ADMIN_EMAIL`, `ADMIN_SENHA`, `ADMIN_NOME` | `admin@corretor.local`, gerada, `Administrador` | Primeiro administrador (só com o banco vazio) |
-| `SESSAO_DURACAO` | `12h` | Validade do login |
-| `MAX_UPLOAD_MB` | `10` | Tamanho máximo de cada arquivo |
-| `CORS_ORIGENS` | vazio | Origens da interface web, separadas por vírgula |
-| `STATIC_DIR` | vazio | Pasta da interface, servida em `/` |
-| `SEED_EXEMPLOS` | `false` | Carrega os textos de demonstração |
+| Variável                                   | Padrão                                          | Para que serve                                  |
+| ------------------------------------------ | ----------------------------------------------- | ----------------------------------------------- |
+| `ADDR`                                     | `:8080`                                         | Endereço HTTP                                   |
+| `DB_PATH`                                  | `./dados/corretor.db`                           | Arquivo SQLite                                  |
+| `ANTHROPIC_API_KEY`                        | vazio                                           | Liga a correção por IA                          |
+| `ANTHROPIC_MODEL`                          | `claude-sonnet-5-5`                             | Modelo usado na correção                        |
+| `ANTHROPIC_VERSION`                        | `2026-10-21`                                    | Cabeçalho `anthropic-version`                   |
+| `CORRECAO_CONCORRENCIA`                    | `4`                                             | Correções simultâneas                           |
+| `CORRECAO_TIMEOUT`                         | `150s`                                          | Tempo máximo de uma correção                    |
+| `ADMIN_EMAIL`, `ADMIN_SENHA`, `ADMIN_NOME` | `admin@corretor.local`, gerada, `Administrador` | Primeiro administrador (só com o banco vazio)   |
+| `SESSAO_DURACAO`                           | `12h`                                           | Validade do login                               |
+| `MAX_UPLOAD_MB`                            | `10`                                            | Tamanho máximo de cada arquivo                  |
+| `CORS_ORIGENS`                             | vazio                                           | Origens da interface web, separadas por vírgula |
+| `STATIC_DIR`                               | vazio                                           | Pasta da interface, servida em `/`              |
+| `SEED_EXEMPLOS`                            | `false`                                         | Carrega os textos de demonstração               |
 
 ## Perfis
 
-| Perfil | Pode |
-|---|---|
-| `admin` | Tudo, mais critérios de correção, perfis sociolinguísticos, alerta de viés, usuários e auditoria |
-| `professor` | Importar, corrigir, revisar, enviar devolutivas e carregar ou remover exemplos |
-| `leitura` | Ver textos, devolutivas e métricas |
+| Perfil      | Pode                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------ |
+| `admin`     | Tudo, mais critérios de correção, perfis sociolinguísticos, alerta de viés, usuários e auditoria |
+| `professor` | Importar, corrigir, revisar, enviar devolutivas e carregar ou remover exemplos                   |
+| `leitura`   | Ver textos, devolutivas e métricas                                                               |
 
 ## Fluxo de um texto
 
@@ -92,42 +92,49 @@ Documentação interativa (Swagger UI) em **`/docs/`**, a partir da especificaç
 
 Todas as rotas `/api` (exceto o login) exigem `Authorization: Bearer <token>`. Os erros vêm como `{"erro":{"codigo":"...","mensagem":"..."}}`, com a mensagem pronta para mostrar ao usuário.
 
-| Método e rota | Perfil | O que faz |
-|---|---|---|
-| `GET /healthz` | público | Saúde do serviço e se a IA está configurada |
-| `POST /api/auth/login` | público | `{email, senha}` → `{token, expira_em, usuario}`. Bloqueia 15 min após 5 senhas erradas |
-| `POST /api/auth/logout` | todos | Encerra a sessão |
-| `GET /api/me` | todos | Usuário atual |
-| `GET /api/config` | todos | Critérios ativos, perfis sociolinguísticos, limiar de viés e critérios disponíveis |
-| `PUT /api/config` | admin | `{criterios, grupos, limiar_vies}` |
-| `GET/POST /api/usuarios` | admin | Lista e cria usuários `{nome, email, senha, perfil}` |
-| `PATCH /api/usuarios/{id}` | admin | Altera `nome`, `perfil`, `ativo` ou `senha` (encerra as sessões do usuário) |
-| `GET /api/auditoria?limite=` | admin | Quem fez o quê, sem conteúdo dos textos |
-| `GET /api/textos?status=&turma=&grupo=&aluno=` | todos | Lista textos com contagem de apontamentos e pendências |
-| `POST /api/textos` | professor | Cria a partir de texto colado `{aluno_codigo, turma, grupo, titulo, conteudo, origem_id, consentimento}` |
-| `POST /api/textos/importar` | professor | `multipart/form-data` com até 20 `arquivos` (PDF, TXT, DOCX) e os mesmos campos |
-| | | `proposta_id` (opcional, em ambas as formas): turma e título vêm da proposta; proposta encerrada recusa |
-| `POST/DELETE /api/textos/exemplos` | professor | Carrega ou remove os textos de demonstração |
-| `GET /api/textos/{id}` | todos | Texto com apontamentos |
-| `DELETE /api/textos/{id}` | professor | Exclui o texto |
-| `POST /api/textos/{id}/corrigir` | professor | `{motor: "ia" \| "simulado"}` opcional, `?aguardar=true` opcional |
-| `PATCH /api/textos/{id}/apontamentos/{aid}` | professor | `{decisao: "aceita" \| "recusada" \| "editada" \| null, sugestao_final}` |
-| `POST /api/textos/{id}/decisoes` | professor | Aceita ou recusa toda a correção |
-| `PUT /api/textos/{id}/comentario` | professor | Comentário do professor para o estudante |
-| `POST /api/textos/{id}/enviar` | professor | Conclui e envia a devolutiva |
-| `GET /api/textos/{id}/devolutiva` | todos | Texto corrigido, segmentos para exibir e lista para a reescrita |
-| `GET /api/propostas?situacao=` | todos | Propostas de redação (abertas primeiro) com a contagem por situação, e os gêneros aceitos |
-| `POST /api/propostas` | professor | `{tema, genero, enunciado, turmas, prazo}` |
-| `GET/PATCH /api/propostas/{id}` | todos / professor | Consultar; alterar, encerrar (`encerrada: true`) ou reabrir |
-| `DELETE /api/propostas/{id}` | professor | Só propostas sem redações |
-| `GET /api/metricas?turma=&proposta=` | todos | Discordância geral e por critério, equidade por perfil, ganho entre versões |
-| `GET /api/metricas/decisoes.csv?turma=&proposta=` | todos | Uma linha por decisão, sem conteúdo nem código do estudante (com `proposta_id`) |
+| Método e rota                                     | Perfil            | O que faz                                                                                                |
+| ------------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------- |
+| `GET /healthz`                                    | público           | Saúde do serviço e se a IA está configurada                                                              |
+| `POST /api/auth/login`                            | público           | `{email, senha}` → `{token, expira_em, usuario}`. Bloqueia 15 min após 5 senhas erradas                  |
+| `POST /api/auth/logout`                           | todos             | Encerra a sessão                                                                                         |
+| `GET /api/me`                                     | todos             | Usuário atual                                                                                            |
+| `GET /api/config`                                 | todos             | Critérios ativos, perfis sociolinguísticos, limiar de viés e critérios disponíveis                       |
+| `PUT /api/config`                                 | admin             | `{criterios, grupos, limiar_vies}`                                                                       |
+| `GET/POST /api/usuarios`                          | admin             | Lista e cria usuários `{nome, email, senha, perfil}`                                                     |
+| `PATCH /api/usuarios/{id}`                        | admin             | Altera `nome`, `perfil`, `ativo` ou `senha` (encerra as sessões do usuário)                              |
+| `GET /api/auditoria?limite=`                      | admin             | Quem fez o quê, sem conteúdo dos textos                                                                  |
+| `GET /api/textos?status=&turma=&grupo=&aluno=`    | todos             | Lista textos com contagem de apontamentos e pendências                                                   |
+| `POST /api/textos`                                | professor         | Cria a partir de texto colado `{aluno_codigo, turma, grupo, titulo, conteudo, origem_id, consentimento}` |
+| `POST /api/textos/importar`                       | professor         | `multipart/form-data` com até 20 `arquivos` (PDF, TXT, DOCX) e os mesmos campos                          |
+|                                                   |                   | `proposta_id` (opcional, em ambas as formas): turma e título vêm da proposta; proposta encerrada recusa  |
+| `POST/DELETE /api/textos/exemplos`                | professor         | Carrega ou remove os textos de demonstração                                                              |
+| `GET /api/textos/{id}`                            | todos             | Texto com apontamentos                                                                                   |
+| `DELETE /api/textos/{id}`                         | professor         | Exclui o texto                                                                                           |
+| `POST /api/textos/{id}/corrigir`                  | professor         | `{motor: "ia" \| "simulado"}` opcional, `?aguardar=true` opcional                                        |
+| `PATCH /api/textos/{id}/apontamentos/{aid}`       | professor         | `{decisao: "aceita" \| "recusada" \| "editada" \| null, sugestao_final}`                                 |
+| `POST /api/textos/{id}/decisoes`                  | professor         | Aceita ou recusa toda a correção                                                                         |
+| `PUT /api/textos/{id}/comentario`                 | professor         | Comentário do professor para o estudante                                                                 |
+| `POST /api/textos/{id}/enviar`                    | professor         | Conclui e envia a devolutiva                                                                             |
+| `GET /api/textos/{id}/devolutiva`                 | todos             | Texto corrigido, segmentos para exibir e lista para a reescrita                                          |
+| `GET /api/propostas?situacao=`                    | todos             | Propostas de redação (abertas primeiro) com a contagem por situação, e os gêneros aceitos                |
+| `POST /api/propostas`                             | professor         | `{tema, genero, enunciado, turmas, prazo}`                                                               |
+| `GET/PATCH /api/propostas/{id}`                   | todos / professor | Consultar; alterar, encerrar (`encerrada: true`) ou reabrir                                              |
+| `DELETE /api/propostas/{id}`                      | professor         | Só propostas sem redações                                                                                |
+| `GET /api/codigos?turma=`                         | professor         | Alunos com código de acesso ativo (o código não é devolvido: fica só o hash)                             |
+| `POST /api/codigos`                               | professor         | `{alunos: [{aluno_codigo, turma, grupo}], consentimento: true}` → códigos (mostrados uma única vez)      |
+| `DELETE /api/codigos/{aluno}`                     | professor         | Revoga o código do aluno                                                                                 |
+| `POST /api/aluno/acesso`                          | público (código)  | `{codigo}` → apelido, propostas abertas da turma, entregas e devolutivas                                 |
+| `POST /api/aluno/entregas`                        | público (código)  | Texto (JSON) ou arquivo (multipart); reenviar troca o texto enquanto a correção não começou              |
+| `POST /api/aluno/devolutiva`                      | público (código)  | `{codigo, texto_id}` → devolutiva, só depois do envio pelo professor                                     |
+| `GET /api/metricas?turma=&proposta=`              | todos             | Discordância geral e por critério, equidade por perfil, ganho entre versões                              |
+| `GET /api/metricas/decisoes.csv?turma=&proposta=` | todos             | Uma linha por decisão, sem conteúdo nem código do estudante (com `proposta_id`)                          |
 
 `inicio` e `fim` dos apontamentos são posições em **unidades UTF-16** no `conteudo`, as mesmas de `String.prototype.slice` no navegador.
 
 ## Decisões de projeto
 
 **Privacidade (LGPD).**
+
 - Estudantes entram por código, nunca pelo nome.
 - O banco recusa texto sem consentimento (`CHECK (consentimento = 1)`).
 - A IA recebe só o texto e os critérios. Código, turma e perfil sociolinguístico nunca saem do servidor.
@@ -135,22 +142,29 @@ Todas as rotas `/api` (exceto o login) exigem `Authorization: Bearer <token>`. O
 - Senhas usam PBKDF2-SHA256 (600 mil iterações). Os tokens de sessão são guardados só como hash.
 
 **Correção por IA.**
+
 - Usa a Messages API com saída estruturada (`output_config.format` com JSON Schema). O critério de cada apontamento fica restrito aos critérios ativos.
 - O texto do estudante vai delimitado, e as instruções mandam ignorar pedidos escritos dentro dele.
 - Erros temporários (429, 5xx, 529) são tentados de novo até 3 vezes.
 - Cada apontamento é localizado no texto pelo trecho exato. Os que não correspondem a nenhum trecho são descartados e contados em `descartados`.
 
 **Métricas.**
+
 - Seguem as mesmas regras da interface da POC.
 - Com os textos de exemplo, dão discordância geral de 26% e alerta de viés no perfil Rural (45%).
 - Um grupo só gera alerta com pelo menos 3 decisões.
 
 **Banco.** SQLite com WAL atende bem a escala da POC (algumas turmas). As consultas estão isoladas em `internal/store`, então trocar por PostgreSQL afeta só o driver, os parâmetros e as migrações.
 
+## Base de demonstração
+
+`go run ./cmd/demo -recriar` cria `dados/demo.db` com conteúdo fictício: usuários (admin, três professores, leitura e um desativado), 30 alunos em 3 turmas, 5 propostas (aberta perto do prazo, vencida, encerrada e sem redações), mais de 50 redações em todas as situações (inclusive com falha de correção e enviadas pelo aluno), decisões que geram alerta de viés em dois perfis, códigos de acesso (`DEMO-0001` a `DEMO-0003` conhecidos) e histórico das últimas semanas. Também grava em `dados/` a lista de chamada fictícia e os códigos de todos os alunos. Suba com `DB_PATH=dados/demo.db go run ./cmd/server`.
+
 ## Estrutura
 
 ```
 cmd/server          ponto de entrada, administrador inicial e encerramento gracioso
+cmd/demo            recria a base de demonstração (conteúdo fictício)
 internal/api        rotas HTTP, autenticação por perfil, correção em segundo plano, OpenAPI e Swagger UI (docs/)
 internal/corretor   motor da Claude API, motor simulado e localização dos trechos
 internal/extracao   leitura de PDF, DOCX e TXT

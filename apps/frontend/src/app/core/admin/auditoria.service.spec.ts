@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { AuditoriaService, descreverAlvo, descreverDetalhe, rotuloAcao } from './auditoria.service';
+import { AuditoriaService, autorDe, descreverAlvo, descreverDetalhe, rotuloAcao } from './auditoria.service';
 
 describe('AuditoriaService', () => {
     it('busca com o limite e converte os registros', async () => {
@@ -40,6 +40,13 @@ describe('AuditoriaService', () => {
 });
 
 describe('descrição dos registros', () => {
+    it('ações da Área do aluno aparecem como feitas pelo aluno', () => {
+        expect(autorDe({ usuarioId: null, acao: 'entrega_aluno' }, new Map())).toBe('Aluno');
+        expect(autorDe({ usuarioId: null, acao: 'login' }, new Map())).toBe('Sistema');
+        expect(autorDe({ usuarioId: 'u1', acao: 'login' }, new Map([['u1', 'Ana']]))).toBe('Ana');
+        expect(rotuloAcao('gerar_codigos')).toBe('Gerou códigos de acesso');
+    });
+
     it('traduz as ações conhecidas e mantém as desconhecidas legíveis', () => {
         expect(rotuloAcao('enviar_devolutiva')).toBe('Enviou devolutiva');
         expect(rotuloAcao('acao_nova')).toBe('Acao nova');
