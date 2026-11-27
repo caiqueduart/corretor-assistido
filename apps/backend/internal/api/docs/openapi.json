@@ -280,9 +280,10 @@
       "get": {
         "tags": ["Textos"],
         "summary": "Listar textos",
-        "description": "Todos os perfis. Traz contagem de apontamentos e pendências, mas não os apontamentos.",
+        "description": "Todos os perfis. Traz contagem de apontamentos e pendências. Os apontamentos só vêm com `completo=true`.",
         "operationId": "listarTextos",
         "parameters": [
+          { "name": "completo", "in": "query", "schema": { "type": "boolean", "default": false }, "description": "Inclui os apontamentos de cada texto." },
           { "name": "status", "in": "query", "schema": { "$ref": "#/components/schemas/Status" } },
           { "name": "turma", "in": "query", "schema": { "type": "string" } },
           { "name": "grupo", "in": "query", "schema": { "type": "string" }, "description": "Perfil sociolinguístico." },
@@ -520,7 +521,7 @@
       "post": {
         "tags": ["Correção e revisão"],
         "summary": "Decidir toda a correção",
-        "description": "Perfis `admin` e `professor`. Aplica a mesma decisão a todos os apontamentos do texto em `revisao`.",
+        "description": "Perfis `admin` e `professor`. Aplica a mesma decisão a todos os apontamentos do texto em `revisao`. Com `apenas_pendentes: true`, mantém as decisões já tomadas e decide só os apontamentos sem decisão.",
         "operationId": "decidirTodos",
         "requestBody": {
           "required": true,
@@ -530,7 +531,10 @@
                 "type": "object",
                 "additionalProperties": false,
                 "required": ["decisao"],
-                "properties": { "decisao": { "type": "string", "enum": ["aceita", "recusada"] } }
+                "properties": {
+                  "decisao": { "type": "string", "enum": ["aceita", "recusada"] },
+                  "apenas_pendentes": { "type": "boolean", "default": false, "description": "Decide só os apontamentos ainda sem decisão." }
+                }
               }
             }
           }

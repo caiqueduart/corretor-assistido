@@ -61,6 +61,7 @@ export const ROTULO_ACAO: Readonly<Record<string, string>> = {
     excluir_texto: 'Excluiu texto',
     carregar_exemplos: 'Carregou textos de exemplo',
     remover_exemplos: 'Removeu textos de exemplo',
+    corrigir: 'Pediu a correção',
     decidir_todos: 'Decidiu toda a correção',
     enviar_devolutiva: 'Enviou devolutiva',
 };
@@ -107,12 +108,21 @@ export function descreverDetalhe(registro: Pick<RegistroAuditoria, 'acao' | 'det
         case 'carregar_exemplos':
         case 'remover_exemplos':
             return `${detalhe} ${detalhe === '1' ? 'texto' : 'textos'}`;
+        case 'corrigir': {
+            const motor =
+                p.get('motor') === 'ia' ? 'IA' : p.get('motor') === 'simulado' ? 'motor simulado' : p.get('motor');
+            const n = p.get('apontamentos');
+
+            return [motor, n && `${n} ${n === '1' ? 'apontamento' : 'apontamentos'}`].filter(Boolean).join(' · ');
+        }
         case 'decidir_todos': {
             const verbo =
                 p.get('decisao') === 'aceita' ? 'Aceitou' : p.get('decisao') === 'recusada' ? 'Recusou' : 'Decidiu';
             const n = p.get('apontamentos') ?? '?';
 
-            return `${verbo} ${n} ${n === '1' ? 'apontamento' : 'apontamentos'}`;
+            const pendentes = p.get('pendentes') === 'true' ? (n === '1' ? ' pendente' : ' pendentes') : '';
+
+            return `${verbo} ${n} ${n === '1' ? 'apontamento' : 'apontamentos'}${pendentes}`;
         }
         case 'alterar_config': {
             const criterios = p.get('criterios')?.split(',').join(', ');

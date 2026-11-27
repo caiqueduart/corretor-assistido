@@ -4,7 +4,7 @@
 </a>
 
 @if (!redacoes.carregado()) {
-    <p class="aluno__nota" role="status">Carregando…</p>
+    <p class="aluno__nota" role="status">{{ redacoes.erroCarga() ?? 'Carregando…' }}</p>
 } @else if (aluno(); as atual) {
     <header class="aluno__topo">
         <h1 class="aluno__titulo">{{ atual.codigo }}</h1>

@@ -40,12 +40,8 @@ export const routes: Routes = [
                 title: 'Evolução do aluno · Corretor Assistido',
                 loadComponent: () => import('./features/alunos/aluno-page/aluno-page').then((m) => m.AlunoPage),
             },
-            {
-                path: 'metricas',
-                title: 'Métricas da POC · Corretor Assistido',
-                loadComponent: () =>
-                    import('./features/metricas/metricas-page/metricas-page').then((m) => m.MetricasPage),
-            },
+            // Métricas agora ficam em Administração; o endereço antigo continua funcionando.
+            { path: 'metricas', pathMatch: 'full', redirectTo: 'admin/metricas' },
             {
                 path: 'admin',
                 canActivate: [perfilGuard('admin')],

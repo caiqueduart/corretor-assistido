@@ -420,8 +420,9 @@ func (s *Store) Decidir(ctx context.Context, textoID, apID string, decisao *domi
 	return a, tx.Commit()
 }
 
-// DecidirTodos aceita ou recusa toda a correção de uma vez.
-func (s *Store) DecidirTodos(ctx context.Context, textoID string, decisao dominio.Decisao, usuarioID string) (int, error) {
+// DecidirTodos aceita ou recusa toda a correção de uma vez. Com apenasPendentes,
+// mantém as decisões já tomadas e decide só os apontamentos sem decisão.
+func (s *Store) DecidirTodos(ctx context.Context, textoID string, decisao dominio.Decisao, usuarioID string, apenasPendentes bool) (int, error) {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return 0, err
@@ -431,8 +432,11 @@ func (s *Store) DecidirTodos(ctx context.Context, textoID string, decisao domini
 		return 0, err
 	}
 	agora := ms(s.now())
-	res, err := tx.ExecContext(ctx, `UPDATE apontamentos SET decisao = ?, sugestao_final = NULL, decidido_por = ?, decidido_em = ? WHERE texto_id = ?`,
-		string(decisao), usuarioID, agora, textoID)
+	consulta := `UPDATE apontamentos SET decisao = ?, sugestao_final = NULL, decidido_por = ?, decidido_em = ? WHERE texto_id = ?`
+	if apenasPendentes {
+		consulta += ` AND decisao IS NULL`
+	}
+	res, err := tx.ExecContext(ctx, consulta, string(decisao), usuarioID, agora, textoID)
 	if err != nil {
 		return 0, err
 	}

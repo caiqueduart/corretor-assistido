@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, untracked } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
+import { ConfigService } from './core/admin/config.service';
 import { ROTULO_PERFIL } from './core/auth/auth.model';
 import { AuthService } from './core/auth/auth.service';
 import { RedacoesService } from './core/redacoes/redacoes.service';
@@ -29,6 +30,7 @@ const ITEM_ADMIN: ItemNavegacao = { rota: '/admin', rotulo: 'Administração', i
 export class App {
     protected readonly auth = inject(AuthService);
     protected readonly redacoes = inject(RedacoesService);
+    private readonly config = inject(ConfigService);
 
     protected readonly rotuloPerfil = ROTULO_PERFIL;
 
@@ -36,8 +38,24 @@ export class App {
         this.auth.temPerfil('admin') ? [...NAVEGACAO, ITEM_ADMIN] : NAVEGACAO,
     );
 
+    /** Só a troca de usuário importa (não, por exemplo, a mudança do nome). */
+    private readonly idUsuario = computed(() => this.auth.usuario()?.id ?? null);
+
     constructor() {
-        void this.redacoes.carregar();
+        // Redações e configuração exigem login: carrega ao entrar e esquece ao sair.
+        effect(() => {
+            const id = this.idUsuario();
+
+            untracked(() => {
+                this.redacoes.limpar();
+                this.config.limpar();
+
+                if (id) {
+                    void this.redacoes.carregar();
+                    void this.config.carregar();
+                }
+            });
+        });
     }
 
     protected sair(): void {

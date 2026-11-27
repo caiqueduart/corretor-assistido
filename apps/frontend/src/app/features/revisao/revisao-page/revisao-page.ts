@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { AuthService } from '../../../core/auth/auth.service';
 import { apontamentosDaDevolutiva, contarDecisoes } from '../../../core/redacoes/analise';
 import { RedacoesService } from '../../../core/redacoes/redacoes.service';
 import { Icone } from '../../../shared/icone/icone';
@@ -31,6 +32,10 @@ type Visao = 'revisao' | 'aluno';
 })
 export class RevisaoPage {
     protected readonly redacoes = inject(RedacoesService);
+    private readonly auth = inject(AuthService);
+
+    /** O perfil leitura vê tudo, mas não decide nem envia. */
+    protected readonly podeEditar = computed(() => this.auth.temPerfil('admin', 'professor'));
 
     /** Vem do parâmetro `:id` da rota. */
     readonly id = input.required<string>();
@@ -119,6 +124,7 @@ export class RevisaoPage {
 
         if (
             this.redacao()?.status !== 'em-revisao' ||
+            !this.podeEditar() ||
             this.visao() !== 'revisao' ||
             evento.ctrlKey ||
             evento.metaKey ||

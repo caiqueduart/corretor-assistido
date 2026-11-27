@@ -131,6 +131,16 @@ export class RedacoesMockApi extends RedacoesApi {
         return this.salvar({ ...redacao, status: 'devolvida', enviadaEm: new Date().toISOString() });
     }
 
+    async carregarExemplos(): Promise<number> {
+        await esperar(LATENCIA_MS);
+
+        const existentes = new Set(this.redacoes.map((redacao) => redacao.id));
+        const novos = REDACOES_EXEMPLO.filter((redacao) => !existentes.has(redacao.id));
+        this.redacoes = [...structuredClone(novos), ...this.redacoes];
+
+        return novos.length;
+    }
+
     private buscar(id: string): Redacao {
         const redacao = this.redacoes.find((item) => item.id === id);
 

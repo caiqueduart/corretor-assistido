@@ -87,7 +87,7 @@
             <div class="importar__campo">
                 <label for="campo-perfil">Perfil sociolinguístico</label>
                 <select id="campo-perfil" formControlName="perfil" aria-describedby="dica-perfil">
-                    @for (perfil of perfis; track perfil) {
+                    @for (perfil of perfis(); track perfil) {
                         <option [value]="perfil">{{ perfil }}</option>
                     }
                 </select>

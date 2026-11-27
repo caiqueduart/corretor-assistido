@@ -2,14 +2,44 @@
     titulo="Redações"
     descricao="A IA corrige a lápis; você decide o que vale. Nada chega ao aluno sem o seu envio."
 >
-    <a class="botao botao--primario" routerLink="/redacoes/nova">
-        <app-icone nome="importar" />
-        Importar redação
-    </a>
+    @if (podeEditar()) {
+        <a class="botao botao--primario" routerLink="/redacoes/nova">
+            <app-icone nome="importar" />
+            Importar redação
+        </a>
+    }
 </app-cabecalho-pagina>
 
-@if (!redacoes.carregado()) {
+@if (redacoes.erroCarga(); as mensagem) {
+    <div class="aviso aviso--erro fila__erro-carga" role="alert">
+        <p>{{ mensagem }}</p>
+        <button class="botao botao--pequeno" type="button" (click)="redacoes.carregar()">Tentar de novo</button>
+    </div>
+} @else if (!redacoes.carregado()) {
     <p class="fila__carregando" role="status">Carregando redações…</p>
+} @else if (!redacoes.redacoes().length) {
+    <section class="fila fila__inicio">
+        <h2 class="fila__titulo">Nenhuma redação ainda</h2>
+        @if (podeEditar()) {
+            <p class="fila__vazio">
+                Importe a primeira redação ou carregue os textos fictícios do roteiro de demonstração.
+            </p>
+            <div class="fila__inicio-acoes">
+                <a class="botao botao--primario" routerLink="/redacoes/nova">
+                    <app-icone nome="importar" />
+                    Importar redação
+                </a>
+                <button class="botao" type="button" [disabled]="carregandoExemplos()" (click)="carregarExemplos()">
+                    {{ carregandoExemplos() ? 'Carregando…' : 'Carregar textos de exemplo' }}
+                </button>
+            </div>
+            @if (erroExemplos(); as erro) {
+                <p class="fila__erro" role="alert">{{ erro }}</p>
+            }
+        } @else {
+            <p class="fila__vazio">Quando os professores importarem redações, elas aparecem aqui.</p>
+        }
+    </section>
 } @else {
     @let grupos = redacoes.porStatus();
 
@@ -63,7 +93,9 @@
                         </div>
 
                         <a class="botao botao--primario botao--pequeno" [routerLink]="['/redacoes', redacao.id]">
-                            {{ decisoes.pendentes === decisoes.total ? 'Revisar' : 'Continuar' }}
+                            {{
+                                !podeEditar() ? 'Ver' : decisoes.pendentes === decisoes.total ? 'Revisar' : 'Continuar'
+                            }}
                         </a>
                     </li>
                 }
@@ -97,7 +129,7 @@
                                 }
                             </p>
 
-                            @if (erros()[redacao.id]; as erro) {
+                            @if (erros()[redacao.id] || redacao.erroCorrecao; as erro) {
                                 <p class="fila__erro" role="alert">{{ erro }}</p>
                             }
                         </div>
@@ -107,7 +139,7 @@
                                 <span class="fila__giro" aria-hidden="true"></span>
                                 A IA está lendo o texto…
                             </p>
-                        } @else {
+                        } @else if (podeEditar()) {
                             <button class="botao botao--pequeno" type="button" (click)="corrigir(redacao)">
                                 <app-icone nome="lapis" />
                                 Corrigir com IA
@@ -119,7 +151,9 @@
         } @else {
             <p class="fila__vazio">
                 Todas as redações importadas já passaram pela IA.
-                <a routerLink="/redacoes/nova">Importar outra</a>
+                @if (podeEditar()) {
+                    <a routerLink="/redacoes/nova">Importar outra</a>
+                }
             </p>
         }
     </section>

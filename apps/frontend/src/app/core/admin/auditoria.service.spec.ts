@@ -50,6 +50,8 @@ describe('descrição dos registros', () => {
         ['criar_texto', 'versao=1 origem=colado', 'versão 1 · texto colado'],
         ['carregar_exemplos', '8', '8 textos'],
         ['decidir_todos', 'decisao=recusada apontamentos=1', 'Recusou 1 apontamento'],
+        ['corrigir', 'motor=simulado apontamentos=1 descartados=0 duracao=0s', 'motor simulado · 1 apontamento'],
+        ['decidir_todos', 'decisao=aceita apontamentos=3 pendentes=true', 'Aceitou 3 apontamentos pendentes'],
         [
             'alterar_config',
             'criterios=Ortografia,Pontuação limiar=15',

@@ -54,19 +54,21 @@ O front-end sobe em http://localhost:4200 e encaminha `/api` para `http://localh
 
 Testes do back-end: `cd apps/backend && go test ./...`.
 
-## O que já fala com a API
+## Como o front usa a API
 
-| Área                                                   | Fonte dos dados                       |
-| ------------------------------------------------------ | ------------------------------------- |
-| Login e sessão                                         | API (`/api/auth`, `/api/me`)          |
-| Administração: usuários, configuração, auditoria       | API (só perfil admin)                 |
-| Exportação do CSV de decisões (tela Métricas)          | API (`/api/metricas/decisoes.csv`)    |
-| Redações, revisão, alunos e números da tela Métricas   | Mock em memória (`RedacoesMockApi`)   |
+Todas as telas usam o back-end:
 
-O token de acesso fica no `localStorage` até expirar (`SESSAO_DURACAO`, 12h por padrão). Uma resposta 401 da API encerra a sessão e volta ao login.
+| Área                                             | Rotas                                                      |
+| ------------------------------------------------ | ---------------------------------------------------------- |
+| Login e sessão                                   | `/api/auth`, `/api/me`                                     |
+| Redações: importar, corrigir, revisar, enviar    | `/api/textos` (`RedacoesHttpApi`)                          |
+| Alunos                                           | `/api/textos?completo=true`, calculadas na tela            |
+| Administração: usuários, configuração, auditoria | `/api/usuarios`, `/api/config`, `/api/auditoria`           |
+| Administração › Métricas (só admin)              | `/api/textos?completo=true` e `/api/metricas/decisoes.csv` |
 
-## Redações ainda com dados mockados
-
-As redações usam `RedacoesMockApi` (em `apps/frontend/src/app/core/redacoes/mock/`), que guarda os exemplos em memória e simula a correção da IA. Os dados voltam ao estado inicial ao recarregar a página.
-
-As telas só falam com `RedacoesService`, que depende do contrato `RedacoesApi`. Para usar a API real, crie uma implementação HTTP desse contrato e troque o provider em `apps/frontend/src/app/app.config.ts`. Até lá, a configuração salva pelo admin (critérios, perfis e limiar de viés) vale para o back-end, mas a importação e os números da tela Métricas ainda usam os valores fixos do front.
+- O token de acesso fica no `localStorage` até expirar (`SESSAO_DURACAO`, 12h por padrão). Uma resposta 401 encerra a sessão e volta ao login.
+- A configuração do admin (critérios, perfis sociolinguísticos e limiar de viés) vale na importação e nas métricas.
+- A correção espera o resultado (`?aguardar=true`). Sem `ANTHROPIC_API_KEY`, o back-end usa o motor simulado.
+- O perfil `leitura` vê tudo, mas não importa, corrige, decide nem envia.
+- Com o banco vazio, a tela de Redações oferece "Carregar textos de exemplo".
+- `RedacoesMockApi` (em `core/redacoes/mock/`) fica só para os testes.
