@@ -65,6 +65,9 @@ export class App {
     /** Menu lateral aberto no celular (no desktop ele fica sempre visível). */
     protected readonly menuAberto = signal(false);
 
+    /** A área do aluno é uma página à parte: nunca aparece dentro do menu dos professores. */
+    protected readonly areaDoAluno = signal(false);
+
     /** No desktop, menu recolhido mostra só os ícones. A preferência fica salva no navegador. */
     protected readonly recolhido = signal(lerPreferenciaMenu());
 
@@ -94,10 +97,11 @@ export class App {
         // No celular, fecha o menu ao navegar.
         inject(Router)
             .events.pipe(
-                filter((evento) => evento instanceof NavigationEnd),
+                filter((evento): evento is NavigationEnd => evento instanceof NavigationEnd),
                 takeUntilDestroyed(),
             )
-            .subscribe(() => {
+            .subscribe((evento) => {
+                this.areaDoAluno.set(evento.urlAfterRedirects.startsWith('/aluno'));
                 this.menuAberto.set(false);
                 this.focarConteudo();
             });

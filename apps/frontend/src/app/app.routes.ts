@@ -4,6 +4,12 @@ import { autenticadoGuard, perfilGuard, visitanteGuard } from './core/auth/guard
 
 export const routes: Routes = [
     {
+        // Área do aluno: pública, autenticada só pelo código de acesso.
+        path: 'aluno',
+        title: 'Área do aluno · Corretor Assistido',
+        loadComponent: () => import('./features/area-aluno/area-aluno-page').then((m) => m.AreaAlunoPage),
+    },
+    {
         path: 'login',
         title: 'Entrar · Corretor Assistido',
         canActivate: [visitanteGuard],
