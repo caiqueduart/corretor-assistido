@@ -1,65 +1,94 @@
-<div class="login">
-    <p class="login__marca">
-        <span class="login__nome">Corretor Assistido</span>
-        <span class="login__versao">POC 1.3</span>
-    </p>
+<div class="login__bg" aria-hidden="true"></div>
 
-    <form class="login__cartao" [formGroup]="formulario" (ngSubmit)="entrar()" novalidate>
-        <h1 class="login__titulo">Entrar</h1>
-        <p class="login__descricao">Use o e-mail e a senha cadastrados pelo administrador da escola.</p>
+<main class="login__main">
+    <div class="login__card">
+        <aside class="login__aside">
+            <p class="login__brand">
+                <span class="login__mark"><app-icone nome="lapis" /></span>
+                Corretor Assistido
+            </p>
 
-        @if (expirada() && !erro()) {
-            <p class="login__aviso" role="status">Sua sessão expirou. Entre de novo para continuar.</p>
-        }
-
-        <div class="login__campo">
-            <label for="campo-email">E-mail</label>
-            <input
-                id="campo-email"
-                type="email"
-                formControlName="email"
-                autocomplete="username"
-                inputmode="email"
-                autofocus
-            />
-
-            @if (formulario.controls.email.touched && formulario.controls.email.invalid) {
-                <p class="login__erro">Informe um e-mail válido.</p>
-            }
-        </div>
-
-        <div class="login__campo">
-            <label for="campo-senha">Senha</label>
-            <div class="login__senha">
-                <input
-                    id="campo-senha"
-                    [type]="senhaVisivel() ? 'text' : 'password'"
-                    formControlName="senha"
-                    autocomplete="current-password"
-                />
-                <button
-                    class="botao botao--discreto botao--pequeno"
-                    type="button"
-                    [attr.aria-pressed]="senhaVisivel()"
-                    (click)="senhaVisivel.set(!senhaVisivel())"
-                >
-                    {{ senhaVisivel() ? 'Ocultar' : 'Mostrar' }}
-                </button>
+            <div>
+                <h2 class="login__headline">A IA aponta a lápis. Você decide o que vale.</h2>
+                <ul class="login__points">
+                    <li>
+                        <app-icone nome="aceitar" />
+                        Nenhuma devolutiva chega ao aluno sem o professor.
+                    </li>
+                    <li>
+                        <app-icone nome="aceitar" />
+                        Alunos identificados só por código.
+                    </li>
+                    <li>
+                        <app-icone nome="aceitar" />
+                        Auditoria de equidade por perfil sociolinguístico.
+                    </li>
+                </ul>
             </div>
 
-            @if (formulario.controls.senha.touched && formulario.controls.senha.invalid) {
-                <p class="login__erro">Informe a senha.</p>
+            <p class="login__poc">POC 1.3</p>
+        </aside>
+
+        <form class="login__side" [formGroup]="formulario" (ngSubmit)="entrar()" novalidate>
+            <header class="login__head">
+                <h1 class="login__title">Entrar</h1>
+                <p class="login__sub">Use o e-mail e a senha cadastrados pelo administrador da escola.</p>
+            </header>
+
+            @if (expirada() && !erro()) {
+                <p class="aviso aviso--atencao" role="status">Sua sessão expirou. Entre de novo para continuar.</p>
             }
-        </div>
 
-        @if (erro(); as mensagem) {
-            <p class="login__erro login__erro--geral" role="alert">{{ mensagem }}</p>
-        }
+            <div class="campo">
+                <label for="campo-email">E-mail</label>
+                <input
+                    id="campo-email"
+                    type="email"
+                    formControlName="email"
+                    autocomplete="username"
+                    inputmode="email"
+                    placeholder="voce@escola.br"
+                    autofocus
+                />
 
-        <button class="botao botao--primario login__entrar" type="submit" [disabled]="entrando()">
-            {{ entrando() ? 'Entrando…' : 'Entrar' }}
-        </button>
-    </form>
+                @if (formulario.controls.email.touched && formulario.controls.email.invalid) {
+                    <p class="campo__erro">Informe um e-mail válido.</p>
+                }
+            </div>
 
-    <p class="login__rodape">Esqueceu a senha? Peça ao administrador para redefini-la.</p>
-</div>
+            <div class="campo">
+                <label for="campo-senha">Senha</label>
+                <div class="login__senha">
+                    <input
+                        id="campo-senha"
+                        [type]="senhaVisivel() ? 'text' : 'password'"
+                        formControlName="senha"
+                        autocomplete="current-password"
+                    />
+                    <button
+                        class="botao botao--discreto botao--pequeno"
+                        type="button"
+                        [attr.aria-pressed]="senhaVisivel()"
+                        (click)="senhaVisivel.set(!senhaVisivel())"
+                    >
+                        {{ senhaVisivel() ? 'Ocultar' : 'Mostrar' }}
+                    </button>
+                </div>
+
+                @if (formulario.controls.senha.touched && formulario.controls.senha.invalid) {
+                    <p class="campo__erro">Informe a senha.</p>
+                }
+            </div>
+
+            @if (erro(); as mensagem) {
+                <p class="aviso aviso--erro" role="alert">{{ mensagem }}</p>
+            }
+
+            <button class="botao botao--primario login__entrar" type="submit" [disabled]="entrando()">
+                {{ entrando() ? 'Entrando…' : 'Entrar' }}
+            </button>
+
+            <p class="login__foot">Esqueceu a senha? Peça ao administrador para redefini-la.</p>
+        </form>
+    </div>
+</main>

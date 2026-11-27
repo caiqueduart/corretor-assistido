@@ -5,10 +5,11 @@ import { Router } from '@angular/router';
 import { mensagemDeErro } from '../../core/api/erro-api';
 import { AuthService } from '../../core/auth/auth.service';
 import { destinoSeguro } from '../../core/auth/guards';
+import { Icone } from '../../shared/icone/icone';
 
 @Component({
     selector: 'app-login-page',
-    imports: [ReactiveFormsModule],
+    imports: [ReactiveFormsModule, Icone],
     templateUrl: './login-page.html',
     styleUrl: './login-page.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,

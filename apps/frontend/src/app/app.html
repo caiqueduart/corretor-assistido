@@ -1,49 +1,76 @@
 @if (auth.usuario(); as usuario) {
     <a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
-    <header class="barra">
-        <a class="barra__marca" routerLink="/redacoes">
-            <span class="barra__nome">Corretor Assistido</span>
-            <span class="barra__versao">POC 1.3</span>
-        </a>
+    <div class="app">
+        <aside class="sidebar" id="menu-principal" [attr.data-open]="menuAberto()" aria-label="Navegação principal">
+            <a class="sidebar__brand" routerLink="/redacoes">
+                <span class="sidebar__logo"><app-icone nome="lapis" /></span>
+                <span class="sidebar__marca">
+                    Corretor Assistido
+                    <span class="sidebar__versao">POC 1.3</span>
+                </span>
+            </a>
 
-        <nav class="barra__nav" aria-label="Principal">
-            @for (item of navegacao(); track item.rota) {
-                <a
-                    class="barra__link"
-                    [routerLink]="item.rota"
-                    routerLinkActive="barra__link--ativo"
-                    ariaCurrentWhenActive="page"
+            <nav class="sidebar__nav">
+                @for (secao of secoes(); track secao.titulo) {
+                    <div class="sidebar__section">
+                        <span class="sidebar__group">{{ secao.titulo }}</span>
+
+                        @for (item of secao.itens; track item.rota) {
+                            <a class="nav-link" [routerLink]="item.rota" routerLinkActive ariaCurrentWhenActive="page">
+                                <app-icone [nome]="item.icone" />
+                                <span>{{ item.rotulo }}</span>
+
+                                @if (item.rota === '/redacoes' && redacoes.porStatus().emRevisao.length) {
+                                    <span class="nav-link__contador">
+                                        {{ redacoes.porStatus().emRevisao.length }}
+                                        <span class="visualmente-oculto">para revisar</span>
+                                    </span>
+                                }
+                            </a>
+                        }
+                    </div>
+                }
+            </nav>
+
+            <div class="sidebar__footer">
+                <div class="sidebar__user">
+                    <span class="avatar" aria-hidden="true">{{ iniciais() }}</span>
+                    <span class="sidebar__user-textos">
+                        <span class="sidebar__user-name">{{ usuario.nome }}</span>
+                        <span class="sidebar__user-role">{{ rotuloPerfil[usuario.perfil] }}</span>
+                    </span>
+                    <button class="sidebar__sair" type="button" aria-label="Sair" title="Sair" (click)="sair()">
+                        <app-icone nome="sair" />
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <div class="sidebar-scrim" [attr.data-open]="menuAberto()" (click)="menuAberto.set(false)"></div>
+
+        <div class="main">
+            <header class="topbar">
+                <button
+                    class="topbar__menu"
+                    type="button"
+                    aria-label="Abrir menu"
+                    aria-controls="menu-principal"
+                    [attr.aria-expanded]="menuAberto()"
+                    (click)="menuAberto.set(true)"
                 >
-                    <app-icone [nome]="item.icone" />
-                    <span>{{ item.rotulo }}</span>
+                    <app-icone nome="menu" />
+                </button>
+                <a class="topbar__marca" routerLink="/redacoes">Corretor Assistido</a>
+            </header>
 
-                    @if (item.rota === '/redacoes' && redacoes.porStatus().emRevisao.length) {
-                        <span class="barra__contador">
-                            {{ redacoes.porStatus().emRevisao.length }}
-                            <span class="visualmente-oculto">para revisar</span>
-                        </span>
-                    }
-                </a>
-            }
-        </nav>
-
-        <div class="barra__perfil">
-            <p class="barra__perfil-textos">
-                <span class="barra__perfil-nome">{{ usuario.nome }}</span>
-                <span class="barra__perfil-papel">{{ rotuloPerfil[usuario.perfil] }}</span>
-            </p>
-
-            <button class="barra__sair" type="button" (click)="sair()">
-                <app-icone nome="sair" />
-                <span>Sair</span>
-            </button>
+            <main class="content" id="conteudo" tabindex="-1">
+                <div class="page">
+                    <router-outlet />
+                </div>
+            </main>
         </div>
-    </header>
-
-    <main class="conteudo" id="conteudo" tabindex="-1">
-        <router-outlet />
-    </main>
+    </div>
 } @else {
     <router-outlet />
 }
