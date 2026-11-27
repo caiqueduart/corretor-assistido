@@ -83,7 +83,7 @@
 
                         <li class="lista__item">
                             <span class="lista__textos">
-                                <span class="lista__titulo">{{ chamada.rotulo(redacao.aluno) }}</span>
+                                <span class="lista__titulo">{{ redacao.aluno }}</span>
                                 <span class="lista__detalhe">
                                     {{ redacao.turma }} · {{ rotuloStatus[redacao.status] }}
                                     @if (redacao.status === 'em-revisao') {
@@ -107,7 +107,7 @@
                                         Abrir
                                     }
                                 }
-                                <span class="visualmente-oculto">{{ chamada.rotulo(redacao.aluno) }}</span>
+                                <span class="visualmente-oculto">{{ redacao.aluno }}</span>
                             </a>
                         </li>
                     }

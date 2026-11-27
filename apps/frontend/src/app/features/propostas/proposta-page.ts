@@ -11,7 +11,6 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
-import { ChamadaService } from '../../core/alunos/chamada.service';
 import { progressoDe, progressoPorProposta } from '../../core/propostas/progresso';
 import { Proposta, PropostasService, descreverPrazo, formatarPrazo } from '../../core/propostas/propostas.service';
 import { contarDecisoes } from '../../core/redacoes/analise';
@@ -43,7 +42,6 @@ const ROTULO_STATUS: Readonly<Record<StatusRedacao, string>> = {
 export class PropostaPage {
     protected readonly propostas = inject(PropostasService);
     protected readonly redacoes = inject(RedacoesService);
-    protected readonly chamada = inject(ChamadaService);
     private readonly alunos = inject(AlunosService);
     private readonly avisos = inject(AvisosService);
     private readonly confirmacao = inject(ConfirmacaoService);
@@ -90,7 +88,7 @@ export class PropostaPage {
         return this.alunos
             .alunos()
             .filter((aluno) => proposta.turmas.includes(aluno.turma) && !entregaram.has(aluno.codigo))
-            .map((aluno) => ({ codigo: aluno.codigo, turma: aluno.turma, rotulo: this.chamada.rotulo(aluno.codigo) }))
+            .map((aluno) => ({ codigo: aluno.codigo, turma: aluno.turma, rotulo: aluno.codigo }))
             .sort((a, b) => a.rotulo.localeCompare(b.rotulo, 'pt-BR'));
     });
 

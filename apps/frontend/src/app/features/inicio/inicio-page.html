@@ -41,54 +41,11 @@
                 {{ falhas().length === 1 ? 'Uma correção falhou' : falhas().length + ' correções falharam' }}. Abra para
                 tentar de novo:
                 @for (redacao of falhas(); track redacao.id; let ultima = $last) {
-                    <a [routerLink]="['/redacoes', redacao.id]">{{ chamada.rotulo(redacao.aluno) }}</a>{{
-                        ultima ? '.' : ','
-                    }}
+                    <a [routerLink]="['/redacoes', redacao.id]">{{ redacao.aluno }}</a>{{ ultima ? '.' : ',' }}
                 }
             </p>
         </div>
     }
-
-    <section class="cartao" aria-labelledby="titulo-propostas">
-        <header class="cartao__cabecalho">
-            <h2 class="cartao__titulo" id="titulo-propostas">Propostas em andamento</h2>
-            <a class="cartao__link" routerLink="/propostas">Ver todas</a>
-        </header>
-
-        @if (emAndamento().length) {
-            <ul class="inicio__propostas" role="list">
-                @for (item of emAndamento(); track item.proposta.id) {
-                    <li>
-                        <a class="inicio__proposta" [routerLink]="['/propostas', item.proposta.id]">
-                            <span class="lista__titulo">{{ item.proposta.tema }}</span>
-                            <span class="lista__detalhe">
-                                {{ item.proposta.turmas.join(' · ') }} ·
-                                <span
-                                    [class.inicio__prazo--perto]="tomPrazo(item.proposta.prazo) === 'perto'"
-                                    [class.inicio__prazo--vencido]="tomPrazo(item.proposta.prazo) === 'vencido'"
-                                    >{{ descreverPrazo(item.proposta.prazo) }}</span
-                                >
-                            </span>
-                            <span class="progresso" aria-hidden="true">
-                                <span class="progresso__barra" [style.width.%]="item.porcentagem"></span>
-                            </span>
-                            <span class="lista__detalhe">
-                                {{ item.progresso.devolvidas }} de {{ item.progresso.total }} com devolutiva
-                            </span>
-                        </a>
-                    </li>
-                }
-            </ul>
-        } @else {
-            <app-estado-vazio
-                icone="proposta"
-                titulo="Nenhuma proposta aberta"
-                texto="Organize as redações por proposta: tema, turmas e prazo."
-            >
-                <a class="botao botao--pequeno" routerLink="/propostas">Criar proposta</a>
-            </app-estado-vazio>
-        }
-    </section>
 
     <div class="inicio__grade inicio__grade--principal">
         <section class="cartao" aria-labelledby="titulo-continuar">
@@ -102,9 +59,7 @@
                     @for (item of continuar(); track item.redacao.id) {
                         <li class="lista__item">
                             <span class="lista__textos">
-                                <span class="lista__titulo"
-                                    >{{ chamada.rotulo(item.redacao.aluno) }} · {{ item.redacao.titulo }}</span
-                                >
+                                <span class="lista__titulo">{{ item.redacao.aluno }} · {{ item.redacao.titulo }}</span>
                                 <span class="lista__detalhe">
                                     {{ item.redacao.turma }} · {{ item.feitas }} de {{ item.total }} decididos
                                 </span>
@@ -114,7 +69,7 @@
                             </span>
                             <a class="botao botao--pequeno" [routerLink]="['/redacoes', item.redacao.id]">
                                 {{ item.feitas ? 'Continuar' : 'Revisar' }}
-                                <span class="visualmente-oculto">{{ chamada.rotulo(item.redacao.aluno) }}</span>
+                                <span class="visualmente-oculto">{{ item.redacao.aluno }}</span>
                             </a>
                         </li>
                     }
@@ -141,7 +96,7 @@
                         <li class="lista__item">
                             <span class="lista__textos">
                                 <a class="lista__titulo" [routerLink]="['/redacoes', redacao.id]">
-                                    {{ chamada.rotulo(redacao.aluno) }} · {{ redacao.titulo }}
+                                    {{ redacao.aluno }} · {{ redacao.titulo }}
                                 </a>
                                 <span class="lista__detalhe">
                                     {{ redacao.turma }} ·

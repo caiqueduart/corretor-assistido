@@ -12,33 +12,10 @@
 
 <app-cabecalho-pagina
     titulo="Importar redação"
-    descricao="Depois de importar, a IA corrige e você revisa. O aluno é identificado só por um apelido."
+    descricao="Depois de importar, a IA corrige e você revisa. O aluno é identificado só por código."
 />
 
 <form class="importar" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
-    <fieldset class="importar__bloco">
-        <legend class="importar__legenda">Proposta</legend>
-
-        <div class="campo">
-            <label for="campo-proposta">Proposta de redação</label>
-            <select
-                id="campo-proposta"
-                [value]="formulario.controls.propostaId.value"
-                (change)="escolherProposta($any($event.target).value)"
-            >
-                <option value="">Sem proposta (redação avulsa)</option>
-                @for (opcao of abertas(); track opcao.id) {
-                    <option [value]="opcao.id">{{ opcao.tema }} · {{ opcao.turmas.join(', ') }}</option>
-                }
-            </select>
-            @if (escolhida(); as proposta) {
-                <p class="campo__dica">{{ proposta.genero }} · {{ descreverPrazo(proposta.prazo) }}</p>
-            } @else if (!abertas().length) {
-                <p class="campo__dica">Nenhuma proposta aberta. Crie uma em Propostas para organizar as redações.</p>
-            }
-        </div>
-    </fieldset>
-
     <fieldset class="importar__bloco">
         <legend class="importar__legenda">Texto do aluno</legend>
 
@@ -106,28 +83,19 @@
                 </div>
 
                 @if (modo() === 'novo') {
-                    <div class="importar__apelido" aria-live="polite">
-                        <span class="campo__dica">No sistema, o aluno será identificado como</span>
-                        <strong class="importar__apelido-nome">{{ formulario.controls.aluno.value }}</strong>
-                        <button class="botao botao--discreto botao--pequeno" type="button" (click)="sortear()">
-                            Sortear outro
-                        </button>
-                    </div>
-
                     <div class="campo">
-                        <label for="campo-nome">
-                            Nome do aluno <span class="importar__opcional">(opcional)</span>
-                        </label>
+                        <label for="campo-aluno">Código do aluno</label>
                         <input
-                            id="campo-nome"
-                            formControlName="nomeLocal"
+                            id="campo-aluno"
+                            formControlName="aluno"
                             autocomplete="off"
-                            aria-describedby="dica-nome"
+                            placeholder="Ex.: 8A-07"
+                            aria-describedby="dica-aluno"
                         />
-                        <p class="campo__dica" id="dica-nome">
-                            Fica só neste computador, para você reconhecer o aluno. Não vai para o servidor nem para a
-                            IA.
-                        </p>
+                        <p class="campo__dica" id="dica-aluno">Use o código da turma. Nunca o nome do aluno.</p>
+                        @if (formulario.controls.aluno.touched && formulario.controls.aluno.invalid) {
+                            <p class="campo__erro">Informe o código do aluno.</p>
+                        }
                     </div>
                 } @else {
                     <div class="campo">

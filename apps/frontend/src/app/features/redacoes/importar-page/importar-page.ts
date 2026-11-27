@@ -4,8 +4,6 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 
 import { ConfigService, GRUPO_NAO_INFORMADO } from '../../../core/admin/config.service';
-import { gerarApelido } from '../../../core/alunos/apelidos';
-import { ChamadaService } from '../../../core/alunos/chamada.service';
 import { AlunosService } from '../../../core/redacoes/alunos.service';
 import { PropostasService, descreverPrazo } from '../../../core/propostas/propostas.service';
 import { RedacoesService } from '../../../core/redacoes/redacoes.service';
@@ -27,7 +25,6 @@ export class ImportarPage implements OnInit {
     private readonly router = inject(Router);
     private readonly avisos = inject(AvisosService);
     private readonly alunos = inject(AlunosService);
-    protected readonly chamada = inject(ChamadaService);
     private readonly propostas = inject(PropostasService);
 
     /** Query params (?proposta=&aluno=) vindos da página da proposta. */
@@ -41,12 +38,10 @@ export class ImportarPage implements OnInit {
     protected readonly perfis = inject(ConfigService).grupos;
 
     protected readonly formulario = inject(NonNullableFormBuilder).group({
-        /** Identificador enviado ao servidor: apelido (aluno novo) ou o já existente. Nunca o nome. */
-        aluno: ['', Validators.required],
+        /** Código do aluno (novo) ou o de um aluno já acompanhado. Nunca o nome. */
+        aluno: ['', [Validators.required, Validators.maxLength(40)]],
         /** Proposta de redação; vazio = redação avulsa. */
         propostaId: [''],
-        /** Nome real do aluno novo: fica só neste computador (lista de chamada local). */
-        nomeLocal: ['', Validators.maxLength(80)],
         turma: ['', Validators.required],
         titulo: [''],
         perfil: [GRUPO_NAO_INFORMADO],
@@ -99,34 +94,19 @@ export class ImportarPage implements OnInit {
         }
     }
 
-    /** Aluno novo (apelido sorteado) ou já acompanhado (escolhido na lista). */
+    /** Aluno novo (código digitado) ou já acompanhado (escolhido na lista). */
     protected readonly modo = signal<'novo' | 'existente'>('novo');
 
     protected readonly existentes = computed(() =>
         this.alunos
             .alunos()
-            .map((aluno) => ({ ...aluno, rotulo: this.chamada.rotulo(aluno.codigo) }))
+            .map((aluno) => ({ ...aluno, rotulo: aluno.codigo }))
             .sort((a, b) => a.rotulo.localeCompare(b.rotulo, 'pt-BR')),
     );
 
-    constructor() {
-        this.sortear();
-    }
-
     protected mudarModo(modo: 'novo' | 'existente'): void {
         this.modo.set(modo);
-        this.formulario.controls.nomeLocal.reset('');
-
-        if (modo === 'novo') {
-            this.sortear();
-        } else {
-            this.formulario.controls.aluno.reset('');
-        }
-    }
-
-    /** Sorteia um apelido que nenhum aluno usa ainda. */
-    protected sortear(): void {
-        this.formulario.controls.aluno.setValue(gerarApelido(this.alunos.alunos().map((aluno) => aluno.codigo)));
+        this.formulario.controls.aluno.reset('');
     }
 
     /** Ao escolher um aluno já acompanhado, repete a turma e o perfil dele. */
@@ -170,21 +150,18 @@ export class ImportarPage implements OnInit {
             return;
         }
 
-        const { nomeLocal, propostaId, ...valores } = this.formulario.getRawValue();
+        const { propostaId, ...valores } = this.formulario.getRawValue();
         this.enviando.set(true);
         this.erroEnvio.set(null);
 
         try {
             const redacao = await this.redacoes.importar({
                 ...valores,
+                aluno: valores.aluno.trim(),
                 origemId: null,
                 propostaId: propostaId || null,
                 arquivo: this.arquivo(),
             });
-
-            if (this.modo() === 'novo' && nomeLocal.trim()) {
-                this.chamada.definir(redacao.aluno, nomeLocal);
-            }
 
             this.avisos.mostrar('Redação importada', { texto: 'Agora peça a correção da IA.' });
             await this.router.navigate(['/redacoes', redacao.id]);

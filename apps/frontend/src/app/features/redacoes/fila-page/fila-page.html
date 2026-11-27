@@ -92,7 +92,7 @@
                         <li class="lista__item fila__item">
                             <span class="lista__textos">
                                 <span class="lista__titulo">
-                                    {{ chamada.rotulo(redacao.aluno) }}
+                                    {{ redacao.aluno }}
                                     <span class="fila__titulo">· {{ redacao.titulo }}</span>
                                 </span>
                                 <span class="fila__meta">
@@ -143,7 +143,7 @@
                                         [routerLink]="['/redacoes', redacao.id]"
                                     >
                                         {{ item.feitas ? 'Continuar' : 'Revisar' }}
-                                        <span class="visualmente-oculto">{{ chamada.rotulo(redacao.aluno) }}</span>
+                                        <span class="visualmente-oculto">{{ redacao.aluno }}</span>
                                     </a>
                                 }
                                 @case ('corrigindo') {
@@ -156,7 +156,7 @@
                                     <button class="botao botao--pequeno" type="button" (click)="corrigir(redacao)">
                                         <app-icone nome="lapis" />
                                         {{ redacao.erroCorrecao ? 'Tentar de novo' : 'Corrigir com IA' }}
-                                        <span class="visualmente-oculto">{{ chamada.rotulo(redacao.aluno) }}</span>
+                                        <span class="visualmente-oculto">{{ redacao.aluno }}</span>
                                     </button>
                                 }
                                 @default {
@@ -165,7 +165,7 @@
                                         [routerLink]="['/redacoes', redacao.id]"
                                     >
                                         Ver devolutiva
-                                        <span class="visualmente-oculto">{{ chamada.rotulo(redacao.aluno) }}</span>
+                                        <span class="visualmente-oculto">{{ redacao.aluno }}</span>
                                     </a>
                                 }
                             }

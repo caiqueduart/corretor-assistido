@@ -1,6 +1,6 @@
 import { NomeIcone } from '../../shared/icone/icone';
 
-export type GrupoBusca = 'Páginas' | 'Propostas' | 'Redações';
+export type GrupoBusca = 'Páginas' | 'Redações';
 
 export interface ItemBusca {
     readonly id: string;

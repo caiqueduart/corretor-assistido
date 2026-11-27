@@ -10,7 +10,6 @@ import { EstadoVazio } from '../../shared/estado-vazio/estado-vazio';
 import { Icone, NomeIcone } from '../../shared/icone/icone';
 import { saudacao, tempoRelativo } from '../../shared/tempo';
 import { InicioAdmin } from './inicio-admin';
-import { ChamadaService } from '../../core/alunos/chamada.service';
 import { progressoDe, progressoPorProposta } from '../../core/propostas/progresso';
 import { PropostasService, descreverPrazo } from '../../core/propostas/propostas.service';
 import { tomPrazo } from '../propostas/propostas-page';
@@ -35,7 +34,6 @@ const SEMANA = 7 * 24 * 3_600_000;
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InicioPage {
-    protected readonly chamada = inject(ChamadaService);
     private readonly auth = inject(AuthService);
     protected readonly redacoes = inject(RedacoesService);
 

@@ -12,7 +12,7 @@
 } @else if (redacao(); as atual) {
     <header class="revisao__topo">
         <h1 class="revisao__titulo">
-            {{ chamada.rotulo(atual.aluno) }}
+            {{ atual.aluno }}
             <span class="revisao__titulo-redacao">{{ atual.titulo }}</span>
         </h1>
 
@@ -203,7 +203,7 @@
                 @if (confirmandoEnvio()) {
                     <p class="envio__texto">
                         Registrar a devolutiva de
-                        <span class="envio__destaque">{{ chamada.rotulo(atual.aluno) }}</span>? Ela terá
+                        <span class="envio__destaque">{{ atual.aluno }}</span>? Ela terá
                         {{ validados() === 1 ? '1 correção' : validados() + ' correções' }} e o seu recado. Depois de
                         registrada, ela não pode ser alterada.
                     </p>

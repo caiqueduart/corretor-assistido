@@ -28,11 +28,7 @@ const INICIO: ItemNavegacao = { rota: '/inicio', rotulo: 'Início', icone: 'inic
 /** O professor corrige; o admin só administra. */
 const PROFESSOR: SecaoNavegacao = {
     titulo: 'Principal',
-    itens: [
-        INICIO,
-        { rota: '/propostas', rotulo: 'Propostas', icone: 'proposta' },
-        { rota: '/redacoes', rotulo: 'Redações', icone: 'redacoes' },
-    ],
+    itens: [INICIO, { rota: '/redacoes', rotulo: 'Redações', icone: 'redacoes' }],
 };
 
 const ADMIN: SecaoNavegacao = { titulo: 'Principal', itens: [INICIO] };

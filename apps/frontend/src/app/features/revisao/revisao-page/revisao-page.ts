@@ -22,7 +22,6 @@ import { ApontamentoItem, EventoDecisao } from '../apontamento-item/apontamento-
 import { Devolutiva } from '../devolutiva/devolutiva';
 import { TextoMarcado } from '../texto-marcado/texto-marcado';
 import { Esqueleto } from '../../../shared/esqueleto/esqueleto';
-import { ChamadaService } from '../../../core/alunos/chamada.service';
 
 type Visao = 'revisao' | 'aluno';
 
@@ -35,7 +34,6 @@ type Visao = 'revisao' | 'aluno';
     host: { '(document:keydown)': 'atalho($event)' },
 })
 export class RevisaoPage {
-    protected readonly chamada = inject(ChamadaService);
     protected readonly redacoes = inject(RedacoesService);
     private readonly titulo = inject(Title);
     private readonly avisos = inject(AvisosService);
@@ -87,7 +85,7 @@ export class RevisaoPage {
 
         const anterior = this.titulo.getTitle();
 
-        this.titulo.setTitle(`Devolutiva ${this.chamada.rotulo(redacao.aluno)} - ${redacao.titulo || 'redação'}`);
+        this.titulo.setTitle(`Devolutiva ${redacao.aluno} - ${redacao.titulo || 'redação'}`);
         window.print();
         this.titulo.setTitle(anterior);
     }
