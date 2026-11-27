@@ -233,7 +233,7 @@ func (s *Servidor) metricas(w http.ResponseWriter, r *http.Request, u dominio.Us
 		s.falhaInterna(w, r, err)
 		return
 	}
-	ts, err := s.st.ListarTextosCompletos(r.Context(), store.FiltroTextos{Turma: r.URL.Query().Get("turma")})
+	ts, err := s.st.ListarTextosCompletos(r.Context(), filtroMetricas(r))
 	if err != nil {
 		s.falhaInterna(w, r, err)
 		return
@@ -244,7 +244,7 @@ func (s *Servidor) metricas(w http.ResponseWriter, r *http.Request, u dominio.Us
 // decisoesCSV exporta uma linha por apontamento decidido, sem o conteúdo dos
 // textos nem o código do estudante, para a análise da experimentação.
 func (s *Servidor) decisoesCSV(w http.ResponseWriter, r *http.Request, u dominio.Usuario) {
-	ts, err := s.st.ListarTextosCompletos(r.Context(), store.FiltroTextos{Turma: r.URL.Query().Get("turma")})
+	ts, err := s.st.ListarTextosCompletos(r.Context(), filtroMetricas(r))
 	if err != nil {
 		s.falhaInterna(w, r, err)
 		return
@@ -252,7 +252,7 @@ func (s *Servidor) decisoesCSV(w http.ResponseWriter, r *http.Request, u dominio
 	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
 	w.Header().Set("Content-Disposition", `attachment; filename="decisoes.csv"`)
 	cw := csv.NewWriter(w)
-	_ = cw.Write([]string{"texto_id", "versao", "turma", "grupo", "motor", "criterio", "variacao", "decisao", "decidido_em"})
+	_ = cw.Write([]string{"texto_id", "versao", "turma", "grupo", "motor", "criterio", "variacao", "decisao", "decidido_em", "proposta_id"})
 	for _, t := range ts {
 		for _, a := range t.Apontamentos {
 			if a.Decisao == nil {
@@ -262,9 +262,19 @@ func (s *Servidor) decisoesCSV(w http.ResponseWriter, r *http.Request, u dominio
 			if a.DecididoEm != nil {
 				em = a.DecididoEm.Format("2006-01-02T15:04:05Z")
 			}
+			proposta := ""
+			if t.PropostaID != nil {
+				proposta = *t.PropostaID
+			}
 			_ = cw.Write([]string{t.ID, strconv.Itoa(t.Versao), t.Turma, t.Grupo, t.Motor, a.Criterio,
-				strconv.FormatBool(a.Variacao), string(*a.Decisao), em})
+				strconv.FormatBool(a.Variacao), string(*a.Decisao), em, proposta})
 		}
 	}
 	cw.Flush()
+}
+
+// filtroMetricas aplica os filtros opcionais ?turma= e ?proposta= das métricas e do CSV.
+func filtroMetricas(r *http.Request) store.FiltroTextos {
+	q := r.URL.Query()
+	return store.FiltroTextos{Turma: q.Get("turma"), PropostaID: q.Get("proposta")}
 }

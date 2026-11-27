@@ -14,6 +14,7 @@
     { "name": "Auditoria" },
     { "name": "Textos", "description": "Criação, importação e consulta das produções textuais." },
     { "name": "Correção e revisão", "description": "Correção (IA ou simulada), decisões do professor e envio da devolutiva." },
+    { "name": "Propostas", "description": "Propostas de redação: tema e orientações que agrupam as redações de uma atividade." },
     { "name": "Métricas" }
   ],
   "security": [{ "bearer": [] }],
@@ -287,7 +288,8 @@
           { "name": "status", "in": "query", "schema": { "$ref": "#/components/schemas/Status" } },
           { "name": "turma", "in": "query", "schema": { "type": "string" } },
           { "name": "grupo", "in": "query", "schema": { "type": "string" }, "description": "Perfil sociolinguístico." },
-          { "name": "aluno", "in": "query", "schema": { "type": "string" }, "description": "Código do estudante." }
+          { "name": "aluno", "in": "query", "schema": { "type": "string" }, "description": "Código do estudante." },
+          { "name": "proposta", "in": "query", "schema": { "type": "string" }, "description": "ID da proposta de redação." }
         ],
         "responses": {
           "200": {
@@ -344,6 +346,7 @@
                   "grupo": { "type": "string" },
                   "titulo": { "type": "string", "maxLength": 120 },
                   "origem_id": { "type": "string" },
+                  "proposta_id": { "type": "string", "description": "Proposta de redação (opcional)." },
                   "consentimento": { "type": "string", "enum": ["true", "false", "1", "0", "on", "sim", "s"], "description": "Consentimento informado da família. Precisa ser verdadeiro." }
                 }
               },
@@ -625,13 +628,98 @@
         }
       }
     },
+    "/api/propostas": {
+      "get": {
+        "tags": ["Propostas"],
+        "summary": "Listar propostas",
+        "description": "Todos os perfis. Abertas primeiro, mais recentes antes, cada uma com a contagem das redações por situação.",
+        "operationId": "listarPropostas",
+        "parameters": [{ "name": "situacao", "in": "query", "schema": { "type": "string", "enum": ["abertas", "encerradas", "todas"], "default": "todas" } }],
+        "responses": {
+          "200": {
+            "description": "Propostas e os gêneros textuais aceitos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["propostas", "generos"],
+                  "properties": {
+                    "propostas": { "type": "array", "items": { "$ref": "#/components/schemas/Proposta" } },
+                    "generos": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "`situacao_invalida`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" }
+        }
+      },
+      "post": {
+        "tags": ["Propostas"],
+        "summary": "Criar proposta",
+        "description": "Perfis `admin` e `professor`. Tema, gênero e turmas são obrigatórios.",
+        "operationId": "criarProposta",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EntradaProposta" } } } },
+        "responses": {
+          "201": { "description": "Proposta criada (aberta).", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Proposta" } } } },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "422": { "description": "`campos_obrigatorios`, `tema_invalido`, `genero_invalido`, `turmas_invalidas`, `prazo_invalido` ou `enunciado_longo`.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
+    "/api/propostas/{id}": {
+      "parameters": [{ "$ref": "#/components/parameters/Id" }],
+      "get": {
+        "tags": ["Propostas"],
+        "summary": "Obter proposta",
+        "description": "Todos os perfis.",
+        "operationId": "obterProposta",
+        "responses": {
+          "200": { "description": "Proposta com a contagem das redações.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Proposta" } } } },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "404": { "$ref": "#/components/responses/NaoEncontrado" }
+        }
+      },
+      "patch": {
+        "tags": ["Propostas"],
+        "summary": "Alterar, encerrar ou reabrir proposta",
+        "description": "Perfis `admin` e `professor`. Só os campos enviados mudam; `prazo: null` remove o prazo; `encerrada: true` impede novas importações.",
+        "operationId": "alterarProposta",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EntradaProposta" } } } },
+        "responses": {
+          "200": { "description": "Proposta atualizada.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Proposta" } } } },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "404": { "$ref": "#/components/responses/NaoEncontrado" },
+          "422": { "description": "Campo inválido (mesmos códigos da criação).", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      },
+      "delete": {
+        "tags": ["Propostas"],
+        "summary": "Excluir proposta",
+        "description": "Perfis `admin` e `professor`. Só propostas sem redações; com redações, encerre a proposta.",
+        "operationId": "excluirProposta",
+        "responses": {
+          "204": { "description": "Excluída." },
+          "401": { "$ref": "#/components/responses/NaoAutenticado" },
+          "403": { "$ref": "#/components/responses/SemPermissao" },
+          "404": { "$ref": "#/components/responses/NaoEncontrado" },
+          "409": { "description": "`estado_invalido`: a proposta tem redações.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Erro" } } } }
+        }
+      }
+    },
     "/api/metricas": {
       "get": {
         "tags": ["Métricas"],
         "summary": "Métricas da POC",
         "description": "Todos os perfis. Discordância professor × IA (geral e por critério), auditoria de equidade por perfil sociolinguístico e ganho entre a 1ª versão e a reescrita. Considera textos em `revisao` ou `concluido`. Um perfil só gera alerta com pelo menos 3 decisões.",
         "operationId": "metricas",
-        "parameters": [{ "name": "turma", "in": "query", "schema": { "type": "string" } }],
+        "parameters": [
+          { "name": "turma", "in": "query", "schema": { "type": "string" } },
+          { "name": "proposta", "in": "query", "schema": { "type": "string" }, "description": "ID da proposta de redação." }
+        ],
         "responses": {
           "200": { "description": "Resumo.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Metricas" } } } },
           "401": { "$ref": "#/components/responses/NaoAutenticado" }
@@ -642,9 +730,12 @@
       "get": {
         "tags": ["Métricas"],
         "summary": "Exportar decisões (CSV)",
-        "description": "Todos os perfis. Uma linha por apontamento decidido, sem o conteúdo dos textos nem o código do estudante. Colunas: `texto_id, versao, turma, grupo, motor, criterio, variacao, decisao, decidido_em`.",
+        "description": "Todos os perfis. Uma linha por apontamento decidido, sem o conteúdo dos textos nem o código do estudante. Colunas: `texto_id, versao, turma, grupo, motor, criterio, variacao, decisao, decidido_em, proposta_id`.",
         "operationId": "decisoesCSV",
-        "parameters": [{ "name": "turma", "in": "query", "schema": { "type": "string" } }],
+        "parameters": [
+          { "name": "turma", "in": "query", "schema": { "type": "string" } },
+          { "name": "proposta", "in": "query", "schema": { "type": "string" }, "description": "ID da proposta de redação." }
+        ],
         "responses": {
           "200": {
             "description": "Arquivo `decisoes.csv`.",
@@ -772,6 +863,7 @@
           "titulo": { "type": "string", "maxLength": 120 },
           "conteudo": { "type": "string", "maxLength": 20000 },
           "origem_id": { "type": "string", "description": "ID da 1ª versão, para cadastrar a reescrita." },
+          "proposta_id": { "type": "string", "description": "Proposta de redação (opcional). Sem título, usa o tema; com uma turma só, usa essa turma. A turma precisa ser da proposta, e a proposta precisa estar aberta." },
           "consentimento": { "type": "boolean", "description": "Consentimento informado da família. Precisa ser `true`." }
         },
         "example": { "aluno_codigo": "8A-07", "turma": "8º A", "grupo": "Rural", "titulo": "Minhas férias", "conteudo": "Eu ja fui pra roça nas ferias.", "consentimento": true }
@@ -798,7 +890,7 @@
       },
       "Texto": {
         "type": "object",
-        "required": ["id", "aluno_codigo", "turma", "grupo", "titulo", "versao", "origem_id", "conteudo", "status", "consentimento", "exemplo", "motor", "criterios_usados", "comentario_ia", "comentario_professor", "descartados", "erro_correcao", "criado_por", "criado_em", "atualizado_em", "avaliado_em", "enviado_em", "enviado_por", "palavras", "total_apontamentos", "pendentes"],
+        "required": ["id", "aluno_codigo", "turma", "grupo", "titulo", "versao", "origem_id", "proposta_id", "conteudo", "status", "consentimento", "exemplo", "motor", "criterios_usados", "comentario_ia", "comentario_professor", "descartados", "erro_correcao", "criado_por", "criado_em", "atualizado_em", "avaliado_em", "enviado_em", "enviado_por", "palavras", "total_apontamentos", "pendentes"],
         "properties": {
           "id": { "type": "string" },
           "aluno_codigo": { "type": "string" },
@@ -807,6 +899,7 @@
           "titulo": { "type": "string" },
           "versao": { "type": "integer", "enum": [1, 2] },
           "origem_id": { "type": "string", "nullable": true, "description": "Na reescrita, ID da 1ª versão." },
+          "proposta_id": { "type": "string", "nullable": true, "description": "Proposta de redação; null nas redações avulsas." },
           "conteudo": { "type": "string" },
           "status": { "$ref": "#/components/schemas/Status" },
           "consentimento": { "type": "boolean" },
@@ -882,6 +975,45 @@
           "segmentos": { "type": "array", "items": { "$ref": "#/components/schemas/Segmento" }, "description": "Texto em pedaços, para destacar as correções." },
           "para_reescrita": { "type": "array", "items": { "$ref": "#/components/schemas/ItemReescrita" } }
         }
+      },
+      "Proposta": {
+        "type": "object",
+        "required": ["id", "tema", "genero", "enunciado", "turmas", "prazo", "encerrada", "criado_por", "criado_em", "atualizado_em", "contagem"],
+        "properties": {
+          "id": { "type": "string" },
+          "tema": { "type": "string" },
+          "genero": { "type": "string" },
+          "enunciado": { "type": "string" },
+          "turmas": { "type": "array", "items": { "type": "string" } },
+          "prazo": { "type": "string", "format": "date", "nullable": true, "description": "Informativo: não bloqueia importações." },
+          "encerrada": { "type": "boolean" },
+          "criado_por": { "type": "string", "nullable": true },
+          "criado_em": { "type": "string", "format": "date-time" },
+          "atualizado_em": { "type": "string", "format": "date-time" },
+          "contagem": {
+            "type": "object",
+            "required": ["total", "aguardando_ia", "revisao", "concluidos"],
+            "properties": {
+              "total": { "type": "integer" },
+              "aguardando_ia": { "type": "integer", "description": "Pendentes ou corrigindo." },
+              "revisao": { "type": "integer" },
+              "concluidos": { "type": "integer" }
+            }
+          }
+        }
+      },
+      "EntradaProposta": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tema": { "type": "string", "minLength": 3, "maxLength": 200 },
+          "genero": { "type": "string", "enum": ["Dissertativo-argumentativo", "Narrativo", "Artigo de opinião", "Carta argumentativa", "Relato", "Outro"] },
+          "enunciado": { "type": "string", "maxLength": 4000 },
+          "turmas": { "type": "array", "minItems": 1, "maxItems": 10, "items": { "type": "string", "maxLength": 30 } },
+          "prazo": { "type": "string", "format": "date", "nullable": true },
+          "encerrada": { "type": "boolean" }
+        },
+        "example": { "tema": "Os desafios da mobilidade no campo", "genero": "Dissertativo-argumentativo", "turmas": ["8º A", "8º B"], "prazo": "2026-12-10" }
       },
       "MetricaCriterio": {
         "type": "object",
