@@ -1,0 +1,130 @@
+<app-cabecalho-pagina
+    titulo="Auditoria"
+    descricao="Quem fez o quê e quando. Os registros não guardam o conteúdo dos textos nem dados dos estudantes."
+/>
+
+<div class="auditoria__filtros">
+    <div class="campo">
+        <label for="filtro-acao">Ação</label>
+        <select id="filtro-acao" [value]="filtroAcao()" (change)="filtroAcao.set($any($event.target).value)">
+            <option value="">Todas</option>
+            @for (acao of acoes(); track acao.valor) {
+                <option [value]="acao.valor">{{ acao.rotulo }}</option>
+            }
+        </select>
+    </div>
+
+    <div class="campo">
+        <label for="filtro-usuario">Usuário</label>
+        <select id="filtro-usuario" [value]="filtroUsuario()" (change)="filtroUsuario.set($any($event.target).value)">
+            <option value="">Todos</option>
+            @for (autor of autores(); track autor.valor) {
+                <option [value]="autor.valor">{{ autor.rotulo }}</option>
+            }
+        </select>
+    </div>
+
+    <div class="campo">
+        <label for="filtro-de">De</label>
+        <input
+            id="filtro-de"
+            type="date"
+            [value]="de()"
+            [max]="ate() || null"
+            (change)="de.set($any($event.target).value)"
+        />
+    </div>
+
+    <div class="campo">
+        <label for="filtro-ate">Até</label>
+        <input
+            id="filtro-ate"
+            type="date"
+            [value]="ate()"
+            [min]="de() || null"
+            (change)="ate.set($any($event.target).value)"
+        />
+    </div>
+
+    <div class="campo">
+        <label for="limite">Carregar</label>
+        <select id="limite" [value]="limite()" (change)="mudarLimite($any($event.target).value)">
+            @for (n of limites; track n) {
+                <option [value]="n">Últimos {{ n }}</option>
+            }
+        </select>
+    </div>
+</div>
+
+@if (erro(); as mensagem) {
+    <div class="aviso aviso--erro auditoria__erro" role="alert">
+        <p>{{ mensagem }}</p>
+        <button class="botao botao--pequeno" type="button" (click)="carregar()">Tentar de novo</button>
+    </div>
+} @else {
+    <div class="auditoria__resumo" role="status">
+        @if (!carregando()) {
+            <p>
+                {{ filtradas().length }} de {{ registros().length }} registros
+                @if (truncado()) {
+                    · pode haver registros mais antigos; aumente a quantidade carregada.
+                }
+            </p>
+            @if (temFiltro()) {
+                <button class="botao botao--discreto botao--pequeno" type="button" (click)="limparFiltros()">
+                    Limpar filtros
+                </button>
+            }
+        }
+    </div>
+
+    <div class="tabela-folha">
+        <table>
+            <caption class="visualmente-oculto">
+                Registros de auditoria, do mais recente ao mais antigo
+            </caption>
+            <thead>
+                <tr>
+                    <th scope="col">Quando</th>
+                    <th scope="col">Usuário</th>
+                    <th scope="col">Ação</th>
+                    <th scope="col">Detalhes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (carregando()) {
+                    <tr>
+                        <td class="tabela-folha__vazio" colspan="4">Carregando registros…</td>
+                    </tr>
+                } @else {
+                    @for (linha of filtradas(); track linha.id) {
+                        <tr>
+                            <td class="auditoria__quando">
+                                <time [attr.datetime]="linha.criadoEm">
+                                    {{ linha.criadoEm | date: 'dd/MM/yyyy' }}
+                                    <span>{{ linha.criadoEm | date: 'HH:mm:ss' }}</span>
+                                </time>
+                            </td>
+                            <td class="auditoria__autor">{{ linha.autor }}</td>
+                            <th scope="row" class="auditoria__acao">
+                                {{ linha.rotulo }}
+                                @if (linha.alvo) {
+                                    <span class="auditoria__alvo">{{ linha.alvo }}</span>
+                                }
+                            </th>
+                            <td class="auditoria__detalhe">{{ linha.detalhe || '—' }}</td>
+                        </tr>
+                    } @empty {
+                        <tr>
+                            <td class="tabela-folha__vazio" colspan="4">
+                                {{
+                                    registros().length ? 'Nenhum registro com esses filtros.' : 'Nenhum registro ainda.'
+                                }}
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+}

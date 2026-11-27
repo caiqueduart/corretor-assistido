@@ -1,0 +1,185 @@
+<app-cabecalho-pagina
+    titulo="Configuração da correção"
+    descricao="Vale para as próximas correções. Textos já corrigidos mantêm os critérios usados na época."
+/>
+
+@if (carregando()) {
+    <p class="config__nota" role="status">Carregando configuração…</p>
+} @else if (erroCarga(); as mensagem) {
+    <div class="aviso aviso--erro config__erro-carga" role="alert">
+        <p>{{ mensagem }}</p>
+        <button class="botao botao--pequeno" type="button" (click)="carregar()">Tentar de novo</button>
+    </div>
+} @else if (estado(); as atual) {
+    @if (atual.iaConfigurada) {
+        <p class="aviso aviso--sucesso">A correção por IA está ligada. O motor simulado continua disponível.</p>
+    } @else {
+        <p class="aviso aviso--atencao">
+            A IA não está configurada no servidor (falta a chave da API). Só a correção simulada, por regras fixas, está
+            disponível.
+        </p>
+    }
+
+    <form class="config" (submit)="$event.preventDefault(); salvar()" novalidate>
+        <fieldset class="config__bloco">
+            <legend class="config__legenda">Critérios de correção</legend>
+            <p class="config__explicacao">O que a IA deve apontar no texto do estudante.</p>
+
+            <div class="config__criterios">
+                @for (criterio of criterios(); track criterio.id) {
+                    <label class="escolha config__criterio" [class.config__criterio--marcado]="criterio.marcado">
+                        <input
+                            type="checkbox"
+                            [checked]="criterio.marcado"
+                            (change)="alternarCriterio(criterio.id, $any($event.target).checked)"
+                        />
+                        <span class="escolha__textos">
+                            <span class="escolha__titulo">
+                                {{ criterio.id }}
+                                @if (criterio.daPoc) {
+                                    <span class="etiqueta etiqueta--caneta">Escopo da POC</span>
+                                } @else {
+                                    <span class="etiqueta">Só para teste</span>
+                                }
+                            </span>
+                            <span class="escolha__dica">{{ criterio.descricao }}</span>
+                        </span>
+                    </label>
+                }
+            </div>
+
+            @if (erroCriterios(); as mensagem) {
+                <p class="campo__erro" role="alert">{{ mensagem }}</p>
+            }
+            @if (foraDaPoc()) {
+                <p class="aviso aviso--atencao">
+                    Há critério fora da especificação da POC (ortografia e pontuação). As métricas de discordância
+                    passam a incluí-lo; registre isso na análise da experimentação.
+                </p>
+            }
+        </fieldset>
+
+        <fieldset class="config__bloco">
+            <legend class="config__legenda">Perfis sociolinguísticos</legend>
+            <p class="config__explicacao">
+                Opções do professor ao importar um texto. Servem só para a auditoria de equidade e nunca são enviadas à
+                IA. Renomear ou remover um perfil não altera os textos já importados.
+            </p>
+
+            <ul class="config__grupos" role="list">
+                <li class="config__grupo">
+                    <input [value]="grupoPadrao" disabled aria-label="Perfil padrão" />
+                    <span class="etiqueta">Padrão</span>
+                </li>
+
+                @for (grupo of rascunho().grupos; track $index; let i = $index) {
+                    <li class="config__grupo">
+                        <input
+                            [value]="grupo"
+                            [attr.maxlength]="limites.tamanhoMaximoGrupo"
+                            [attr.aria-label]="'Perfil ' + (i + 2)"
+                            (input)="renomearGrupo(i, $any($event.target).value)"
+                        />
+                        <button class="botao botao--discreto botao--pequeno" type="button" (click)="removerGrupo(i)">
+                            <app-icone nome="recusar" />
+                            <span class="visualmente-oculto">Remover {{ grupo }}</span>
+                        </button>
+                    </li>
+                }
+            </ul>
+
+            <div class="config__novo-grupo">
+                <div class="campo">
+                    <label for="novo-grupo">Novo perfil</label>
+                    <input
+                        id="novo-grupo"
+                        [value]="novoGrupo()"
+                        [attr.maxlength]="limites.tamanhoMaximoGrupo"
+                        [disabled]="!podeAdicionarGrupo()"
+                        placeholder="Ex.: Quilombola"
+                        (input)="novoGrupo.set($any($event.target).value)"
+                        (keydown.enter)="$event.preventDefault(); adicionarGrupo()"
+                    />
+                </div>
+                <button
+                    class="botao"
+                    type="button"
+                    [disabled]="!novoGrupo().trim() || !podeAdicionarGrupo()"
+                    (click)="adicionarGrupo()"
+                >
+                    <app-icone nome="mais" />
+                    Adicionar
+                </button>
+            </div>
+
+            @if (erroGrupos(); as mensagem) {
+                <p class="campo__erro" role="alert">{{ mensagem }}</p>
+            } @else if (!podeAdicionarGrupo()) {
+                <p class="campo__dica">Limite de {{ limites.maximoGrupos }} perfis atingido.</p>
+            }
+        </fieldset>
+
+        <fieldset class="config__bloco">
+            <legend class="config__legenda">Alerta de possível viés</legend>
+            <p class="config__explicacao">
+                Na auditoria de equidade, um perfil é sinalizado quando a discordância entre professor e IA nele passa a
+                média geral por mais que este limiar, com pelo menos 3 decisões.
+            </p>
+
+            <div class="campo config__limiar">
+                <label for="limiar">Limiar</label>
+                <div class="config__limiar-entrada">
+                    <input
+                        id="limiar"
+                        type="number"
+                        inputmode="numeric"
+                        [min]="limites.limiarMinimo"
+                        [max]="limites.limiarMaximo"
+                        step="1"
+                        [value]="rascunho().limiar"
+                        (input)="definirLimiar($any($event.target).value)"
+                    />
+                    <span>pontos percentuais</span>
+                </div>
+                @if (erroLimiar(); as mensagem) {
+                    <p class="campo__erro" role="alert">{{ mensagem }}</p>
+                } @else {
+                    <p class="campo__dica">
+                        Exemplo: com discordância geral de 20%, o alerta aparece para perfis acima de
+                        {{ 20 + rascunho().limiar }}%. Valores menores sinalizam mais cedo, com mais falsos alarmes.
+                    </p>
+                }
+            </div>
+        </fieldset>
+
+        <footer class="config__rodape">
+            <div class="config__situacao" role="status">
+                @if (erroSalvar(); as mensagem) {
+                    <p class="campo__erro">{{ mensagem }}</p>
+                } @else if (tentouSalvar() && !valido()) {
+                    <p class="campo__erro">Corrija os campos destacados para salvar.</p>
+                } @else if (salvoAgora()) {
+                    <p class="config__salvo">Configuração salva.</p>
+                } @else if (alterado()) {
+                    <p class="config__pendente">Alterações não salvas.</p>
+                } @else if (ultimaAlteracao(); as ultima) {
+                    <p class="config__nota">
+                        Última alteração em {{ ultima.em | date: "dd/MM/yyyy 'às' HH:mm" }}
+                        @if (ultima.por) {
+                            por {{ ultima.por }}
+                        }
+                    </p>
+                }
+            </div>
+
+            <div class="config__acoes">
+                <button class="botao botao--discreto" type="button" [disabled]="!alterado()" (click)="descartar()">
+                    Descartar
+                </button>
+                <button class="botao botao--primario" type="submit" [disabled]="!alterado() || salvando()">
+                    {{ salvando() ? 'Salvando…' : 'Salvar configuração' }}
+                </button>
+            </div>
+        </footer>
+    </form>
+}

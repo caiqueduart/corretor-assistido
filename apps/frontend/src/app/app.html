@@ -1,38 +1,49 @@
-<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+@if (auth.usuario(); as usuario) {
+    <a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
-<header class="barra">
-    <a class="barra__marca" routerLink="/redacoes">
-        <span class="barra__nome">Corretor Assistido</span>
-        <span class="barra__versao">POC 1.3</span>
-    </a>
+    <header class="barra">
+        <a class="barra__marca" routerLink="/redacoes">
+            <span class="barra__nome">Corretor Assistido</span>
+            <span class="barra__versao">POC 1.3</span>
+        </a>
 
-    <nav class="barra__nav" aria-label="Principal">
-        @for (item of navegacao; track item.rota) {
-            <a
-                class="barra__link"
-                [routerLink]="item.rota"
-                routerLinkActive="barra__link--ativo"
-                ariaCurrentWhenActive="page"
-            >
-                <app-icone [nome]="item.icone" />
-                <span>{{ item.rotulo }}</span>
+        <nav class="barra__nav" aria-label="Principal">
+            @for (item of navegacao(); track item.rota) {
+                <a
+                    class="barra__link"
+                    [routerLink]="item.rota"
+                    routerLinkActive="barra__link--ativo"
+                    ariaCurrentWhenActive="page"
+                >
+                    <app-icone [nome]="item.icone" />
+                    <span>{{ item.rotulo }}</span>
 
-                @if (item.rota === '/redacoes' && redacoes.porStatus().emRevisao.length) {
-                    <span class="barra__contador">
-                        {{ redacoes.porStatus().emRevisao.length }}
-                        <span class="visualmente-oculto">para revisar</span>
-                    </span>
-                }
-            </a>
-        }
-    </nav>
+                    @if (item.rota === '/redacoes' && redacoes.porStatus().emRevisao.length) {
+                        <span class="barra__contador">
+                            {{ redacoes.porStatus().emRevisao.length }}
+                            <span class="visualmente-oculto">para revisar</span>
+                        </span>
+                    }
+                </a>
+            }
+        </nav>
 
-    <p class="barra__perfil">
-        <span class="barra__perfil-nome">Profa. Helena</span>
-        <span class="barra__perfil-papel">Professora · dados de demonstração</span>
-    </p>
-</header>
+        <div class="barra__perfil">
+            <p class="barra__perfil-textos">
+                <span class="barra__perfil-nome">{{ usuario.nome }}</span>
+                <span class="barra__perfil-papel">{{ rotuloPerfil[usuario.perfil] }}</span>
+            </p>
 
-<main class="conteudo" id="conteudo" tabindex="-1">
+            <button class="barra__sair" type="button" (click)="sair()">
+                <app-icone nome="sair" />
+                <span>Sair</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="conteudo" id="conteudo" tabindex="-1">
+        <router-outlet />
+    </main>
+} @else {
     <router-outlet />
-</main>
+}
