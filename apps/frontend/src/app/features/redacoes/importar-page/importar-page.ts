@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
-import { PERFIS_SOCIOLINGUISTICOS, PerfilSociolinguistico } from '../../../core/redacoes/redacao.model';
+import { ConfigService, GRUPO_NAO_INFORMADO } from '../../../core/admin/config.service';
 import { RedacoesService } from '../../../core/redacoes/redacoes.service';
 import { CabecalhoPagina } from '../../../shared/cabecalho-pagina/cabecalho-pagina';
 import { Icone } from '../../../shared/icone/icone';
@@ -21,13 +21,14 @@ export class ImportarPage {
     private readonly redacoes = inject(RedacoesService);
     private readonly router = inject(Router);
 
-    protected readonly perfis = PERFIS_SOCIOLINGUISTICOS;
+    /** Perfis definidos pelo admin em Administração › Configuração. */
+    protected readonly perfis = inject(ConfigService).grupos;
 
     protected readonly formulario = inject(NonNullableFormBuilder).group({
         aluno: ['', [Validators.required, Validators.pattern(/^[\w-]{2,12}$/)]],
         turma: ['', Validators.required],
         titulo: [''],
-        perfil: ['Não informado' as PerfilSociolinguistico],
+        perfil: [GRUPO_NAO_INFORMADO],
         textoColado: [''],
         consentimentoFamilia: [false, Validators.requiredTrue],
     });

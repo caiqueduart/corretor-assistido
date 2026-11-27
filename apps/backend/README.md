@@ -158,4 +158,4 @@ internal/exemplos   os 8 textos do roteiro de demonstração
 
 - PDFs digitalizados (imagem) são recusados com uma mensagem pedindo OCR. Redações manuscritas exigiriam reconhecimento de escrita.
 - O login é por e-mail e senha. Login institucional (Google Workspace, gov.br) depende de decisão dos stakeholders.
-- A interface Angular (`apps/frontend`) já usa esta API para login, administração (usuários, configuração e auditoria) e exportação do CSV. As redações ainda vêm de dados mockados; o próximo passo é apontá-las para `/api/textos`.
+- A interface Angular (`apps/frontend`) usa esta API em todas as telas. A correção espera o resultado (`?aguardar=true`); acompanhar o status em segundo plano fica para quando a IA real estiver ligada.

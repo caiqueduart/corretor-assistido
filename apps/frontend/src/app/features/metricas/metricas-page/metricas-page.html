@@ -90,7 +90,8 @@
         <h2 class="metricas__subtitulo" id="titulo-equidade">Auditoria de equidade por perfil</h2>
         <p class="metricas__nota">
             Se o professor recusa bem mais apontamentos num grupo, a IA pode estar tratando a fala desse grupo como
-            erro. O alerta aparece quando a discordância passa {{ limiar }} pontos da média, com pelo menos 3 decisões.
+            erro. O alerta aparece quando a discordância passa {{ limiar() }} pontos da média, com pelo menos 3
+            decisões.
         </p>
 
         <div class="metricas__rolagem">
@@ -135,15 +136,9 @@
     </section>
 
     <p class="metricas__nota">
-        Valores calculados a partir das redações carregadas, incluindo os exemplos de demonstração. Perfil e código do
-        aluno nunca são enviados à IA.
+        Valores calculados a partir das redações registradas no servidor, incluindo os textos de exemplo, se carregados.
+        Perfil e código do aluno nunca são enviados à IA.
     </p>
 }
 
-<!-- Fica fora do @if: o CSV vem do servidor e não depende das redações carregadas na tela. -->
 <app-exportar-decisoes />
-
-<p class="metricas__nota">
-    Atenção: enquanto as redações desta interface usam dados de demonstração, o CSV traz as decisões registradas no
-    servidor. Os números podem diferir dos mostrados acima.
-</p>

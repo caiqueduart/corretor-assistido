@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom, map } from 'rxjs';
 
 /** Perfil padrão do back-end; não pode ser removido. */
@@ -7,6 +7,16 @@ export const GRUPO_NAO_INFORMADO = 'Não informado';
 
 /** Critérios da especificação da POC; os demais ficam disponíveis só para teste. */
 export const CRITERIOS_DA_POC: readonly string[] = ['Ortografia', 'Pontuação'];
+
+/** Padrões do back-end (`dominio.ConfiguracaoPadrao`), usados se a configuração não puder ser lida. */
+export const GRUPOS_PADRAO: readonly string[] = [
+    GRUPO_NAO_INFORMADO,
+    'Urbano',
+    'Rural',
+    'Migrante de outra região',
+    'Bilíngue / outra língua materna',
+];
+export const LIMIAR_PADRAO = 15;
 
 export const LIMITES_CONFIG = {
     limiarMinimo: 5,
@@ -74,14 +84,44 @@ function deApi(r: EstadoConfiguracaoApi): EstadoConfiguracao {
 export class ConfigService {
     private readonly http = inject(HttpClient);
 
-    obter(): Promise<EstadoConfiguracao> {
-        return firstValueFrom(this.http.get<EstadoConfiguracaoApi>('/api/config').pipe(map(deApi)));
+    /** Última configuração lida ou salva. Null antes do login ou se a leitura falhou. */
+    private readonly ativa = signal<ConfiguracaoCorrecao | null>(null);
+
+    /** Perfis que o professor pode escolher ao importar. */
+    readonly grupos = computed(() => this.ativa()?.grupos ?? GRUPOS_PADRAO);
+    /** Critérios que a IA aplica nas próximas correções. */
+    readonly criterios = computed(() => this.ativa()?.criterios ?? CRITERIOS_DA_POC);
+    /** Pontos percentuais acima da média que disparam o alerta de possível viés. */
+    readonly limiarVies = computed(() => this.ativa()?.limiarVies ?? LIMIAR_PADRAO);
+
+    async obter(): Promise<EstadoConfiguracao> {
+        const estado = await firstValueFrom(this.http.get<EstadoConfiguracaoApi>('/api/config').pipe(map(deApi)));
+        this.ativa.set(estado.configuracao);
+
+        return estado;
     }
 
-    salvar(nova: NovaConfiguracao): Promise<EstadoConfiguracao> {
+    async salvar(nova: NovaConfiguracao): Promise<EstadoConfiguracao> {
         const corpo = { criterios: nova.criterios, grupos: nova.grupos, limiar_vies: nova.limiarVies };
+        const estado = await firstValueFrom(
+            this.http.put<EstadoConfiguracaoApi>('/api/config', corpo).pipe(map(deApi)),
+        );
+        this.ativa.set(estado.configuracao);
 
-        return firstValueFrom(this.http.put<EstadoConfiguracaoApi>('/api/config', corpo).pipe(map(deApi)));
+        return estado;
+    }
+
+    /** Lê a configuração ao entrar. Sem ela, valem os padrões da POC. */
+    async carregar(): Promise<void> {
+        try {
+            await this.obter();
+        } catch {
+            this.ativa.set(null);
+        }
+    }
+
+    limpar(): void {
+        this.ativa.set(null);
     }
 }
 

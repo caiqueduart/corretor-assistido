@@ -4,15 +4,6 @@ export type Criterio = string;
 /** Critérios da especificação da POC, usados quando a configuração não está disponível. */
 export const CRITERIOS: readonly Criterio[] = ['Ortografia', 'Pontuação'];
 
-/** Perfis padrão do back-end, usados quando a configuração não está disponível. */
-export const PERFIS_SOCIOLINGUISTICOS: readonly PerfilSociolinguistico[] = [
-    'Não informado',
-    'Urbano',
-    'Rural',
-    'Migrante de outra região',
-    'Bilíngue / outra língua materna',
-];
-
 /** Perfil sociolinguístico. A lista é definida pelo admin (`/api/config`). */
 export type PerfilSociolinguistico = string;
 

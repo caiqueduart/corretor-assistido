@@ -1,11 +1,10 @@
 import { Injectable, computed, inject } from '@angular/core';
 
 import { AlunosService } from './alunos.service';
-import { Apontamento, CRITERIOS, Criterio, PerfilSociolinguistico, contarPalavras } from './redacao.model';
+import { ConfigService } from '../admin/config.service';
+import { Apontamento, Criterio, PerfilSociolinguistico, contarPalavras } from './redacao.model';
 import { RedacoesService } from './redacoes.service';
 
-/** Diferença, em pontos percentuais, acima da média geral que dispara o alerta de possível viés. */
-export const LIMIAR_ALERTA_VIES = 15;
 const MINIMO_DECISOES_PARA_ALERTA = 3;
 
 export interface LinhaCriterio {
@@ -43,6 +42,17 @@ function discordancia(apontamentos: readonly Apontamento[]): number | null {
 export class MetricasService {
     private readonly redacoes = inject(RedacoesService);
     private readonly alunos = inject(AlunosService);
+    private readonly config = inject(ConfigService);
+
+    /** Diferença, em pontos percentuais, acima da média geral que dispara o alerta (definida pelo admin). */
+    readonly limiar = computed(() => this.config.limiarVies());
+
+    /** Critérios ativos, mais os que aparecem em correções antigas (ex.: um critério desligado depois). */
+    private readonly criterios = computed<Criterio[]>(() => {
+        const usados = new Set(this.todosApontamentos().map((apontamento) => apontamento.criterio));
+
+        return [...new Set([...this.config.criterios(), ...usados])];
+    });
 
     private readonly corrigidas = computed(() =>
         this.redacoes.redacoes().filter((redacao) => redacao.status === 'em-revisao' || redacao.status === 'devolvida'),
@@ -74,7 +84,7 @@ export class MetricasService {
     });
 
     readonly porCriterio = computed<LinhaCriterio[]>(() =>
-        CRITERIOS.map((criterio) => {
+        this.criterios().map((criterio) => {
             const doCriterio = this.todosApontamentos().filter((apontamento) => apontamento.criterio === criterio);
             const contar = (decisao: Apontamento['decisao']) => doCriterio.filter((a) => a.decisao === decisao).length;
 
@@ -90,6 +100,7 @@ export class MetricasService {
 
     readonly porPerfil = computed<LinhaPerfil[]>(() => {
         const geral = this.discordanciaGeral();
+        const limiar = this.limiar();
         const perfis = [...new Set(this.corrigidas().map((redacao) => redacao.perfil))];
 
         return perfis
@@ -110,7 +121,7 @@ export class MetricasService {
                         valor !== null &&
                         geral !== null &&
                         decisoes >= MINIMO_DECISOES_PARA_ALERTA &&
-                        valor - geral >= LIMIAR_ALERTA_VIES,
+                        valor - geral >= limiar,
                 };
             })
             .sort((a, b) => b.redacoes - a.redacoes);
