@@ -11,14 +11,14 @@ web
 ## Users
 
 - **Professor de Língua Portuguesa** do ensino fundamental (8º e 9º ano, _inferido do protótipo_). Importa as produções dos alunos, revisa a correção da IA e libera a devolutiva. É quem usa a ferramenta no dia a dia, geralmente no computador da escola ou de casa, com várias redações por turma.
-- **Administrador do sistema**: cadastra professores e demais usuários, define os critérios de correção e acompanha métricas e auditoria. Não corrige redações.
+- **Administrador do sistema**: cadastra professores e demais usuários, define os critérios de correção e acompanha a auditoria. Não corrige redações.
 - **Estudante**: não acessa o sistema nesta POC; recebe do professor o PDF da devolutiva validada.
 
 ## Product Purpose
 
 Corretor assistido de produções textuais (POC 1.3). A IA aponta desvios de ortografia e pontuação; o professor aceita, recusa ou ajusta cada apontamento (ou a correção inteira) antes de qualquer devolutiva. A POC testa a hipótese de que o feedback assistido melhora a reescrita sem introduzir vieses contra variedades linguísticas não padrão.
 
-Sucesso: professor revisa uma redação em poucos minutos, entende sem esforço o que já decidiu e o que falta, e acompanha a evolução do aluno entre a 1ª versão e a reescrita.
+Sucesso: professor revisa uma redação em poucos minutos, entende sem esforço o que já decidiu e o que falta. Evolução do aluno e métricas da POC ficam para uma próxima versão.
 
 ## Positioning
 

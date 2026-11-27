@@ -38,7 +38,7 @@ function configurar(): { http: HttpTestingController; auth: AuthService; sessao:
     };
 }
 
-async function rodarGuard(guard: typeof autenticadoGuard, url = '/metricas'): Promise<unknown> {
+async function rodarGuard(guard: typeof autenticadoGuard, url = '/redacoes'): Promise<unknown> {
     return TestBed.runInInjectionContext(() =>
         guard({} as ActivatedRouteSnapshot, { url } as RouterStateSnapshot),
     ) as Promise<unknown>;
@@ -170,10 +170,10 @@ describe('guards', () => {
     it('autenticadoGuard manda ao login guardando o destino', async () => {
         configurar();
 
-        const resultado = await rodarGuard(autenticadoGuard, '/metricas');
+        const resultado = await rodarGuard(autenticadoGuard, '/redacoes');
 
         expect(resultado).toBeInstanceOf(UrlTree);
-        expect(TestBed.inject(Router).serializeUrl(resultado as UrlTree)).toBe('/login?voltar=%2Fmetricas');
+        expect(TestBed.inject(Router).serializeUrl(resultado as UrlTree)).toBe('/login?voltar=%2Fredacoes');
     });
 
     it('perfilGuard libera o perfil certo e barra os outros', async () => {

@@ -13,8 +13,7 @@
         </h1>
 
         <p class="revisao__meta">
-            {{ atual.turma }} · {{ atual.versao === 1 ? '1ª versão' : 'Reescrita (versão ' + atual.versao + ')' }} ·
-            <a [routerLink]="['/alunos', atual.aluno]">Ver evolução do aluno</a>
+            {{ atual.turma }} · {{ atual.versao === 1 ? '1ª versão' : 'Reescrita (versão ' + atual.versao + ')' }}
 
             @if (atual.exemplo) {
                 <span class="etiqueta">Exemplo</span>

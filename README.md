@@ -61,18 +61,16 @@ Testes do back-end: `cd apps/backend && go test ./...`.
 
 Todas as telas usam o back-end:
 
-| Área                                                                | Perfil    | Rotas                                                      |
-| ------------------------------------------------------------------- | --------- | ---------------------------------------------------------- |
-| Login e sessão                                                      | todos     | `/api/auth`, `/api/me`                                     |
-| Redações: importar, corrigir, validar, registrar, PDF da devolutiva | professor | `/api/textos` (`RedacoesHttpApi`)                          |
-| Alunos                                                              | professor | `/api/textos?completo=true`, calculadas na tela            |
-| Administração: usuários, configuração, auditoria                    | admin     | `/api/usuarios`, `/api/config`, `/api/auditoria`           |
-| Administração › Métricas                                            | admin     | `/api/textos?completo=true` e `/api/metricas/decisoes.csv` |
+| Área                                                                | Perfil    | Rotas                                            |
+| ------------------------------------------------------------------- | --------- | ------------------------------------------------ |
+| Login e sessão                                                      | todos     | `/api/auth`, `/api/me`                           |
+| Redações: importar, corrigir, validar, registrar, PDF da devolutiva | professor | `/api/textos` (`RedacoesHttpApi`)                |
+| Administração: usuários, configuração, auditoria                    | admin     | `/api/usuarios`, `/api/config`, `/api/auditoria` |
 
-Perfis (os mesmos da POC): o **administrador** cadastra professores e outros usuários e cuida da configuração, das métricas e da auditoria, sem corrigir redações. O **professor** importa, corrige, valida e registra a devolutiva. Depois do registro, o botão "Gerar PDF para o aluno" abre a impressão do navegador só com a devolutiva; escolha "Salvar como PDF". O estudante não tem login.
+Perfis (os mesmos da POC): o **administrador** cadastra professores e outros usuários e cuida da configuração e da auditoria, sem corrigir redações. O **professor** importa, corrige, valida e registra a devolutiva. Depois do registro, o botão "Gerar PDF para o aluno" abre a impressão do navegador só com a devolutiva; escolha "Salvar como PDF". O estudante não tem login. As telas de evolução do aluno e de métricas da POC ainda não fazem parte desta versão (as rotas `/api/metricas` do back-end continuam disponíveis).
 
 - O token de acesso fica no `localStorage` até expirar (`SESSAO_DURACAO`, 12h por padrão). Uma resposta 401 encerra a sessão e volta ao login.
-- A configuração do admin (critérios, perfis sociolinguísticos e limiar de viés) vale na importação e nas métricas.
+- A configuração do admin (critérios, perfis sociolinguísticos e limiar de viés) vale na importação.
 - A correção espera o resultado (`?aguardar=true`). Sem `ANTHROPIC_API_KEY`, o back-end usa o motor simulado.
 - Com o banco vazio, a tela de Redações oferece "Carregar textos de exemplo".
 - `RedacoesMockApi` (em `core/redacoes/mock/`) fica só para os testes.

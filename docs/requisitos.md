@@ -20,7 +20,7 @@ Prioridades: **Alta** (indispensável para o lançamento), **Média** (important
 
 | Perfil        | Pode                                                                                                          |
 | ------------- | ------------------------------------------------------------------------------------------------------------- |
-| Administrador | Cadastrar e gerenciar usuários, definir critérios e perfis sociolinguísticos, ver métricas e auditoria.       |
+| Administrador | Cadastrar e gerenciar usuários, definir critérios e perfis sociolinguísticos, ver a auditoria.                |
 | Professor     | Importar redações, pedir a correção da IA, aceitar, recusar ou ajustar, registrar a devolutiva e gerar o PDF. |
 
 O estudante não acessa o sistema: é identificado só por código e recebe do professor o PDF da devolutiva validada. O administrador não corrige redações.

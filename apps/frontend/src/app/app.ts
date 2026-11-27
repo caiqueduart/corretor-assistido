@@ -16,7 +16,6 @@ interface ItemNavegacao {
 const NAVEGACAO: Readonly<Record<Perfil, readonly ItemNavegacao[]>> = {
     professor: [
         { rota: '/redacoes', rotulo: 'Redações', icone: 'redacoes' },
-        { rota: '/alunos', rotulo: 'Alunos', icone: 'alunos' },
     ],
     admin: [{ rota: '/admin', rotulo: 'Administração', icone: 'escudo' }],
 };
