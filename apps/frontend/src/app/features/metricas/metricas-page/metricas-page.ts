@@ -6,10 +6,11 @@ import { RedacoesService } from '../../../core/redacoes/redacoes.service';
 import { CabecalhoPagina } from '../../../shared/cabecalho-pagina/cabecalho-pagina';
 import { Icone } from '../../../shared/icone/icone';
 import { ExportarDecisoes } from '../exportar-decisoes/exportar-decisoes';
+import { Esqueleto } from '../../../shared/esqueleto/esqueleto';
 
 @Component({
     selector: 'app-metricas-page',
-    imports: [DecimalPipe, CabecalhoPagina, Icone, ExportarDecisoes],
+    imports: [DecimalPipe, CabecalhoPagina, Icone, ExportarDecisoes, Esqueleto],
     templateUrl: './metricas-page.html',
     styleUrl: './metricas-page.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,

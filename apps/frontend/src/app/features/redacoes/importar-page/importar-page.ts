@@ -7,6 +7,7 @@ import { ConfigService, GRUPO_NAO_INFORMADO } from '../../../core/admin/config.s
 import { RedacoesService } from '../../../core/redacoes/redacoes.service';
 import { CabecalhoPagina } from '../../../shared/cabecalho-pagina/cabecalho-pagina';
 import { Icone } from '../../../shared/icone/icone';
+import { AvisosService } from '../../../core/ui/avisos.service';
 
 const EXTENSOES_ACEITAS = ['pdf', 'txt', 'docx'];
 
@@ -20,6 +21,7 @@ const EXTENSOES_ACEITAS = ['pdf', 'txt', 'docx'];
 export class ImportarPage {
     private readonly redacoes = inject(RedacoesService);
     private readonly router = inject(Router);
+    private readonly avisos = inject(AvisosService);
 
     /** Perfis definidos pelo admin em Administração › Configuração. */
     protected readonly perfis = inject(ConfigService).grupos;
@@ -84,6 +86,7 @@ export class ImportarPage {
                 arquivo: this.arquivo(),
             });
 
+            this.avisos.mostrar('Redação importada', { texto: 'Agora peça a correção da IA.' });
             await this.router.navigate(['/redacoes', redacao.id]);
         } catch (erro) {
             this.erroEnvio.set(erro instanceof Error ? erro.message : 'Não foi possível importar a redação.');

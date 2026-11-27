@@ -4,7 +4,11 @@
 />
 
 @if (!redacoes.carregado()) {
-    <p class="metricas__nota" role="status">{{ redacoes.erroCarga() ?? 'Calculando…' }}</p>
+    @if (redacoes.erroCarga(); as erro) {
+        <p class="aviso aviso--erro" role="alert">{{ erro }}</p>
+    } @else {
+        <div class="cartao"><app-esqueleto [quantidade]="6" rotulo="Calculando…" /></div>
+    }
 } @else {
     <section aria-labelledby="titulo-resumo">
         <h2 class="visualmente-oculto" id="titulo-resumo">Resumo</h2>

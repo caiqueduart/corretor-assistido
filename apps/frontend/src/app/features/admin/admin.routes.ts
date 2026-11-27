@@ -4,7 +4,7 @@ import { AdminLayout } from './admin-layout';
 
 /** Página com alterações que o usuário pode perder ao sair. */
 interface ComAlteracoes {
-    podeSair(): boolean;
+    podeSair(): boolean | Promise<boolean>;
 }
 
 const confirmarSaida: CanDeactivateFn<ComAlteracoes> = (pagina) => pagina.podeSair();

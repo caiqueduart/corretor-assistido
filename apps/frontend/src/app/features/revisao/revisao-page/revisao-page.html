@@ -4,7 +4,11 @@
 </a>
 
 @if (!redacoes.carregado()) {
-    <p class="revisao__aviso" role="status">{{ redacoes.erroCarga() ?? 'Carregando redação…' }}</p>
+    @if (redacoes.erroCarga(); as erro) {
+        <p class="aviso aviso--erro" role="alert">{{ erro }}</p>
+    } @else {
+        <div class="cartao"><app-esqueleto [quantidade]="6" rotulo="Carregando redação…" /></div>
+    }
 } @else if (redacao(); as atual) {
     <header class="revisao__topo">
         <h1 class="revisao__titulo">

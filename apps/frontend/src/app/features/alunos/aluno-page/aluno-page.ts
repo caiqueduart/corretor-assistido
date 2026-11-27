@@ -5,10 +5,11 @@ import { AlunosService } from '../../../core/redacoes/alunos.service';
 import { RedacoesService } from '../../../core/redacoes/redacoes.service';
 import { Icone } from '../../../shared/icone/icone';
 import { SituacaoVersao } from '../situacao-versao/situacao-versao';
+import { Esqueleto } from '../../../shared/esqueleto/esqueleto';
 
 @Component({
     selector: 'app-aluno-page',
-    imports: [RouterLink, Icone, SituacaoVersao],
+    imports: [RouterLink, Icone, SituacaoVersao, Esqueleto],
     templateUrl: './aluno-page.html',
     styleUrl: './aluno-page.scss',
     changeDetection: ChangeDetectionStrategy.OnPush,

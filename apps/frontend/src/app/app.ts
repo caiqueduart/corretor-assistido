@@ -6,6 +6,8 @@ import { filter } from 'rxjs';
 import { ConfigService } from './core/admin/config.service';
 import { AuthService } from './core/auth/auth.service';
 import { RedacoesService } from './core/redacoes/redacoes.service';
+import { Avisos } from './layout/avisos/avisos';
+import { Confirmacao } from './layout/confirmacao/confirmacao';
 import { Topbar } from './layout/topbar/topbar';
 import { Icone, NomeIcone } from './shared/icone/icone';
 
@@ -36,11 +38,13 @@ const SISTEMA: SecaoNavegacao = {
 
 @Component({
     selector: 'app-root',
-    imports: [RouterOutlet, RouterLink, RouterLinkActive, Icone, Topbar],
+    imports: [RouterOutlet, RouterLink, RouterLinkActive, Icone, Topbar, Avisos, Confirmacao],
     templateUrl: './app.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
+    private primeiraNavegacao = true;
+
     protected readonly auth = inject(AuthService);
     protected readonly redacoes = inject(RedacoesService);
     private readonly config = inject(ConfigService);
@@ -75,6 +79,25 @@ export class App {
                 filter((evento) => evento instanceof NavigationEnd),
                 takeUntilDestroyed(),
             )
-            .subscribe(() => this.menuAberto.set(false));
+            .subscribe(() => {
+                this.menuAberto.set(false);
+                this.focarConteudo();
+            });
+    }
+
+    /**
+     * Ao trocar de página, leva o foco ao conteúdo: o leitor de tela anuncia a
+     * página nova e o Tab recomeça dali. Na primeira carga, mantém o foco natural.
+     */
+    private focarConteudo(): void {
+        if (this.primeiraNavegacao) {
+            this.primeiraNavegacao = false;
+            return;
+        }
+
+        setTimeout(() => {
+            document.getElementById('conteudo')?.focus({ preventScroll: true });
+            window.scrollTo({ top: 0 });
+        });
     }
 }

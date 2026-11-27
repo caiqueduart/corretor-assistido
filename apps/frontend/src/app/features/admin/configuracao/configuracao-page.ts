@@ -13,6 +13,8 @@ import { UsuariosService } from '../../../core/admin/usuarios.service';
 import { mensagemDeErro } from '../../../core/api/erro-api';
 import { CabecalhoPagina } from '../../../shared/cabecalho-pagina/cabecalho-pagina';
 import { Icone } from '../../../shared/icone/icone';
+import { AvisosService } from '../../../core/ui/avisos.service';
+import { ConfirmacaoService } from '../../../core/ui/confirmacao.service';
 
 interface Rascunho {
     readonly criterios: readonly string[];
@@ -41,6 +43,8 @@ function rascunhoDe(estado: EstadoConfiguracao): Rascunho {
 export class ConfiguracaoPage implements OnInit {
     private readonly config = inject(ConfigService);
     private readonly usuarios = inject(UsuariosService);
+    private readonly avisos = inject(AvisosService);
+    private readonly confirmacao = inject(ConfirmacaoService);
 
     protected readonly grupoPadrao = GRUPO_NAO_INFORMADO;
     protected readonly limites = LIMITES_CONFIG;
@@ -187,6 +191,7 @@ export class ConfiguracaoPage implements OnInit {
                 }),
             );
             this.salvoAgora.set(true);
+            this.avisos.mostrar('Configuração salva', { texto: 'Vale a partir das próximas correções.' });
             this.tentouSalvar.set(false);
         } catch (erro) {
             this.erroSalvar.set(mensagemDeErro(erro, 'Não foi possível salvar a configuração.'));
@@ -196,8 +201,17 @@ export class ConfiguracaoPage implements OnInit {
     }
 
     /** Usado pelo guard de saída da rota. */
-    podeSair(): boolean {
-        return !this.alterado() || confirm('Há alterações não salvas na configuração. Sair mesmo assim?');
+    podeSair(): boolean | Promise<boolean> {
+        return (
+            !this.alterado() ||
+            this.confirmacao.confirmar({
+                titulo: 'Sair sem salvar?',
+                texto: 'As alterações na configuração da correção serão perdidas.',
+                confirmar: 'Sair sem salvar',
+                cancelar: 'Continuar editando',
+                perigo: true,
+            })
+        );
     }
 
     protected avisarAoSair(evento: BeforeUnloadEvent): void {
